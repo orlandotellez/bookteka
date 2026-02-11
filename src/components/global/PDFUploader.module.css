@@ -1,0 +1,106 @@
+.wrapper {
+  min-height: 70vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+}
+
+.dropzone {
+  position: relative;
+  width: 100%;
+  max-width: 640px;
+  padding: 48px;
+  border-radius: 20px;
+  border: 2px dashed #d1d5db;
+  background-color: #f9fafb;
+  cursor: pointer;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  transition: all 0.3s ease;
+}
+
+.dropzone:hover {
+  border-color: #3b82f6;
+  background-color: #eef2ff;
+}
+
+.dragging {
+  border-color: #2563eb;
+  background-color: #dbeafe;
+  transform: scale(1.02);
+}
+
+.loading {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.iconContainer {
+  margin-bottom: 24px;
+  padding: 20px;
+  border-radius: 9999px;
+  background-color: #e5e7eb;
+  transition: all 0.3s ease;
+}
+
+.iconDragging {
+  background-color: #dbeafe;
+}
+
+.icon {
+  width: 48px;
+  height: 48px;
+  color: #6b7280;
+  transition: color 0.3s ease;
+}
+
+.iconActive {
+  color: #2563eb;
+}
+
+.title {
+  margin-bottom: 8px;
+  font-size: 20px;
+  font-weight: 500;
+  color: #111827;
+}
+
+.description {
+  text-align: center;
+  color: #6b7280;
+}
+
+.supportText {
+  margin-top: 16px;
+  font-size: 14px;
+  color: rgba(107, 114, 128, 0.7);
+}
+
+/* Animación sutil para loading */
+@keyframes pulseSubtle {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.pulse {
+  animation: pulseSubtle 1.5s infinite ease-in-out;
+}
