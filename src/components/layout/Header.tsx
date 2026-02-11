@@ -1,7 +1,11 @@
 import logo from "@/assets/logo.svg";
 import styles from "./Header.module.css";
+import { ShowUploaderModal } from "../modals/ShowUploaderModal";
+import { useBookStore } from "@/store/bookStore";
 
 export const Header = () => {
+  const { showUploader, setShowUploader, addBook } = useBookStore();
+
   return (
     <header className={styles.header}>
       <article>
@@ -11,9 +15,16 @@ export const Header = () => {
         </div>
 
         <div className={styles.buttonContainer}>
-          <button>+ Añadir libro</button>
+          <button onClick={() => setShowUploader(true)}>+ Añadir libro</button>
         </div>
       </article>
+
+      {showUploader && (
+        <ShowUploaderModal
+          setShowUploader={() => setShowUploader(false)}
+          onAddBook={addBook}
+        />
+      )}
     </header>
   );
 };

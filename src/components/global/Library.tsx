@@ -1,32 +1,42 @@
 import type { Book } from "@/types/book";
-import { useState, useMemo, useCallback } from "react";
-import { isValidPDF, extractTextFromPDF } from "@/lib/pdfExtractor";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { toast } from "sonner";
 import { CardBook } from "./CardBook";
-import PDFUploader from "./PDFUploader";
-
-interface LibraryProps {
-  books: Book[];
-  isLoading: boolean;
-  onAddBook: (name: string, text: string, totalPages?: number) => Promise<Book>;
-  onDeleteBook: (id: string) => Promise<void>;
-  onOpenBook: (book: Book) => void;
-}
+import { useBookStore } from "@/store/bookStore";
+import styles from "./Library.module.css";
 
 type SortBy = "recent" | "name" | "time";
 type FilterStatus = "all" | "reading" | "unstarted";
 
-export const Library = ({
-  books,
-  isLoading,
-  onAddBook,
-  onDeleteBook,
-  onOpenBook,
-}: LibraryProps) => {
-  const [isUploading, setIsUploading] = useState(false);
+export const Library = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<FilterStatus>("all");
   const [sortBy, setSortBy] = useState<SortBy>("recent");
+
+  const {
+    books,
+    isLoading,
+    deleteBook,
+    getBookById,
+    setCurrentBook,
+    setCurrentView,
+    loadBooks,
+  } = useBookStore();
+
+  useEffect(() => {
+    loadBooks();
+  }, [loadBooks]);
+
+  const handleOpenBook = useCallback(
+    async (book: Book) => {
+      const freshBook = await getBookById(book.id);
+      if (freshBook) {
+        setCurrentBook(freshBook);
+        setCurrentView("reader");
+      }
+    },
+    [getBookById, setCurrentBook, setCurrentView],
+  );
 
   const processedBooks = useMemo(() => {
     let filtered = [...books];
@@ -55,57 +65,27 @@ export const Library = ({
     return filtered;
   }, [books, searchQuery, filterStatus, sortBy]);
 
-  const handleFileSelect = useCallback(
-    async (file: File) => {
-      if (!isValidPDF(file)) {
-        toast.error("Por favor selecciona un archivo PDF válido");
-        return;
-      }
-      setIsUploading(true);
-      try {
-        const result = await extractTextFromPDF(file);
-        if (!result.fullText.trim()) {
-          toast.error("No se pudo extraer texto del PDF.");
-          return;
-        }
-        const book = await onAddBook(
-          file.name,
-          result.fullText,
-          result.totalPages,
-        );
-
-        toast.success(`"${book.name}" añadido a la biblioteca`);
-        //     setShowUploader(false);
-      } catch (error) {
-        console.error("Error al procesar el PDF:", error);
-        toast.error("Error al procesar el PDF.");
-      } finally {
-        setIsUploading(false);
-      }
-    },
-    [onAddBook],
-  );
-
   const handleDelete = useCallback(
     async (id: string) => {
       try {
-        await onDeleteBook(id);
+        await deleteBook(id);
         toast.success("Libro eliminado");
       } catch {
         toast.error("Error al eliminar el libro");
       }
     },
-    [onDeleteBook],
+    [deleteBook],
   );
 
   const renderBooks = (booksToRender: Book[]) => {
+    console.log(booksToRender);
     return (
-      <div>
+      <div className={styles.cards}>
         {booksToRender.map((book) => (
           <CardBook
             key={book.id}
             book={book}
-            onOpen={onOpenBook}
+            onOpen={handleOpenBook}
             onDelete={handleDelete}
           />
         ))}
@@ -113,11 +93,10 @@ export const Library = ({
     );
   };
 
+  if (isLoading) return "cargando....";
+
   return (
     <>
-      <div>
-        <PDFUploader onFileSelect={handleFileSelect} isLoading={isUploading} />
-      </div>
       <article>{renderBooks(processedBooks)}</article>
     </>
   );
