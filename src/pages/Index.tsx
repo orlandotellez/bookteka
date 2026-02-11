@@ -4,8 +4,6 @@ const Index = () => {
   return (
     <>
       <section>
-        <h2>Index</h2>
-
         <Library />
       </section>
     </>

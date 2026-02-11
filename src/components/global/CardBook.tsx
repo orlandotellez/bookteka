@@ -35,16 +35,18 @@ export const CardBook = ({ book, onOpen, onDelete }: BookCardProps) => {
               {book.name.replace(".pdf", "")}
             </h3>
 
-            <div className={styles.meta}>
-              <span className={styles.metaItem}>
-                <Clock size={14} />
-                {formatTime(book.readingTimeSeconds)}
-              </span>
-              <span>•</span>
-              <span>{progress}</span>
-            </div>
+            <div>
+              <div className={styles.meta}>
+                <span className={styles.metaItem}>
+                  <Clock size={14} />
+                  {formatTime(book.readingTimeSeconds)}
+                </span>
+                <span>•</span>
+                <span>{progress}</span>
+              </div>
 
-            <p className={styles.lastRead}>Última lectura: {lastRead}</p>
+              <p className={styles.lastRead}>Última lectura: {lastRead}</p>
+            </div>
           </div>
         </div>
 
