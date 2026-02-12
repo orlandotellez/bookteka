@@ -1,0 +1,86 @@
+.container {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 1px solid #ddd;
+  background: #ffffff;
+  padding: 12px;
+}
+
+.controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+}
+
+.group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f3f3f3;
+  padding: 6px 10px;
+  border-radius: 8px;
+}
+
+.group button {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.value {
+  min-width: 50px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.dropdown {
+  position: relative;
+}
+
+.dropdown > button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #f3f3f3;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.menu {
+  position: absolute;
+  top: 110%;
+  left: 0;
+  background: white;
+  border: 1px solid #ddd;
+  padding: 10px;
+  border-radius: 8px;
+  min-width: 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+}
+
+.menuItem {
+  background: none;
+  border: none;
+  text-align: left;
+  padding: 6px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.menuItem:hover {
+  background: #f0f0f0;
+}
+
+.activeItem {
+  background: #222;
+  color: white;
+  padding: 6px;
+  border-radius: 6px;
+}

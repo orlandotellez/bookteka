@@ -1,0 +1,135 @@
+.container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+}
+
+.streakDisplay {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(249, 115, 22, 0.1);
+}
+
+.flameActive {
+  color: #f97316;
+}
+
+.flameInactive {
+  color: #999;
+}
+
+.streakActive {
+  font-weight: 600;
+  color: #f97316;
+}
+
+.streakInactive {
+  color: #777;
+}
+
+.completeButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  transition: 0.2s ease;
+}
+
+.notCompleted {
+  background: #f97316;
+  color: white;
+}
+
+.notCompleted:hover {
+  background: #ea580c;
+}
+
+.completed {
+  background: rgba(34, 197, 94, 0.1);
+  color: #16a34a;
+}
+
+.settingsWrapper {
+  position: relative;
+}
+
+.settingsButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  transition: 0.2s ease;
+}
+
+.settingsButton:hover {
+  background: #f3f3f3;
+}
+
+.popover {
+  position: absolute;
+  right: 0;
+  top: 110%;
+  width: 280px;
+  z-index: 50;
+}
+
+.popoverContent {
+  background: white;
+  border: 1px solid #e5e5e5;
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.popoverHeader h4 {
+  margin: 0;
+  font-size: 14px;
+}
+
+.popoverHeader p {
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 12px;
+}
+
+.field label {
+  font-size: 13px;
+}
+
+.field input {
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+}
+
+.initializeButton {
+  margin-top: 14px;
+  width: 100%;
+  padding: 8px;
+  border-radius: 6px;
+  border: none;
+  background: #2563eb;
+  color: white;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.initializeButton:hover {
+  background: #1d4ed8;
+}

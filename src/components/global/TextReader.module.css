@@ -1,0 +1,52 @@
+.readerContainer {
+  min-height: 100vh;
+  padding: 3rem 0;
+}
+
+.article {
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.readerContent {
+  color: var(--reader-text, #1f2937);
+}
+
+.paragraph {
+  margin-bottom: 1.5rem;
+  opacity: 0;
+  animation: fadeIn 0.4s ease forwards;
+}
+
+.highlight {
+  padding: 0 2px;
+  border-radius: 4px;
+}
+
+/* Highlight colors */
+.highlightYellow {
+  background-color: rgba(253, 224, 71, 0.6);
+}
+
+.highlightGreen {
+  background-color: rgba(134, 239, 172, 0.6);
+}
+
+.highlightBlue {
+  background-color: rgba(147, 197, 253, 0.6);
+}
+
+.highlightPink {
+  background-color: rgba(249, 168, 212, 0.6);
+}
+
+.highlightOrange {
+  background-color: rgba(253, 186, 116, 0.6);
+}
+
+/* Animación */
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}

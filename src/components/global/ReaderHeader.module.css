@@ -1,0 +1,75 @@
+.header {
+  width: 100%;
+  top: 0;
+  z-index: 20;
+  border-bottom: 1px solid var(--border-color);
+  background-color: white;
+}
+
+.container {
+  max-width: var(--max-width);
+  margin: auto;
+  padding: var(--padding);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logoContainer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.iconBox {
+  background: #f0f0f0;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.titleContainer {
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.fileName {
+  font-size: 14px;
+  color: #666;
+  max-width: 250px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Right side */
+.right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.iconButton {
+  background: none;
+  border: none;
+  padding: 8px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.iconButton:hover {
+  background: #f3f3f3;
+}
+
+.closeButton:hover {
+  background: #ffe5e5;
+  color: #d11a2a;
+}
