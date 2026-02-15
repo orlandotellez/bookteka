@@ -26,13 +26,37 @@ const DEFAULT_SETTINGS: ReadingSettings = {
 };
 
 export const Reader = ({ book }: ReaderProps) => {
-  const { updateScrollPosition, updateReadingTime, setCurrentView } =
-    useBookStore();
+  const {
+    updateScrollPosition,
+    updateReadingTime,
+    setCurrentView,
+    loadBookmarks,
+    addBookmark,
+    removeBookmark,
+    loadHighlights,
+    addHighlight,
+  } = useBookStore();
   const { isRunning, sessionSeconds, start, pause } = useReadingTimer();
   const [settings, setSettings] = useState<ReadingSettings>(DEFAULT_SETTINGS);
   const [highlights, setHighlights] = useState<Highlight[]>([]);
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [showBookmarks, setShowBookmarks] = useState(false);
+  const [isLoadingData, setIsLoadingData] = useState(true);
+
+  // Cargar highlights y bookmarks al montar el componente
+  useEffect(() => {
+    const loadData = async () => {
+      setIsLoadingData(true);
+      const [loadedHighlights, loadedBookmarks] = await Promise.all([
+        loadHighlights(book.id),
+        loadBookmarks(book.id),
+      ]);
+      setHighlights(loadedHighlights);
+      setBookmarks(loadedBookmarks);
+      setIsLoadingData(false);
+    };
+    loadData();
+  }, [book.id, loadHighlights, loadBookmarks]);
 
   const handleClose = () => {
     pause();
@@ -77,39 +101,63 @@ export const Reader = ({ book }: ReaderProps) => {
         endOffset,
         createdAt: Date.now(),
       };
-      
-      setHighlights(prev => [...prev, newHighlight]);
-      // TODO: Guardar en base de datos
+
+      await addHighlight(newHighlight);
+      setHighlights((prev) => [...prev, newHighlight]);
     },
-    []
+    [book.id, addHighlight],
   );
 
-  // Manejar bookmarks
-  const handleAddBookmark = useCallback((name: string) => {
-    // Crear bookmark en la posición actual del scroll
-    const scrollY = window.scrollY;
-    const textPreview = "Texto seleccionado..."; // TODO: Obtener texto alrededor
-    
-    const newBookmark: Bookmark = {
-      id: crypto.randomUUID(),
-      bookId: book.id,
-      name,
-      textPreview,
-      scrollPosition: scrollY,
-      createdAt: Date.now(),
-    };
-    
-    setBookmarks(prev => [...prev, newBookmark]);
-    // TODO: Guardar en base de datos
-  }, []);
+  // Manejar bookmarks (desde toolbar o desde panel)
+  const handleAddBookmark = useCallback(
+    async (nameOrText: string, textPreview?: string) => {
+      const scrollY = window.scrollY;
 
-  const handleDeleteBookmark = useCallback((id: string) => {
-    setBookmarks(prev => prev.filter(b => b.id !== id));
-    // TODO: Eliminar de base de datos
-  }, []);
+      if (nameOrText.includes("|||")) {
+        const [name, selectedText] = nameOrText.split("|||");
+
+        const newBookmark: Bookmark = {
+          id: crypto.randomUUID(),
+          bookId: book.id,
+          name: name.trim(),
+          textPreview: selectedText,
+          scrollPosition: scrollY,
+          createdAt: Date.now(),
+        };
+
+        await addBookmark(newBookmark);
+        setBookmarks((prev) => [...prev, newBookmark]);
+        return;
+      }
+
+      const name = nameOrText;
+      const preview = textPreview || "Texto seleccionado...";
+
+      const newBookmark: Bookmark = {
+        id: crypto.randomUUID(),
+        bookId: book.id,
+        name,
+        textPreview: preview,
+        scrollPosition: scrollY,
+        createdAt: Date.now(),
+      };
+
+      await addBookmark(newBookmark);
+      setBookmarks((prev) => [...prev, newBookmark]);
+    },
+    [book.id, addBookmark],
+  );
+
+  const handleDeleteBookmark = useCallback(
+    async (id: string) => {
+      await removeBookmark(id);
+      setBookmarks((prev) => prev.filter((b) => b.id !== id));
+    },
+    [removeBookmark],
+  );
 
   const handleNavigateToBookmark = useCallback((bookmark: Bookmark) => {
-    window.scrollTo({ top: bookmark.scrollPosition, behavior: 'smooth' });
+    window.scrollTo({ top: bookmark.scrollPosition, behavior: "smooth" });
   }, []);
 
   // Actualizar tiempo de lectura cuando se detiene el timer
@@ -120,6 +168,16 @@ export const Reader = ({ book }: ReaderProps) => {
       }
     };
   }, [sessionSeconds, book.id, updateReadingTime]);
+
+  if (isLoadingData) {
+    return (
+      <div className={styles.reader}>
+        <div style={{ padding: "2rem", textAlign: "center" }}>
+          Cargando libro...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.reader}>
@@ -145,6 +203,7 @@ export const Reader = ({ book }: ReaderProps) => {
           totalPages={book.totalPages}
           onScrollPositionChange={handleScrollPositionChange}
           onAddHighlight={handleAddHighlight}
+          onAddBookmark={handleAddBookmark}
         />
       </main>
 

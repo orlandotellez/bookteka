@@ -77,6 +77,29 @@
   background-color: #f97316;
 }
 
+.divider {
+  width: 1px;
+  height: 20px;
+  background-color: #e5e7eb;
+  margin: 0 4px;
+}
+
+.bookmarkButton {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background-color 0.15s ease;
+}
+
+.bookmarkButton:hover {
+  background-color: #f3f4f6;
+}
+
 .closeButton {
   background: transparent;
   border: none;
@@ -89,6 +112,54 @@
 
 .closeButton:hover {
   opacity: 0.7;
+}
+
+/* Modo agregar marcador */
+.bookmarkInput {
+  padding: 6px 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  font-size: 14px;
+  width: 150px;
+  outline: none;
+}
+
+.bookmarkInput:focus {
+  border-color: #3b82f6;
+}
+
+.colorPicker {
+  display: flex;
+  gap: 4px;
+  margin-left: 8px;
+}
+
+.colorButton.selected {
+  outline: 2px solid #1f2937;
+  outline-offset: 2px;
+}
+
+.confirmButton {
+  background: #10b981;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  margin-left: 8px;
+  color: white;
+  transition: background-color 0.15s ease;
+}
+
+.confirmButton:hover:not(:disabled) {
+  background-color: #059669;
+}
+
+.confirmButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* Animación */

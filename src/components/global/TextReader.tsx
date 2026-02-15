@@ -1,7 +1,7 @@
 import { useMemo, useRef, useEffect, useCallback, useState } from "react";
 import type { ReadingSettings } from "./ReadingControls";
 import type { Highlight, HighlightColor } from "@/types/book";
-import HighlightToolbar from "./HighlightToolbar";
+import { HighlightToolbar } from "./HighlightToolbar";
 import PageNavigator from "./PageNavigator";
 import styles from "./TextReader.module.css";
 
@@ -12,7 +12,6 @@ interface TextReaderProps {
   initialScrollPosition?: number;
   totalPages?: number;
   onScrollPositionChange?: (position: number) => void;
-  onTextAtPosition?: (text: string) => void;
   onAddHighlight?: (
     text: string,
     color: HighlightColor,
@@ -20,6 +19,7 @@ interface TextReaderProps {
     startOffset: number,
     endOffset: number,
   ) => void;
+  onAddBookmark?: (text: string) => void;
   showPageNavigator?: boolean;
 }
 
@@ -38,8 +38,8 @@ export const TextReader = ({
   initialScrollPosition = 0,
   totalPages,
   onScrollPositionChange,
-  onTextAtPosition,
   onAddHighlight,
+  onAddBookmark,
   showPageNavigator = true,
 }: TextReaderProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -122,19 +122,22 @@ export const TextReader = ({
 
       // Encontrar el párrafo y posición de la selección
       const range = selection.getRangeAt(0);
-      const paragraphElement = range.startContainer.parentElement?.closest('[data-index]');
-      
+      const paragraphElement =
+        range.startContainer.parentElement?.closest("[data-index]");
+
       if (paragraphElement) {
-        const paragraphIndex = parseInt(paragraphElement.getAttribute('data-index') || '0');
+        const paragraphIndex = parseInt(
+          paragraphElement.getAttribute("data-index") || "0",
+        );
         const paragraphText = paragraphs[paragraphIndex];
-        
+
         if (paragraphText) {
           const startOffset = range.startOffset;
           const endOffset = range.endOffset;
-          
+
           // Obtener posición del cursor para mostrar toolbar
           const rect = range.getBoundingClientRect();
-          
+
           setSelection({
             text: selectedText,
             paragraphIndex,
@@ -142,15 +145,16 @@ export const TextReader = ({
             endOffset,
             position: {
               x: rect.left,
-              y: rect.top - 10
-            }
+              y: rect.top - 10,
+            },
           });
         }
       }
     };
 
-    document.addEventListener('selectionchange', handleSelectionChange);
-    return () => document.removeEventListener('selectionchange', handleSelectionChange);
+    document.addEventListener("selectionchange", handleSelectionChange);
+    return () =>
+      document.removeEventListener("selectionchange", handleSelectionChange);
   }, [paragraphs]);
 
   // Detectar página actual según el scroll
@@ -261,21 +265,24 @@ export const TextReader = ({
   );
 
   // Manejar highlight
-  const handleAddHighlight = useCallback((color: HighlightColor) => {
-    if (!selection || !onAddHighlight) return;
-    
-    onAddHighlight(
-      selection.text,
-      color,
-      selection.paragraphIndex,
-      selection.startOffset,
-      selection.endOffset
-    );
-    
-    // Limpiar selección y toolbar
-    window.getSelection()?.removeAllRanges();
-    setSelection(null);
-  }, [selection, onAddHighlight]);
+  const handleAddHighlight = useCallback(
+    (color: HighlightColor) => {
+      if (!selection || !onAddHighlight) return;
+
+      onAddHighlight(
+        selection.text,
+        color,
+        selection.paragraphIndex,
+        selection.startOffset,
+        selection.endOffset,
+      );
+
+      // Limpiar selección y toolbar
+      window.getSelection()?.removeAllRanges();
+      setSelection(null);
+    },
+    [selection, onAddHighlight],
+  );
 
   // Navegar a página específica
   const handleNavigateToPage = useCallback(
@@ -315,9 +322,9 @@ export const TextReader = ({
           style={textStyle}
         >
           {paragraphs.map((paragraph, index) => (
-            <p 
-              key={index} 
-              data-index={index} 
+            <p
+              key={index}
+              data-index={index}
               className={styles.paragraph}
               onMouseUp={() => {
                 // Dar tiempo a que la selección se complete
@@ -347,7 +354,9 @@ export const TextReader = ({
       {selection && onAddHighlight && (
         <HighlightToolbar
           position={selection.position}
+          selectedText={selection.text}
           onHighlight={handleAddHighlight}
+          onAddBookmark={onAddBookmark || (() => {})}
           onClose={() => setSelection(null)}
         />
       )}

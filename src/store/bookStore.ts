@@ -1,4 +1,4 @@
-import type { Book } from "@/types/book";
+import type { Book, Bookmark, Highlight } from "@/types/book";
 import { create } from "zustand";
 import {
   getAllBooks,
@@ -8,6 +8,12 @@ import {
   updateBookReadingTime,
   updateBookScrollPosition,
   setBookReadingTime,
+  getBookmarksByBook,
+  saveBookmark,
+  deleteBookmark as deleteBookmarkFromDB,
+  getHighlightsByBook,
+  saveHighlight,
+  deleteHighlight as deleteHighlightFromDB,
 } from "@/lib/database";
 
 type View = "library" | "reader" | "profile";
@@ -36,6 +42,16 @@ interface BookStore {
   setShowUploader: (show: boolean) => void;
   setCurrentView: (view: View) => void;
   setCurrentBook: (book: Book | null) => void;
+
+  // Acciones de bookmarks
+  loadBookmarks: (bookId: string) => Promise<Bookmark[]>;
+  addBookmark: (bookmark: Bookmark) => Promise<void>;
+  removeBookmark: (id: string) => Promise<void>;
+
+  // Acciones de highlights
+  loadHighlights: (bookId: string) => Promise<Highlight[]>;
+  addHighlight: (highlight: Highlight) => Promise<void>;
+  removeHighlight: (id: string) => Promise<void>;
 }
 
 export const useBookStore = create<BookStore>((set) => ({
@@ -164,4 +180,68 @@ export const useBookStore = create<BookStore>((set) => ({
   setShowUploader: (show: boolean) => set({ showUploader: show }),
   setCurrentView: (view: View) => set({ currentView: view }),
   setCurrentBook: (book: Book | null) => set({ currentBook: book }),
+
+  // Cargar bookmarks de un libro
+  loadBookmarks: async (bookId: string) => {
+    try {
+      return await getBookmarksByBook(bookId);
+    } catch (error) {
+      console.error("Error loading bookmarks:", error);
+      return [];
+    }
+  },
+
+  // Agregar bookmark
+  addBookmark: async (bookmark: Bookmark) => {
+    try {
+      await saveBookmark(bookmark);
+    } catch (error) {
+      console.error("Error adding bookmark:", error);
+      set({ error: "Error al añadir marcador" });
+      throw error;
+    }
+  },
+
+  // Eliminar bookmark
+  removeBookmark: async (id: string) => {
+    try {
+      await deleteBookmarkFromDB(id);
+    } catch (error) {
+      console.error("Error removing bookmark:", error);
+      set({ error: "Error al eliminar marcador" });
+      throw error;
+    }
+  },
+
+  // Cargar highlights de un libro
+  loadHighlights: async (bookId: string) => {
+    try {
+      return await getHighlightsByBook(bookId);
+    } catch (error) {
+      console.error("Error loading highlights:", error);
+      return [];
+    }
+  },
+
+  // Agregar highlight
+  addHighlight: async (highlight: Highlight) => {
+    try {
+      await saveHighlight(highlight);
+    } catch (error) {
+      console.error("Error adding highlight:", error);
+      set({ error: "Error al añadir resaltado" });
+      throw error;
+    }
+  },
+
+  // Eliminar highlight
+  removeHighlight: async (id: string) => {
+    try {
+      await deleteHighlightFromDB(id);
+    } catch (error) {
+      console.error("Error removing highlight:", error);
+      set({ error: "Error al eliminar resaltado" });
+      throw error;
+    }
+  },
 }));

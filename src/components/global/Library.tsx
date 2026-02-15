@@ -9,9 +9,9 @@ type SortBy = "recent" | "name" | "time";
 type FilterStatus = "all" | "reading" | "unstarted";
 
 export const Library = () => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filterStatus, setFilterStatus] = useState<FilterStatus>("all");
-  const [sortBy, setSortBy] = useState<SortBy>("recent");
+  const [searchQuery] = useState("");
+  const [filterStatus] = useState<FilterStatus>("all");
+  const [sortBy] = useState<SortBy>("recent");
 
   const {
     books,
