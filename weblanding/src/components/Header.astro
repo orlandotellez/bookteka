@@ -1,33 +1,35 @@
 ---
-import logo from "../assets/logo.svg";
+import logo from "@/assets/logo.svg";
 ---
 
 <header>
-  <div class="logo-container">
-    <img src={logo.src} alt="logo" />
-    <h1>Bookteka</h1>
-  </div>
-  <div class="menu-container">
-    <button class="menu-toggle" id="menuToggle">☰</button>
-  </div>
-  <nav class="nav-menu" id="navMenu">
-    <ul>
-      <li>
-        <a href="/#inicio" class="btn-demo"> Ver demo </a>
-      </li>
-    </ul>
-  </nav>
+  <div class="header-container">
+    <div class="logo-container">
+      <img src={logo.src} alt="logo" />
+      <h1>Bookteka</h1>
+    </div>
+    <div class="menu-container">
+      <button class="menu-toggle" id="menuToggle">☰</button>
+    </div>
+    <nav class="nav-menu" id="navMenu">
+      <ul>
+        <li>
+          <a href="/#inicio" class="btn-demo"> Ver demo </a>
+        </li>
+      </ul>
+    </nav>
 
-  <svg
-    class="header-wave"
-    viewBox="0 0 675 900"
-    preserveAspectRatio="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      d="M262 0L262.8 21.5C263.7 43 265.3 86 258.5 128.8C251.7 171.7 236.3 214.3 221.2 257.2C206 300 191 343 189.8 385.8C188.7 428.7 201.3 471.3 213.7 514.2C226 557 238 600 238 642.8C238 685.7 226 728.3 232.8 771.2C239.7 814 265.3 857 278.2 878.5L291 900L0 900L0 0Z"
-      fill="var(--secondary-color)"></path>
-  </svg>
+    <svg
+      class="header-wave"
+      viewBox="0 0 675 900"
+      preserveAspectRatio="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M262 0L262.8 21.5C263.7 43 265.3 86 258.5 128.8C251.7 171.7 236.3 214.3 221.2 257.2C206 300 191 343 189.8 385.8C188.7 428.7 201.3 471.3 213.7 514.2C226 557 238 600 238 642.8C238 685.7 226 728.3 232.8 771.2C239.7 814 265.3 857 278.2 878.5L291 900L0 900L0 0Z"
+        fill="var(--secondary-color)"></path>
+    </svg>
+  </div>
 </header>
 
 <style>
@@ -39,7 +41,7 @@ import logo from "../assets/logo.svg";
   }
 
   .logo-container img {
-    width: 32px;
+    width: 24px;
   }
 
   header {
@@ -48,11 +50,18 @@ import logo from "../assets/logo.svg";
     left: 0;
     width: 100%;
     background-color: var(--primary-color);
-    padding: 20px;
     z-index: 10;
+    border: 1px solid var(--border-color);
+  }
+
+  .header-container {
+    width: 100%;
+    max-width: var(--max-width);
+    margin: auto;
     display: flex;
     flex-direction: row;
-    border: 1px solid var(--border-color);
+
+    padding: 20px;
   }
 
   nav {
@@ -66,12 +75,16 @@ import logo from "../assets/logo.svg";
     width: 100%;
   }
 
+  h1 {
+    font-size: 20px;
+  }
+
   .btn-demo {
     background-color: var(--secondary-color);
     padding: 10px 15px;
     border-radius: 7px;
     color: white;
-    font-size: 24px;
+    font-size: 20px;
   }
 
   /* borde derecho */

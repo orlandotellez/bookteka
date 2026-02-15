@@ -1,7 +1,67 @@
 ---
-
+import fire from "@/assets/fire.svg";
 ---
 
 <section>
-  <h1>Hero section</h1>
+  <article>
+    <div class="tag">
+      <img src={fire.src} alt="fire icon" />
+      <span>Tu compañero de lectura digital</span>
+    </div>
+    <div class="text">
+      <h2>Lee tus PDFs como si fueran</h2>
+      <h2><span>libros de verdad</span></h2>
+      <p>
+        Una experiencia de lectura limpia, cálida y sin distracciones. Sube tus
+        PDFs, personaliza la tipografía y lleva el control de tu progreso — todo
+        desde el navegador.
+      </p>
+    </div>
+  </article>
 </section>
+
+<style>
+  section {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .tag {
+    display: flex;
+    background-color: #f3e6dd;
+    width: 100%;
+    max-width: 400px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50px;
+    margin: auto;
+    padding: 6px;
+    gap: 6px;
+    font-weight: bold;
+  }
+
+  .text {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-top: 20px;
+  }
+
+  span {
+    color: var(--secondary-color);
+  }
+
+  p {
+    max-width: 42rem;
+    margin-top: 20px;
+  }
+
+  h2 {
+    font-size: 3.1rem;
+  }
+</style>
