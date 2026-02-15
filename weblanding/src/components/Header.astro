@@ -1,0 +1,184 @@
+ ---
+import logo from "../assets/logo.svg"
+---
+
+<header>
+  <div class="logo-container">
+    <img src={logo.src} alt="logo">
+    <h1>Bookteka</h1>
+  </div>
+  <div class="menu-container">
+      <button class="menu-toggle" id="menuToggle">☰</button>
+  </div>
+  <nav class="nav-menu" id="navMenu">
+    <ul>
+      <li>
+        <a href="/#inicio" class="btn-demo">
+          Ver demo
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <svg
+    class="header-wave"
+    viewBox="0 0 675 900"
+    preserveAspectRatio="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M262 0L262.8 21.5C263.7 43 265.3 86 258.5 128.8C251.7 171.7 236.3 214.3 221.2 257.2C206 300 191 343 189.8 385.8C188.7 428.7 201.3 471.3 213.7 514.2C226 557 238 600 238 642.8C238 685.7 226 728.3 232.8 771.2C239.7 814 265.3 857 278.2 878.5L291 900L0 900L0 0Z"
+      fill="var(--secondary-color)"
+    />
+  </svg>
+</header>
+
+<style>
+  .logo-container {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-container img { 
+    width: 32px;
+  }
+
+
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: var(--primary-color);
+  padding: 20px;
+  z-index: 10;
+  display: flex;
+  flex-direction: row;
+  border: 1px solid var(--border-color);
+}
+
+nav {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+}
+
+a {
+  display: flex;
+  width: 100%;
+}
+
+.btn-demo {
+  background-color: var(--secondary-color);
+  padding: 10px 15px;
+  border-radius: 7px;
+  color: white;
+  font-size: 24px;
+}
+
+/* borde derecho */
+.header-wave {
+  position: absolute;
+  top: 0;
+  right: -220px;      /* ajusta según la forma */
+  width: 220px;       /* ancho visible de la curva */
+  height: 100%;       /* TODO el alto del header */
+  z-index: 1;
+  pointer-events: none;
+}
+
+ul {
+  display: flex;
+  flex-direction: row;
+  gap: 30px;
+}
+
+li {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: var(--text-color);
+  cursor: pointer;
+  padding: 10px;
+}
+
+.menu-toggle.menu-open {
+  transform: rotate(90deg);
+}
+
+@media only screen and (max-width: 1024px) {
+    header {
+        width: 100%;
+        padding: 0px 20px;
+        height: auto;
+        min-height: 80px;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .menu-toggle {
+        display: block;
+    }
+
+    .nav-menu {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background-color: var(--secondary-color);
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-out;
+        padding: 0px 20px 0px 20px;
+    }
+
+    .nav-menu.nav-open {
+        max-height: 500px;
+        transition: max-height 0.3s ease-in;
+    }
+
+    .nav-menu ul {
+        margin-top: 20px;
+        margin-left: 0;
+        gap: 20px;
+        padding-bottom: 20px;
+    }
+
+    .logo-container {
+        width: auto;
+        max-width: 40px;
+        margin-left: 0;
+    }
+
+    .logo-container img {
+        width: 100%;
+    }
+
+    .header-wave {
+        display: none;
+    }
+}
+
+</style>
+
+<script is:inline>
+  const menuToggle = document.getElementById('menuToggle');
+  const navMenu = document.getElementById('navMenu');
+
+  if (menuToggle && navMenu) {
+    menuToggle.addEventListener('click', () => {
+      navMenu.classList.toggle('nav-open');
+      menuToggle.classList.toggle('menu-open');
+    });
+  }
+</script>
