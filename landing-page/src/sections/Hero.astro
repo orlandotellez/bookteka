@@ -17,6 +17,10 @@ import fire from "@/assets/fire.svg";
         desde el navegador.
       </p>
     </div>
+    <div class="buttons">
+      <a href="#" class="demo-button">Ver Demo</a>
+      <a href="#" class="other-button">Conocer más</a>
+    </div>
   </article>
 </section>
 
@@ -63,5 +67,27 @@ import fire from "@/assets/fire.svg";
 
   h2 {
     font-size: 3.1rem;
+  }
+
+  .buttons {
+    width: 100%;
+    display: flex;
+    margin-top: 40px;
+    gap: 20px;
+    justify-content: center;
+  }
+
+  .buttons a {
+    padding: 10px 15px;
+    border-radius: 7px;
+  }
+
+  .demo-button {
+    background-color: var(--secondary-color);
+    color: white;
+  }
+
+  .other-button {
+    border: 1px solid var(--border-color);
   }
 </style>
