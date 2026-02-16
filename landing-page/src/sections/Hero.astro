@@ -1,5 +1,6 @@
 ---
 import fire from "@/assets/fire.svg";
+import RenderPreview from "@/components/RenderPreview.astro";
 ---
 
 <section>
@@ -20,6 +21,9 @@ import fire from "@/assets/fire.svg";
     <div class="buttons">
       <a href="#" class="demo-button">Ver Demo</a>
       <a href="#" class="other-button">Conocer más</a>
+    </div>
+    <div class="preview">
+      <RenderPreview />
     </div>
   </article>
 </section>
@@ -89,5 +93,9 @@ import fire from "@/assets/fire.svg";
 
   .other-button {
     border: 1px solid var(--border-color);
+  }
+
+  .preview {
+    margin-top: 30px;
   }
 </style>

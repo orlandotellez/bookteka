@@ -1,0 +1,230 @@
+---
+
+---
+
+<section class="preview-section">
+  <div class="container">
+    <div class="reader-card">
+      <div class="window-bar">
+        <div class="dot red"></div>
+        <div class="dot yellow"></div>
+        <div class="dot gray"></div>
+        <span class="window-title">Bookteka — Mi libro.pdf</span>
+      </div>
+
+      <div class="controls">
+        <div class="control-group">
+          <button id="decrease">−</button>
+          <span id="fontSizeDisplay">16px</span>
+          <button id="increase">+</button>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="control-group">
+          <button class="font-btn active" data-font="serif">Serif</button>
+          <button class="font-btn" data-font="sans-serif">Sans</button>
+          <button class="font-btn" data-font="monospace">Mono</button>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="control-group">
+          <input
+            type="range"
+            id="widthRange"
+            min="50"
+            max="100"
+            step="5"
+            value="70"
+          />
+        </div>
+      </div>
+
+      <div class="reader-bg">
+        <div id="readerContent" class="reader-text">
+          <p>
+            Era el mejor de los tiempos, era el peor de los tiempos, era la edad
+            de la sabiduría, era la edad de la necedad, era la época de las
+            creencias, era la época de la incredulidad...
+          </p>
+          <p class="muted">
+            Era la primavera de la esperanza, era el invierno de la
+            desesperación, lo teníamos todo ante nosotros, no teníamos nada ante
+            nosotros, todos íbamos directos al Cielo, todos íbamos directos al
+            otro lado...
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <p class="hint">↑ Prueba los controles — así se siente leer con Bookteka</p>
+  </div>
+</section>
+
+<style>
+  .preview-section {
+    padding: 2rem 1rem 4rem;
+  }
+
+  p {
+    font-size: inherit;
+  }
+
+  .container {
+    max-width: 1060px;
+    margin: auto;
+  }
+
+  .reader-card {
+    border: 1px solid #e5e5e5;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    background: white;
+  }
+
+  .window-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: #f5f5f5;
+    border-bottom: 1px solid #e5e5e5;
+  }
+
+  .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+  }
+
+  .red {
+    background: #ff5f56;
+  }
+  .yellow {
+    background: #ffbd2e;
+  }
+  .gray {
+    background: #ccc;
+  }
+
+  .window-title {
+    margin-left: 12px;
+    font-size: 12px;
+    color: #666;
+  }
+
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 16px;
+    border-bottom: 1px solid #e5e5e5;
+    background: #fafafa;
+  }
+
+  .control-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .control-group button {
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: none;
+    background: #eaeaea;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+
+  .control-group button:hover {
+    background: #dcdcdc;
+  }
+
+  .font-btn.active {
+    background: #222;
+    color: white;
+  }
+
+  .divider {
+    width: 1px;
+    height: 24px;
+    background: #e5e5e5;
+  }
+
+  .reader-bg {
+    padding: 3rem 2rem;
+    background: #fdfcf8;
+    display: flex;
+    justify-content: center;
+  }
+
+  .reader-text {
+    font-size: 16px;
+    width: 70%;
+    line-height: 1.7;
+    transition: all 0.3s ease;
+  }
+
+  .reader-text .muted {
+    opacity: 0.7;
+  }
+
+  .hint {
+    text-align: center;
+    font-size: 14px;
+    color: #777;
+    margin-top: 16px;
+  }
+</style>
+
+<script is:inline>
+  document.addEventListener("DOMContentLoaded", () => {
+    const reader = document.getElementById("readerContent");
+    const fontSizeDisplay = document.getElementById("fontSizeDisplay");
+    const increaseBtn = document.getElementById("increase");
+    const decreaseBtn = document.getElementById("decrease");
+    const widthRange = document.getElementById("widthRange");
+    const fontButtons = document.querySelectorAll(".font-btn");
+
+    if (!reader) return;
+
+    let fontSize = 16;
+
+    function updateFontSize() {
+      reader.style.fontSize = fontSize + "px";
+      fontSizeDisplay.textContent = fontSize + "px";
+    }
+
+    increaseBtn.addEventListener("click", () => {
+      if (fontSize < 32) {
+        fontSize += 2;
+        updateFontSize();
+      }
+    });
+
+    decreaseBtn.addEventListener("click", () => {
+      if (fontSize > 12) {
+        fontSize -= 2;
+        updateFontSize();
+      }
+    });
+
+    widthRange.addEventListener("input", (e) => {
+      reader.style.width = e.target.value + "%";
+    });
+
+    fontButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        fontButtons.forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        reader.style.fontFamily = btn.dataset.font;
+      });
+    });
+
+    updateFontSize();
+  });
+</script>
