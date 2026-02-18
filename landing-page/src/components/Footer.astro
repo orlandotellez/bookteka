@@ -1,11 +1,14 @@
 ---
-import logo from "@/assets/logo.svg";
+import logoDark from "@/assets/logoDark.svg";
+import logoLight from "@/assets/logoLight.svg";
 ---
 
 <footer>
   <div>
     <article>
-      <img src={logo.src} alt="logo icon" />
+      <img src={logoDark.src} alt="logo" class="logo dark" />
+      <img src={logoLight.src} alt="logo" class="logo light" />
+
       <h3>Bookteka</h3>
     </article>
     <p>Hecho con cariño para los amantes de la lectura.</p>
@@ -13,6 +16,15 @@ import logo from "@/assets/logo.svg";
 </footer>
 
 <style>
+  .logo {
+    display: none;
+  }
+
+  html[data-theme="dark"] .dark,
+  html[data-theme="light"] .light {
+    display: block;
+  }
+
   footer {
     width: 100%;
     padding: 30px 40px;

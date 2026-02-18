@@ -1,12 +1,14 @@
 ---
-import logo from "@/assets/logo.svg";
+import logoDark from "@/assets/logoDark.svg";
+import logoLight from "@/assets/logoLight.svg";
 import IconTheme from "@/components/IconTheme.astro";
 ---
 
 <header>
   <div class="header-container">
     <div class="logo-container">
-      <img src={logo.src} alt="logo" />
+      <img src={logoDark.src} alt="logo" class="logo dark" />
+      <img src={logoLight.src} alt="logo" class="logo light" />
       <h1>Bookteka</h1>
     </div>
     <div class="container-menu-nav">
@@ -42,6 +44,15 @@ import IconTheme from "@/components/IconTheme.astro";
 </header>
 
 <style>
+  .logo {
+    display: none;
+  }
+
+  html[data-theme="dark"] .dark,
+  html[data-theme="light"] .light {
+    display: block;
+  }
+
   .logo-container {
     width: 100%;
     display: flex;
