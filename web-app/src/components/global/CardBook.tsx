@@ -27,7 +27,7 @@ export const CardBook = ({ book, onOpen, onDelete }: BookCardProps) => {
       <div className={styles.card}>
         <div className={styles.header}>
           <div className={styles.iconWrapper}>
-            <BookIcon size={22} />
+            <BookIcon size={22} color="#df8052" />
           </div>
 
           <div className={styles.content}>

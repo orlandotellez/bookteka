@@ -9,7 +9,7 @@
 }
 
 .readerContent {
-  color: var(--reader-text, #1f2937);
+  color: var(--font-color-title);
 }
 
 .paragraph {

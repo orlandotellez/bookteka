@@ -1,13 +1,16 @@
 import { Outlet } from "react-router-dom";
 import "./App.css";
 import { Layout } from "@/components/layout/Layout";
+import { ThemeWrapper } from "./ThemeWrapper";
 
 function App() {
   return (
     <>
-      <Layout>
-        <Outlet />
-      </Layout>
+      <ThemeWrapper>
+        <Layout>
+          <Outlet />
+        </Layout>
+      </ThemeWrapper>
     </>
   );
 }

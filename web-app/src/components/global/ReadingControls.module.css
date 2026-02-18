@@ -2,8 +2,9 @@
   position: sticky;
   top: 0;
   z-index: 10;
-  border-bottom: 1px solid #ddd;
-  background: #ffffff;
+  border-bottom: 1px solid var(--border-color);
+  background: #f6f4ee;
+  background: var(--window-color);
   padding: 12px;
 }
 
@@ -18,15 +19,17 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #f3f3f3;
   padding: 6px 10px;
   border-radius: 8px;
+  border: 1px solid var(--border-color);
+  color: var(--font-color-title);
 }
 
 .group button {
   background: none;
   border: none;
   cursor: pointer;
+  color: var(--font-color-title);
 }
 
 .value {
@@ -43,11 +46,13 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  background: #f3f3f3;
+  background: transparent;
   border: none;
   padding: 8px 12px;
   border-radius: 8px;
   cursor: pointer;
+  color: var(--font-color-title);
+  border: 1px solid var(--border-color);
 }
 
 .menu {

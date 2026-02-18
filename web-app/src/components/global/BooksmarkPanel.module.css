@@ -4,8 +4,8 @@
   top: 0;
   width: 320px;
   height: 100%;
-  background: #ffffff;
-  border-left: 1px solid #e5e5e5;
+  background: var(--primary-color);
+  border-left: 1px solid var(--border-color);
   box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
   z-index: 4000;
   display: flex;
@@ -29,13 +29,14 @@
   justify-content: space-between;
   align-items: center;
   padding: 16px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .headerLeft {
   display: flex;
   align-items: center;
   gap: 8px;
+  color: var(--font-color-title);
 }
 
 .iconButton {
@@ -53,25 +54,28 @@
 /* Add section */
 .addSection {
   padding: 16px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .addButton {
   width: 100%;
   padding: 10px;
   border-radius: 8px;
-  border: 1px solid #ddd;
-  background: #fafafa;
+  background: var(--secondary-color);
+  color: var(--font-color-title);
+  font-weight: bold;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
   transition: background 0.2s ease;
+  border: 1px solid var(--border-color);
 }
 
 .addButton:hover {
-  background: #f0f0f0;
+  background: var(--primary-color);
+  border: 1px solid var(--border-color);
 }
 
 .addForm {
@@ -117,14 +121,16 @@
 .bookmarkItem {
   padding: 12px;
   border-radius: 8px;
-  background: #f8f8f8;
+  background: var(--window-color);
+  border: 1px solid var(--border-color);
   cursor: pointer;
   margin-bottom: 8px;
   transition: background 0.2s ease;
+  color: var(--font-color-title);
 }
 
 .bookmarkItem:hover {
-  background: #eeeeee;
+  background: var(--primary-color);
 }
 
 .bookmarkContent {

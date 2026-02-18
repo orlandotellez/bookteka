@@ -1,9 +1,10 @@
 .header {
   width: 100%;
   top: 0;
-  z-index: 20;
+  z-index: 1000;
   border-bottom: 1px solid var(--border-color);
-  background-color: white;
+  background: #f6f4ee;
+  background: var(--window-color);
 }
 
 .container {
@@ -21,6 +22,10 @@
   gap: 12px;
 }
 
+.logoContainer img {
+  width: 24px;
+}
+
 .iconBox {
   background: #f0f0f0;
   border-radius: 10px;
@@ -35,9 +40,10 @@
 }
 
 .title {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 600;
   margin: 0;
+  color: var(--font-color-title);
 }
 
 .fileName {
@@ -47,6 +53,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: var(--font-color-text);
 }
 
 /* Right side */

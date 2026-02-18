@@ -19,10 +19,10 @@ interface ReaderProps {
 }
 
 const DEFAULT_SETTINGS: ReadingSettings = {
-  fontSize: 16,
+  fontSize: 18,
   fontFamily: "sans",
-  lineHeight: 1.6,
-  textWidth: 80,
+  lineHeight: 1.7,
+  textWidth: 70,
 };
 
 export const Reader = ({ book }: ReaderProps) => {

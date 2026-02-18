@@ -2,7 +2,7 @@ import { X, Bookmark, User } from "lucide-react";
 import styles from "./ReaderHeader.module.css";
 import { ReadingTimer } from "./ReadingTimer";
 import StreakButton from "./StreakButton";
-import logo from "@/assets/logo.svg";
+import logo from "@/assets/logo2.svg";
 
 interface StreakData {
   currentStreak: number;

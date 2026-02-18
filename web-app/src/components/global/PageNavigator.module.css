@@ -8,8 +8,8 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  border: 1px solid #ddd;
-  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid var(--border-color);
+  background: var(--font-color-title);
   backdrop-filter: blur(6px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   cursor: pointer;
@@ -25,14 +25,15 @@
   position: fixed;
   bottom: 24px;
   left: 16px;
-  z-index: 30;
+  z-index: 4000;
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
   border-radius: 999px;
-  border: 1px solid #ddd;
-  background: rgba(255, 255, 255, 0.95);
+  border-right: 1px solid var(--border-color);
+  background: var(--font-color-title);
+  color: var(--primary-color);
   backdrop-filter: blur(6px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
@@ -64,13 +65,13 @@
   left: 0;
   width: 280px;
   height: 100%;
-  background: rgba(255, 255, 255, 0.98);
+  background: var(--primary-color);
   backdrop-filter: blur(10px);
-  border-right: 1px solid #ddd;
+  border-right: 1px solid var(--border-color);
   box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
   transform: translateX(-100%);
   transition: transform 0.3s ease-in-out;
-  z-index: 20;
+  z-index: 4000;
   display: flex;
   flex-direction: column;
 }
@@ -81,18 +82,20 @@
 
 .sidebarHeader {
   padding: 16px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .sidebarHeader h2 {
   margin: 0;
   font-size: 18px;
+
+  color: var(--font-color-title);
 }
 
 .sidebarHeader p {
   margin: 4px 0 0;
   font-size: 13px;
-  color: #666;
+  color: var(--font-color-text);
 }
 
 .pageList {
@@ -112,15 +115,15 @@
   margin-bottom: 4px;
   transition: background 0.2s ease;
   font-size: 14px;
+  color: var(--font-color-title);
 }
 
 .pageItem:hover {
-  background: #f2f2f2;
+  background: var(--secondary-color);
 }
 
 .pageItemActive {
-  background: #e6f0ff;
-  border: 1px solid #cce0ff;
+  background: var(--secondary-color);
   font-weight: 600;
 }
 
@@ -129,7 +132,7 @@
   font-size: 11px;
   padding: 2px 6px;
   border-radius: 999px;
-  background: #3b82f6;
+  background: var(--primary-color);
   color: white;
 }
 
@@ -137,7 +140,7 @@
   padding: 12px;
   font-size: 12px;
   text-align: center;
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--border-color);
   color: #666;
 }
 

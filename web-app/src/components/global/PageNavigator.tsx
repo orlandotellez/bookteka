@@ -57,7 +57,11 @@ const PageNavigator = forwardRef<HTMLDivElement, PageNavigatorProps>(
           onClick={() => setIsOpen(!isOpen)}
           aria-label="Toggle navegación"
         >
-          {isOpen ? <X size={16} /> : <List size={16} />}
+          {isOpen ? (
+            <X size={16} color="var(--primary-color)" />
+          ) : (
+            <List size={16} color="var(--primary-color)" />
+          )}
         </button>
 
         {/* Indicador de página */}
@@ -67,7 +71,7 @@ const PageNavigator = forwardRef<HTMLDivElement, PageNavigatorProps>(
             disabled={currentPage <= 1}
             className={styles.iconButton}
           >
-            <ChevronLeft size={16} />
+            <ChevronLeft size={16} color="var(--primary-color)" />
           </button>
 
           <span className={styles.pageText}>
@@ -79,7 +83,7 @@ const PageNavigator = forwardRef<HTMLDivElement, PageNavigatorProps>(
             disabled={currentPage >= totalPages}
             className={styles.iconButton}
           >
-            <ChevronRight size={16} />
+            <ChevronRight size={16} color="var(--primary-color)" />
           </button>
         </div>
 

@@ -1,6 +1,5 @@
 .header {
   width: 100%;
-  background-color: white;
   border-bottom: 1px solid var(--border-color);
 }
 
@@ -23,7 +22,7 @@
 
 .article p {
   font-size: 14px;
-  color: #666;
+  color: var(--font-color-text);
   max-width: 250px;
   white-space: nowrap;
   overflow: hidden;
@@ -31,7 +30,8 @@
 }
 
 .header h1 {
-  font-size: 18px;
+  font-size: 20px;
+  color: var(--font-color-title);
 }
 
 .logoContainer {
@@ -40,7 +40,23 @@
   gap: 12px;
 }
 
+.logoContainer img {
+  width: 24px;
+}
+
+.buttons {
+  display: flex;
+  gap: 20px;
+}
+
 .buttonContainer button {
   width: 100%;
-  padding: 6px 16px;
+  padding: 10px 16px;
+  color: white;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.buttonTheme {
+  background-color: transparent;
 }

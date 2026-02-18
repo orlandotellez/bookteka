@@ -1,10 +1,14 @@
-import logo from "@/assets/logo.svg";
+import logo from "@/assets/logo2.svg";
 import styles from "./Header.module.css";
 import { ShowUploaderModal } from "../modals/ShowUploaderModal";
 import { useBookStore } from "@/store/bookStore";
+import { useTheme } from "@/context/ThemeContext";
+import moon from "@/assets/moon.svg";
+import sun from "@/assets/sun.svg";
 
 export const Header = () => {
   const { showUploader, setShowUploader, addBook } = useBookStore();
+  const { theme, toggleTheme } = useTheme();
 
   return (
     <header className={styles.header}>
@@ -17,8 +21,24 @@ export const Header = () => {
           </div>
         </div>
 
-        <div className={styles.buttonContainer}>
-          <button onClick={() => setShowUploader(true)}>+ Añadir libro</button>
+        <div className={styles.buttons}>
+          <button onClick={toggleTheme} className={styles.buttonTheme}>
+            {theme === "light" ? (
+              <>
+                <img src={moon} alt="" />
+              </>
+            ) : (
+              <>
+                <img src={sun} alt="" />
+              </>
+            )}
+          </button>
+
+          <div className={styles.buttonContainer}>
+            <button onClick={() => setShowUploader(true)}>
+              + Añadir libro
+            </button>
+          </div>
         </div>
       </article>
 

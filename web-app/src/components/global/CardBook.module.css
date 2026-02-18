@@ -2,11 +2,13 @@
   border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 20px;
-  background: white;
+  background: var(--primary-color);
   transition: box-shadow 0.2s ease;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  width: 100%;
+  max-width: 440px;
 }
 
 .card:hover {
@@ -20,13 +22,11 @@
 }
 
 .iconWrapper {
-  width: 48px;
-  height: 56px;
-  background: #f3f3f3;
+  background: var(--third-color);
   border-radius: 8px;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  padding: 10px;
+  height: 50px;
 }
 
 .content {
@@ -39,6 +39,7 @@
 .title {
   font-weight: 600;
   margin: 0;
+  color: var(--font-color-title);
 }
 
 .meta {
@@ -74,7 +75,7 @@
   border-radius: 6px;
   border: none;
   cursor: pointer;
-  background: #e25c2a;
+  background: var(--secondary-color);
   color: white;
 }
 
