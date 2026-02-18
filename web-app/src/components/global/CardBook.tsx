@@ -59,7 +59,7 @@ export const CardBook = ({ book, onOpen, onDelete }: BookCardProps) => {
             className={styles.deleteButton}
             onClick={() => setShowConfirm(true)}
           >
-            <Trash2 size={16} />
+            <Trash2 size={16} color="var(--font-color-title)" />
           </button>
         </div>
       </div>

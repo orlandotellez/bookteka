@@ -73,10 +73,5 @@
 }
 
 .iconButton:hover {
-  background: #f3f3f3;
-}
-
-.closeButton:hover {
-  background: #ffe5e5;
-  color: #d11a2a;
+  background: var(--primary-color);
 }

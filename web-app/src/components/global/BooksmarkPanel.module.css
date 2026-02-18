@@ -47,10 +47,6 @@
   border-radius: 6px;
 }
 
-.iconButton:hover {
-  background: #f2f2f2;
-}
-
 /* Add section */
 .addSection {
   padding: 16px;

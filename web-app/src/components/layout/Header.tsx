@@ -1,4 +1,5 @@
-import logo from "@/assets/logo2.svg";
+import logoLight from "@/assets/logoLight.svg";
+import logoDark from "@/assets/logoDark.svg";
 import styles from "./Header.module.css";
 import { ShowUploaderModal } from "../modals/ShowUploaderModal";
 import { useBookStore } from "@/store/bookStore";
@@ -14,7 +15,15 @@ export const Header = () => {
     <header className={styles.header}>
       <article>
         <div className={styles.logoContainer}>
-          <img src={logo} alt="logo bookteka" />
+          {theme == "dark" ? (
+            <>
+              <img src={logoDark} alt="logo bookteka" />
+            </>
+          ) : (
+            <>
+              <img src={logoLight} alt="logo bookteka" />
+            </>
+          )}
           <div className={styles.article}>
             <h1>Bookteka</h1>
             <p>Lee siempre, mente mejor</p>

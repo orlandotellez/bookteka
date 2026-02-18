@@ -42,7 +42,7 @@ export const BookmarksPanel = ({
           <h2>Marcadores</h2>
         </div>
         <button className={styles.iconButton} onClick={onClose}>
-          <X size={16} />
+          <X size={16} color="var(--font-color-title)" />
         </button>
       </div>
 

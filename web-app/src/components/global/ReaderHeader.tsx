@@ -2,7 +2,9 @@ import { X, Bookmark, User } from "lucide-react";
 import styles from "./ReaderHeader.module.css";
 import { ReadingTimer } from "./ReadingTimer";
 import StreakButton from "./StreakButton";
-import logo from "@/assets/logo2.svg";
+import logoDark from "@/assets/logoDark.svg";
+import logoLight from "@/assets/logoLight.svg";
+import { useTheme } from "@/context/ThemeContext";
 
 interface StreakData {
   currentStreak: number;
@@ -38,12 +40,21 @@ export const ReaderHeader = ({
   themeToggle,
   streakData,
 }: ReaderHeaderProps) => {
+  const { theme } = useTheme();
   return (
     <header className={styles.header}>
       <div className={styles.container}>
         {/* Lado izquierdo */}
         <div className={styles.logoContainer}>
-          <img src={logo} alt="logo bookteka" />
+          {theme == "dark" ? (
+            <>
+              <img src={logoDark} alt="logo bookteka" />
+            </>
+          ) : (
+            <>
+              <img src={logoLight} alt="logo bookteka" />
+            </>
+          )}
 
           <div className={styles.titleContainer}>
             <h1 className={styles.title}>Bookteka</h1>
@@ -83,7 +94,7 @@ export const ReaderHeader = ({
               onClick={onOpenBookmarks}
               aria-label="Marcadores"
             >
-              <Bookmark size={20} />
+              <Bookmark size={20} color="var(--font-color-title)" />
             </button>
           )}
 
@@ -93,7 +104,7 @@ export const ReaderHeader = ({
               onClick={onOpenProfile}
               aria-label="Mi perfil"
             >
-              <User size={20} />
+              <User size={20} color="var(--font-color-title)" />
             </button>
           )}
 
@@ -103,7 +114,7 @@ export const ReaderHeader = ({
               onClick={onClose}
               aria-label="Cerrar documento"
             >
-              <X size={20} />
+              <X size={20} color="var(--font-color-title)" />
             </button>
           )}
         </div>
