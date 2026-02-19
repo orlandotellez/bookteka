@@ -1,0 +1,150 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.modal {
+  background: #1e1e1e;
+  color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  max-width: 400px;
+  width: 100%;
+  padding: 1.5rem;
+  border: 1px solid #2a2a2a;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.title {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.closeButton {
+  background: transparent;
+  border: none;
+  color: #bbbbbb;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.closeButton:hover {
+  color: #ffffff;
+  background: #2a2a2a;
+}
+
+.bookInfo {
+  margin-bottom: 1.5rem;
+}
+
+.bookName {
+  font-size: 0.9rem;
+  color: #888;
+}
+
+.inputGroup {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 1rem;
+}
+
+.inputWrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.inputWrapper label {
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.input {
+  background: #2a2a2a;
+  border: 1px solid #3a3a3a;
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: #ffffff;
+  font-size: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #f97316;
+}
+
+.preview {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: #f97316;
+  margin-bottom: 1.5rem;
+  padding: 10px;
+  background: rgba(249, 115, 22, 0.1);
+  border-radius: 8px;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.cancelButton {
+  background: transparent;
+  border: 1px solid #3a3a3a;
+  color: #bbbbbb;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 10px 16px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.cancelButton:hover {
+  background: #2a2a2a;
+  color: #ffffff;
+}
+
+.saveButton {
+  background: #f97316;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 10px 20px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.saveButton:hover {
+  background: #ea580c;
+}
+
+.saveButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

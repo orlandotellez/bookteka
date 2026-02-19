@@ -1,0 +1,213 @@
+.container {
+  background: var(--primary-color);
+  font-family: system-ui, sans-serif;
+}
+
+.header {
+  position: fixed;
+  width: 100%;
+  left: 0;
+  top: 0;
+  background: var(--primary-color);
+  border-bottom: 1px solid var(--border-color);
+  padding: 20px 0px;
+}
+
+.headerContainer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: var(--max-width);
+  margin: auto;
+  padding: 0px 20px;
+}
+
+.headerInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--font-color-title);
+  font-size: 14px;
+}
+
+.headerInfo h2 {
+  font-size: 20px;
+}
+
+.headerInfo p {
+  color: var(--font-color-text);
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  background: var(--third-color);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.main {
+  width: 100%;
+  margin: auto;
+  padding: 20px 0px;
+  display: flex;
+  flex-direction: row-reverse;
+  gap: 20px;
+  padding-inline: 20px;
+  padding-top: 105px;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.statCard {
+  background: var(--primary-color);
+  border: 1px solid var(--border-color);
+  padding: 16px;
+  border-radius: 12px;
+}
+
+.statValue {
+  font-size: 22px;
+  font-weight: bold;
+  color: var(--font-color-title);
+}
+
+.statLabel {
+  font-size: 14px;
+  color: #666;
+}
+
+.card {
+  background: var(--primary-color);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 16px;
+  width: 100%;
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  color: var(--font-color-title);
+}
+
+.bookRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.index {
+  width: 24px;
+  height: 24px;
+  background: var(--third-color);
+  color: var(--secondary-color);
+  font-weight: bold;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+.bookName {
+  flex: 1;
+  color: var(--font-color-title);
+}
+
+.time {
+  font-family: monospace;
+  color: #666;
+}
+
+.iconButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.primaryButton {
+  background: #f97316;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.empty {
+  text-align: center;
+  color: #666;
+  margin-top: 40px;
+}
+
+.streakCard {
+  background: linear-gradient(90deg, #fff7ed, #fffbeb);
+
+  border: 1px solid var(--border-color);
+  padding: 16px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.streakLeft {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.flame {
+  background: #fed7aa;
+  padding: 10px;
+  border-radius: 50%;
+}
+
+.streakNumber {
+  font-size: 28px;
+  font-weight: bold;
+  color: #f97316;
+}
+
+.streakText {
+  font-size: 14px;
+}
+
+.streakDate {
+  font-size: 12px;
+  color: #666;
+}
+
+.streakActions {
+  position: relative;
+  display: flex;
+  gap: 8px;
+}
+
+.popover {
+  position: absolute;
+  right: 0;
+  top: 40px;
+
+  border: 1px solid var(--border-color);
+  padding: 12px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 200px;
+}
