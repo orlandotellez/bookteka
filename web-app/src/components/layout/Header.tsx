@@ -6,6 +6,8 @@ import { useBookStore } from "@/store/bookStore";
 import { useTheme } from "@/context/ThemeContext";
 import moon from "@/assets/moon.svg";
 import sun from "@/assets/sun.svg";
+import { User } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export const Header = () => {
   const { showUploader, setShowUploader, addBook } = useBookStore();
@@ -47,6 +49,11 @@ export const Header = () => {
             <button onClick={() => setShowUploader(true)}>
               + Añadir libro
             </button>
+            <div className={styles.iconProfile}>
+              <Link to={"/profile"}>
+                <User size={30} color="#ebe7e0" />
+              </Link>
+            </div>
           </div>
         </div>
       </article>

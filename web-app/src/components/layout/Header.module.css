@@ -49,6 +49,13 @@
   gap: 20px;
 }
 
+.buttonContainer {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  align-items: center;
+}
+
 .buttonContainer button {
   width: 100%;
   padding: 10px 16px;
