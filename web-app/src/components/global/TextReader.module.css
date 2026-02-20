@@ -12,6 +12,23 @@
   color: var(--font-color-title);
 }
 
+/* Familias de fuentes */
+.serif {
+  font-family: "Crimson Pro", serif;
+}
+
+.serifAlt {
+  font-family: "Merriweather", serif;
+}
+
+.sans {
+  font-family: "Inter", sans-serif;
+}
+
+.sansAlt {
+  font-family: "Open Sans", sans-serif;
+}
+
 .paragraph {
   margin-bottom: 1.5rem;
   opacity: 0;
