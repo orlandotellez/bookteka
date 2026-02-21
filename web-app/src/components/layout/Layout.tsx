@@ -11,7 +11,9 @@ interface LayoutProps {
 export const Layout = ({ children }: LayoutProps) => {
   const { currentView, currentBook } = useBookStore();
   const location = useLocation();
-  const isProfilePage = location.pathname.includes("/profile");
+  const isNotHeaderPage =
+    location.pathname.includes("/profile") ||
+    location.pathname.startsWith("/auth");
 
   // si estamos en vista de lector y tenemos un libro, mostramos el lector
   if (currentView === "reader" && currentBook) {
@@ -27,9 +29,9 @@ export const Layout = ({ children }: LayoutProps) => {
   return (
     <>
       <div>
-        {!isProfilePage && <Header />}
+        {!isNotHeaderPage && <Header />}
 
-        <main className={`${isProfilePage ? styles.isProfile : styles.main}`}>
+        <main className={`${isNotHeaderPage ? styles.isProfile : styles.main}`}>
           {children}
         </main>
       </div>

@@ -6,7 +6,7 @@ import type { Book } from "@/types/book";
 import { useStreakStore } from "@/store/streakStore";
 
 const Profile = () => {
-  const { books, loadBooks, setCurrentView, setReadingTime } = useBookStore();
+  const { books, loadBooks, setReadingTime } = useBookStore();
   const {
     streakData,
     loadStreakData,
@@ -20,10 +20,6 @@ const Profile = () => {
     loadBooks();
     loadStreakData();
   }, [loadBooks, loadStreakData]);
-
-  const handleBack = () => {
-    setCurrentView("library");
-  };
 
   const handleEditTime = (book: Book) => {
     setEditingBook(book);
@@ -41,7 +37,6 @@ const Profile = () => {
     <>
       <UserProfile
         books={books}
-        onBack={handleBack}
         onEditTime={handleEditTime}
         streakData={streakData || undefined}
         onCompleteDay={completeDay}

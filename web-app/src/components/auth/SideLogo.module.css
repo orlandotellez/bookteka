@@ -1,0 +1,10 @@
+.container {
+  width: 100%;
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  justify-content: center;
+}
+
+.logoIcon {
+  width: 80%;
+}
