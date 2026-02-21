@@ -1,0 +1,34 @@
+.container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary-color);
+  color: var(--font-color-title);
+}
+
+.content {
+  text-align: center;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.subtitle {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+  color: var(--font-color-text);
+}
+
+.link {
+  color: #3b82f6;
+  text-decoration: underline;
+  transition: opacity 0.2s ease;
+}
+
+.link:hover {
+  opacity: 0.9;
+}
