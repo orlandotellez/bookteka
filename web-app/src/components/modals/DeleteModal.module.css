@@ -1,0 +1,128 @@
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9000;
+  animation: fadeIn 0.15s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modalContent {
+  background: var(--primary-color);
+  border-radius: 12px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  animation: slideIn 0.2s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 20px 0;
+}
+
+.modalTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--font-color-title);
+  margin: 0;
+}
+
+.modalClose {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: #6b7280;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background-color 0.15s;
+}
+
+.modalClose:hover {
+  background-color: #f3f4f6;
+}
+
+.modalCloseIcon {
+  width: 20px;
+  height: 20px;
+}
+
+.modalBody {
+  padding: 12px 20px 20px;
+}
+
+.modalDescription {
+  font-size: 14px;
+  color: var(--font-color-text);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 0 20px 20px;
+}
+
+.modalCancel {
+  padding: 8px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: white;
+  color: #1f2937;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.modalCancel:hover {
+  background-color: #f9fafb;
+}
+
+.modalConfirm {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  background-color: #dc3545;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.modalConfirm:hover {
+  background-color: #dc2626;
+}

@@ -1,0 +1,128 @@
+.card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background-color: var(--primary-color);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.card:hover {
+  border-color: var(--secondary-color);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.iconWrapper {
+  flex-shrink: 0;
+  width: 32px;
+  height: 40px;
+  background-color: var(--third-color);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon {
+  width: 16px;
+  height: 16px;
+  color: var(--secondary-color);
+}
+
+.titleWrapper {
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--font-color-title);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+}
+
+.meta {
+  display: none;
+  align-items: center;
+  gap: 16px;
+  font-size: 12px;
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+@media (min-width: 640px) {
+  .meta {
+    display: flex;
+  }
+}
+
+.metaItem {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.metaIcon {
+  width: 12px;
+  height: 12px;
+}
+
+.badge {
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 12px;
+}
+
+.badgeActive {
+  background-color: var(--third-color);
+  color: var(--secondary-color);
+}
+
+.badgeInactive {
+  background-color: var(--preview-color);
+  color: var(--font-color-text);
+}
+
+.deleteButton {
+  opacity: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: #6b7280;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.card:hover .deleteButton {
+  opacity: 1;
+}
+
+.deleteButton:hover {
+  color: #ef4444;
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+.deleteIcon {
+  width: 14px;
+  height: 14px;
+}
+
+.chevron {
+  width: 16px;
+  height: 16px;
+  color: rgba(107, 114, 128, 0.5);
+  flex-shrink: 0;
+}

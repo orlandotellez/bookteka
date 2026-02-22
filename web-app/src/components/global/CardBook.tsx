@@ -4,6 +4,7 @@ import styles from "./CardBook.module.css";
 import type { Book } from "@/types/book";
 
 import { formatTime } from "@/utils/time";
+import { DeleteModal } from "../modals/DeleteModal";
 
 interface BookCardProps {
   book: Book;
@@ -21,6 +22,10 @@ export const CardBook = ({ book, onOpen, onDelete }: BookCardProps) => {
   });
 
   const progress = book.scrollPosition > 0 ? "En progreso" : "Sin empezar";
+
+  const closeModal = () => {
+    setShowConfirm(false);
+  };
 
   return (
     <>
@@ -65,34 +70,7 @@ export const CardBook = ({ book, onOpen, onDelete }: BookCardProps) => {
       </div>
 
       {showConfirm && (
-        <div className={styles.overlay}>
-          <div className={styles.dialog}>
-            <h4>¿Eliminar libro?</h4>
-            <p>
-              Se eliminará "{book.name}" junto con todos sus marcadores y
-              progreso. Esta acción no se puede deshacer.
-            </p>
-
-            <div className={styles.dialogActions}>
-              <button
-                onClick={() => setShowConfirm(false)}
-                className={styles.cancelButton}
-              >
-                Cancelar
-              </button>
-
-              <button
-                onClick={() => {
-                  onDelete(book.id);
-                  setShowConfirm(false);
-                }}
-                className={styles.confirmDelete}
-              >
-                Eliminar
-              </button>
-            </div>
-          </div>
-        </div>
+        <DeleteModal book={book} onClose={closeModal} onDelete={onDelete} />
       )}
     </>
   );

@@ -11,6 +11,7 @@ import {
   Menu,
   Search,
 } from "lucide-react";
+import { CardBookList } from "./CardBookList";
 
 type SortBy = "recent" | "name" | "time";
 type FilterStatus = "all" | "reading" | "unstarted";
@@ -111,19 +112,35 @@ export const Library = () => {
   );
 
   const renderBooks = (booksToRender: Book[]) => {
-    console.log(booksToRender);
-    return (
-      <div className={styles.cards}>
-        {booksToRender.map((book) => (
-          <CardBook
-            key={book.id}
-            book={book}
-            onOpen={handleOpenBook}
-            onDelete={handleDelete}
-          />
-        ))}
-      </div>
-    );
+    if (viewMode === "grid") {
+      return (
+        <div className={styles.cards}>
+          {booksToRender.map((book) => (
+            <CardBook
+              key={book.id}
+              book={book}
+              onOpen={handleOpenBook}
+              onDelete={handleDelete}
+            />
+          ))}
+        </div>
+      );
+    }
+
+    if (viewMode === "list") {
+      return (
+        <div className={styles.cardsList}>
+          {booksToRender.map((book) => (
+            <CardBookList
+              key={book.id}
+              book={book}
+              onOpen={handleOpenBook}
+              onDelete={handleDelete}
+            />
+          ))}
+        </div>
+      );
+    }
   };
 
   if (isLoading) return "cargando....";
