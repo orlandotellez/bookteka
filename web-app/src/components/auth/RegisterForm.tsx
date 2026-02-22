@@ -1,16 +1,15 @@
-import styles from "./LoginForm.module.css";
+import styles from "./Auth.module.css";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/common/Input.tsx";
 import {
-  loginSchema,
   registerSchema,
-  type LoginData,
   type RegisterData,
 } from "../../validations/loginValidations.ts";
 import { Link, useNavigate } from "react-router-dom";
 import { authClient } from "@/lib/auth-client.ts";
 import { useState } from "react";
+import { IconTheme } from "../common/IconTheme.tsx";
 
 export const RegisterForm = () => {
   const navigate = useNavigate();
@@ -57,11 +56,18 @@ export const RegisterForm = () => {
 
   return (
     <article className={styles.container}>
+      <div className={styles.iconContainer}>
+        <IconTheme />
+      </div>
+
       <form className={styles.form} onSubmit={handleSubmit(onSubmit, onError)}>
-        <h4>Register Form</h4>
+        <h4>Register</h4>
+        <p>Create a new account</p>
 
         {error && (
-          <div style={{ color: "red", marginBottom: "10px" }}>{error}</div>
+          <div style={{ color: "var(--error-color)", marginBottom: "10px" }}>
+            {error}
+          </div>
         )}
 
         <div className={styles.inputs}>

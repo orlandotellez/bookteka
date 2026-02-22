@@ -1,10 +1,18 @@
 .container {
   width: 100%;
-  border-right: 1px solid var(--border-color);
   display: flex;
+  flex-direction: column;
   justify-content: center;
+  align-items: center;
+  margin: auto;
+  gap: 20px;
 }
 
-.logoIcon {
-  width: 80%;
+.container img {
+  width: 50%;
+}
+
+.container h1 {
+  color: var(--font-color-title);
+  font-size: 3.25rem;
 }

@@ -37,7 +37,7 @@ export const Input = <T extends FieldValues>({
         {...register(name, options)}
         onChange={onChange}
       />
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {error && <p style={{ color: "var(--error-color)" }}>{error}</p>}
     </div>
   );
 };

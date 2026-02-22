@@ -1,5 +1,6 @@
 :root {
   --max-width: 1100px;
+  --error-color: #dc3545;
   --padding: 20px;
 }
 
@@ -8,6 +9,7 @@
   --secondary-color: #df8052;
   --third-color: #36281f;
   --four-color: #25211d;
+  --card-color: #231f1a;
   --altern-color: #332516;
   --altern-secondary-color: #5a3315;
 
@@ -23,6 +25,7 @@
   --secondary-color: #df8052;
   --third-color: #f2e4d9;
   --four-color: #f4f2ec;
+  --card-color: #f7f4ed;
   --altern-color: #f7ebda;
   --altern-secondary-color: #f7d1b2;
 

@@ -4,14 +4,13 @@ import styles from "./Header.module.css";
 import { ShowUploaderModal } from "../modals/ShowUploaderModal";
 import { useBookStore } from "@/store/bookStore";
 import { useTheme } from "@/context/ThemeContext";
-import moon from "@/assets/moon.svg";
-import sun from "@/assets/sun.svg";
 import { User } from "lucide-react";
 import { Link } from "react-router-dom";
+import { IconTheme } from "../common/IconTheme";
 
 export const Header = () => {
   const { showUploader, setShowUploader, addBook } = useBookStore();
-  const { theme, toggleTheme } = useTheme();
+  const { theme } = useTheme();
 
   return (
     <header className={styles.header}>
@@ -33,17 +32,7 @@ export const Header = () => {
         </div>
 
         <div className={styles.buttons}>
-          <button onClick={toggleTheme} className={styles.buttonTheme}>
-            {theme === "light" ? (
-              <>
-                <img src={moon} alt="moon icon" />
-              </>
-            ) : (
-              <>
-                <img src={sun} alt="sun icon" />
-              </>
-            )}
-          </button>
+          <IconTheme />
 
           <div className={styles.buttonContainer}>
             <button onClick={() => setShowUploader(true)}>

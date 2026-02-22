@@ -42,7 +42,7 @@
   border-radius: 6px;
   font-size: 14px;
   border: 1px solid var(--border-color);
-  background-color: var(--primary-color);
+  background-color: var(--preview-color);
   color: var(--font-color-title);
 }
 
@@ -67,7 +67,7 @@
   cursor: pointer;
   transition: background-color 0.15s;
   border: 1px solid var(--border-color);
-  background-color: var(--primary-color);
+  background-color: var(--preview-color);
   color: var(--font-color-title);
 }
 
@@ -144,7 +144,7 @@
   cursor: pointer;
   transition: all 0.15s;
   border: 1px solid var(--border-color);
-  background-color: var(--primary-color);
+  background-color: var(--preview-color);
   color: var(--font-color-title);
 }
 

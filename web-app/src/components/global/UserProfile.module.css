@@ -8,7 +8,7 @@
   width: 100%;
   left: 0;
   top: 0;
-  background: var(--primary-color);
+  background: var(--card-color);
   border-bottom: 1px solid var(--border-color);
   padding: 20px 0px;
   z-index: 2000;

@@ -31,7 +31,7 @@ export const LogoutButton = () => {
       disabled={loading}
       style={{
         padding: "8px 16px",
-        backgroundColor: "#dc3545",
+        backgroundColor: "var(--error-color)",
         color: "white",
         border: "none",
         borderRadius: "4px",

@@ -16,6 +16,6 @@
   font-size: 1.2rem;
   border-radius: 5px;
   border: 1px solid var(--border-color);
-  color: white;
+  color: var(--font-color-title);
   padding: 5px 10px;
 }
