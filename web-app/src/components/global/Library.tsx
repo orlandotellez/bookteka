@@ -10,9 +10,11 @@ import {
   Grid,
   Menu,
   Search,
+  Plus,
 } from "lucide-react";
 import { CardBookList } from "./CardBookList";
 import { normalizeText } from "@/utils/text";
+import { ShowUploaderModal } from "../modals/ShowUploaderModal";
 
 type SortBy = "recent" | "name" | "time";
 type FilterStatus = "all" | "reading" | "unstarted";
@@ -33,6 +35,9 @@ export const Library = () => {
     setCurrentBook,
     setCurrentView,
     loadBooks,
+    showUploader,
+    setShowUploader,
+    addBook,
   } = useBookStore();
 
   useEffect(() => {
@@ -148,7 +153,7 @@ export const Library = () => {
 
   return (
     <>
-      {books.length > 0 && (
+      {books.length > 0 ? (
         <div className={styles.toolbar}>
           {/* Search */}
           <div className={styles.searchWrapper}>
@@ -175,9 +180,8 @@ export const Library = () => {
               <ChevronDown width={16} />
             </button>
             <div
-              className={`${styles.dropdownContent} ${
-                isFilterOpen ? styles.open : ""
-              }`}
+              className={`${styles.dropdownContent} ${isFilterOpen ? styles.open : ""
+                }`}
             >
               {(Object.keys(filterLabels) as FilterStatus[]).map((key) => (
                 <button
@@ -205,9 +209,8 @@ export const Library = () => {
               <ChevronDown width={16} />
             </button>
             <div
-              className={`${styles.dropdownContent} ${
-                isSortOpen ? styles.open : ""
-              }`}
+              className={`${styles.dropdownContent} ${isSortOpen ? styles.open : ""
+                }`}
             >
               {(Object.keys(sortLabels) as SortBy[]).map((key) => (
                 <button
@@ -226,27 +229,24 @@ export const Library = () => {
 
           <div className={styles.viewToggle}>
             <button
-              className={`${styles.viewButton} ${styles.viewButtonFirst} ${
-                viewMode === "grid" ? styles.active : ""
-              }`}
+              className={`${styles.viewButton} ${styles.viewButtonFirst} ${viewMode === "grid" ? styles.active : ""
+                }`}
               onClick={() => setViewMode("grid")}
               aria-label="Vista grid"
             >
               <Grid width={16} />
             </button>
             <button
-              className={`${styles.viewButton} ${styles.viewButtonMiddle} ${
-                viewMode === "list" ? styles.active : ""
-              }`}
+              className={`${styles.viewButton} ${styles.viewButtonMiddle} ${viewMode === "list" ? styles.active : ""
+                }`}
               onClick={() => setViewMode("list")}
               aria-label="Vista lista"
             >
               <Menu width={16} />
             </button>
             <button
-              className={`${styles.viewButton} ${styles.viewButtonLast} ${
-                viewMode === "shelf" ? styles.active : ""
-              }`}
+              className={`${styles.viewButton} ${styles.viewButtonLast} ${viewMode === "shelf" ? styles.active : ""
+                }`}
               onClick={() => setViewMode("shelf")}
               aria-label="Vista estante"
             >
@@ -254,8 +254,34 @@ export const Library = () => {
             </button>
           </div>
         </div>
+      ) : (
+        <>
+          <div className={styles.emptyState}>
+            <div className={styles.emptyIcon}>
+              <BookIcon width={64} height={64} color="var(--font-color-text)" />
+            </div>
+            <h2 className={styles.emptyTitle}>Tu biblioteca está vacía</h2>
+            <p className={styles.emptyText}>
+              Sube tu primer libro para comenzar a leer
+            </p>
+            <button
+              className={styles.emptyButton}
+              onClick={() => setShowUploader(true)}
+            >
+              <Plus width={20} height={20} />
+              Añadir tu primer libro
+            </button>
+          </div>
+        </>
       )}
       <article>{renderBooks(processedBooks)}</article>
+
+      {showUploader && (
+        <ShowUploaderModal
+          setShowUploader={() => setShowUploader(false)}
+          onAddBook={addBook}
+        />
+      )}
     </>
   );
 };
