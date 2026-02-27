@@ -1,0 +1,95 @@
+.container {
+  margin: 0 auto;
+  font-family: var(--font-family, sans-serif);
+}
+
+.title {
+  margin: 0 0 20px 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--font-color-title);
+}
+
+.section {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.avatarPlaceholder {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-color: var(--secondary-color);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.userDetails h3 {
+  margin: 0 0 4px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--font-color-title);
+}
+
+.userDetails p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--font-color-text);
+}
+
+.badge {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.badgeVerified {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.badgeUnverified {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+
+.detailsList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 14px;
+  color: var(--font-color-secondary);
+}
+
+.detailsList li {
+  margin-bottom: 8px;
+  color: var(--font-color-text);
+}
+
+.detailsList strong {
+  color: var(--font-color-title);
+}

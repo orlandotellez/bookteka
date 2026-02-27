@@ -13,6 +13,7 @@ import { Link } from "react-router-dom";
 import { StatCard } from "./StatCard";
 import { StreakCard } from "./StreakCard";
 import { LogoutButton } from "../auth/LogoutButton";
+import { CardProfile } from "./CardProfile";
 
 interface UserProfileProps {
   books: Book[];
@@ -97,6 +98,8 @@ const UserProfile = ({
         </div>
       </header>
 
+
+
       <main className={styles.main}>
         <StreakCard
           streakData={
@@ -110,6 +113,8 @@ const UserProfile = ({
           onInitializeStreak={onInitializeStreak}
           isLoading={isStreakLoading}
         />
+
+        <CardProfile />
         <article className={styles.article}>
           {/* Stats */}
           <div className={styles.statsGrid}>
