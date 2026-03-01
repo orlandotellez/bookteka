@@ -8,6 +8,7 @@ import { useStreakStore } from "@/store/streakStore";
 import { ReadingControls, type ReadingSettings } from "./ReadingControls";
 import type { Highlight, HighlightColor, Bookmark } from "@/types/book";
 import styles from "./Reader.module.css";
+import { Loading } from "@/components/common/Loading";
 
 interface ReaderProps {
   book: {
@@ -172,13 +173,7 @@ export const Reader = ({ book }: ReaderProps) => {
   }, []);
 
   if (isLoadingData) {
-    return (
-      <div className={styles.reader}>
-        <div style={{ padding: "2rem", textAlign: "center" }}>
-          Cargando libro...
-        </div>
-      </div>
-    );
+    return <Loading text="Cargando libro..." />;
   }
 
   return (

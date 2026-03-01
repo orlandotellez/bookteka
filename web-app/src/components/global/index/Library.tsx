@@ -15,6 +15,7 @@ import {
 import { CardBookList } from "./CardBookList";
 import { normalizeText } from "@/utils/text";
 import { ShowUploaderModal } from "@/components/modals/ShowUploaderModal";
+import { Loading } from "@/components/common/Loading";
 
 type SortBy = "recent" | "name" | "time";
 type FilterStatus = "all" | "reading" | "unstarted";
@@ -149,7 +150,7 @@ export const Library = () => {
     }
   };
 
-  if (isLoading) return "cargando....";
+  if (isLoading) return <Loading text="Cargando libros..." />;
 
   return (
     <>

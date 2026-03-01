@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import { Upload, FileText } from "lucide-react";
 import styles from "./PDFUploader.module.css";
+import { Spinner } from "@/components/common/Spinner";
 
 interface PDFUploaderProps {
   onFileSelect: (file: File) => void;
@@ -95,6 +96,10 @@ const PDFUploader = ({ onFileSelect, isLoading }: PDFUploaderProps) => {
               `}
             />
           )}
+        </div>
+
+        <div style={{ marginBottom: "10px" }}>
+          {isLoading ? <Spinner /> : null}
         </div>
 
         <h3 className={styles.title}>

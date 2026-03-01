@@ -1,0 +1,16 @@
+.container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.content {
+  padding: 2rem;
+  gap: 20px;
+  text-align: center;
+}
+
+.content span {
+  color: var(--font-color-title);
+}
