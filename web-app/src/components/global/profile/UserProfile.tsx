@@ -5,6 +5,7 @@ import {
   ArrowLeft,
   TrendingUp,
   Edit2,
+  Download
 } from "lucide-react";
 import { formatTime } from "@/utils/time";
 import type { Book } from "@/types/book";
@@ -14,6 +15,8 @@ import { StatCard } from "./StatCard";
 import { StreakCard } from "./StreakCard";
 import { LogoutButton } from "@/components/auth/LogoutButton";
 import { CardProfile } from "./CardProfile";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 interface UserProfileProps {
   books: Book[];
@@ -76,6 +79,30 @@ const UserProfile = ({
       value: formatTime(averageTimePerBook),
     },
   ];
+
+  const handleDownload = async (bookId: string, fileName: string) => {
+    try {
+      const response = await fetch(
+        `${API_URL}/api/books/${bookId}/download`,
+        {
+          credentials: "include"
+        }
+      );
+      if (!response.ok) throw new Error("No se pudo obtener el enlace");
+
+      const { url } = await response.json();
+
+      // Forzar la descarga en el navegador
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      alert("Error al descargar el archivo");
+    }
+  };
 
   return (
     <div className={styles.container}>
@@ -150,6 +177,15 @@ const UserProfile = ({
                   <span className={styles.time}>
                     {formatTime(book.readingTimeSeconds)}
                   </span>
+
+                  <button
+                    onClick={() => handleDownload(book.id, book.name)}
+                    className={styles.downloadButton}
+                    title="Descargar de la nube"
+                  >
+                    <Download size={20} color="var(--font-color-title)" />
+                  </button>
+
 
                   {onEditTime && (
                     <button

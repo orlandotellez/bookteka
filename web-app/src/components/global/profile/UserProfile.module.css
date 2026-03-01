@@ -135,6 +135,10 @@
   gap: 6px;
 }
 
+.downloadButton {
+  background: none;
+}
+
 .empty {
   text-align: center;
   color: #666;

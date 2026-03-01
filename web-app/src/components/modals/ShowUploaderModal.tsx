@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import type { Book } from "@/types/book";
 
 interface ShowUploaderModalProps {
-  onAddBook: (name: string, text: string, totalPages?: number) => Promise<Book>;
+  onAddBook: (name: string, text: string, totalPages?: number, file?: File) => Promise<Book>;
   setShowUploader: () => void;
 }
 
@@ -18,11 +18,14 @@ export const ShowUploaderModal = ({
 
   const handleFileSelect = useCallback(
     async (file: File) => {
+
       if (!isValidPDF(file)) {
         toast.error("Por favor selecciona un archivo PDF válido");
         return;
       }
+
       setIsUploading(true);
+
       try {
         const result = await extractTextFromPDF(file);
         if (!result.fullText.trim()) {
@@ -33,6 +36,7 @@ export const ShowUploaderModal = ({
           file.name,
           result.fullText,
           result.totalPages,
+          file,
         );
 
         toast.success(`"${book.name}" añadido a la biblioteca`);
