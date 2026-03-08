@@ -1,9 +1,10 @@
-import { Book, Trash2, Clock, ChevronRight, Download } from "lucide-react";
+import { Book, Trash2, Clock, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { formatTime } from "@/utils/time";
 import type { Book as BookType } from "@/types/book";
 import styles from "./CardBookList.module.css";
 import { DeleteModal } from "@/components/modals/DeleteModal";
+import { Spinner } from "@/components/common/Spinner";
 
 interface BookListItemProps {
   book: BookType;
@@ -21,8 +22,8 @@ export const CardBookList = ({ book, onOpen, onDelete, isDownloading, downloadPr
     month: "short",
   });
 
-  const progress = isDownloading 
-    ? "Descargando..." 
+  const progress = isDownloading
+    ? "Descargando..."
     : book.scrollPosition > 0 ? "En progreso" : "Sin empezar";
 
   const closeModal = () => {
@@ -39,7 +40,7 @@ export const CardBookList = ({ book, onOpen, onDelete, isDownloading, downloadPr
     <div className={`${styles.card} ${isDownloading ? styles.cardDownloading : ""}`} onClick={handleClick}>
       <div className={styles.iconWrapper}>
         {isDownloading ? (
-          <Download className={`${styles.icon} ${styles.spinningIcon}`} />
+          <Spinner />
         ) : (
           <Book className={styles.icon} />
         )}

@@ -9,7 +9,7 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { authClient } from "@/lib/auth-client.ts";
 import { useState } from "react";
-import { IconTheme } from "../common/IconTheme.tsx";
+import { ThemeSelector } from "../common/ThemeSelector.tsx";
 
 export const RegisterForm = () => {
   const navigate = useNavigate();
@@ -57,7 +57,7 @@ export const RegisterForm = () => {
   return (
     <article className={styles.container}>
       <div className={styles.iconContainer}>
-        <IconTheme />
+        <ThemeSelector />
       </div>
 
       <form className={styles.form} onSubmit={handleSubmit(onSubmit, onError)}>

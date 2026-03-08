@@ -4,20 +4,16 @@ import styles from "./IconTheme.module.css";
 import { useTheme } from "@/context/ThemeContext";
 
 export const IconTheme = () => {
-  const { theme, toggleTheme } = useTheme();
+  const { theme } = useTheme();
+  const isDark = theme === "dark" || theme === "midnight";
+  
   return (
-    <>
-      <button onClick={toggleTheme} className={styles.buttonTheme}>
-        {theme === "light" ? (
-          <>
-            <img src={moon} alt="moon icon" />
-          </>
-        ) : (
-          <>
-            <img src={sun} alt="sun icon" />
-          </>
-        )}
-      </button>
-    </>
+    <button className={styles.buttonTheme}>
+      {isDark ? (
+        <img src={sun} alt="sun icon" />
+      ) : (
+        <img src={moon} alt="moon icon" />
+      )}
+    </button>
   );
 };

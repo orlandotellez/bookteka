@@ -6,7 +6,7 @@ import { useBookStore } from "@/store/bookStore";
 import { useTheme } from "@/context/ThemeContext";
 import { User } from "lucide-react";
 import { Link } from "react-router-dom";
-import { IconTheme } from "../common/IconTheme";
+import { ThemeSelector } from "../common/ThemeSelector";
 
 export const Header = () => {
   const { showUploader, setShowUploader, addBook } = useBookStore();
@@ -32,7 +32,7 @@ export const Header = () => {
         </div>
 
         <div className={styles.buttons}>
-          <IconTheme />
+          <ThemeSelector />
 
           <div className={styles.buttonContainer}>
             <button onClick={() => setShowUploader(true)}>

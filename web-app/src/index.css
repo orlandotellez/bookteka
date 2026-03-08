@@ -4,6 +4,25 @@
   --padding: 20px;
 }
 
+/* LIGHT THEME (Default) */
+[data-theme="light"] {
+  --primary-color: #fcf5ee;
+  --secondary-color: #df8052;
+  --third-color: #f2e4d9;
+  --four-color: #f4f2ec;
+  --card-color: #f7f4ed;
+  --altern-color: #f7ebda;
+  --altern-secondary-color: #f7d1b2;
+
+  --window-color: #f1eee6;
+  --preview-color: #f6f4ee;
+
+  --font-color-title: #38332e;
+  --font-color-text: #7e7367;
+  --border-color: #e0dad1;
+}
+
+/* DARK THEME */
 [data-theme="dark"] {
   --primary-color: #1c1a16;
   --secondary-color: #df8052;
@@ -20,21 +39,72 @@
   --border-color: #3f3831;
 }
 
-[data-theme="light"] {
-  --primary-color: #fcf5ee;
-  --secondary-color: #df8052;
-  --third-color: #f2e4d9;
-  --four-color: #f4f2ec;
-  --card-color: #f7f4ed;
-  --altern-color: #f7ebda;
-  --altern-secondary-color: #f7d1b2;
+/* MIDNIGHT THEME (Very Dark with Black Tones)  */
+[data-theme="midnight"] {
+  --primary-color: #000000;
+  --secondary-color: #1a1a1a;
+  --third-color: #222222;
+  --four-color: #121212;
+  --card-color: #010101;
+  --altern-color: #202020;
+  --altern-secondary-color: #2a2a2a;
 
-  --window-color: #f1eee6;
-  --preview-color: #f6f4ee;
+  --window-color: #0d0d0d;
+  --preview-color: #050505;
+  --font-color-title: #e5e5e5;
+  --font-color-text: #a3a3a3;
+  --border-color: #303030;
+}
 
-  --font-color-title: #38332e;
-  --font-color-text: #7e7367;
-  --border-color: #e0dad1;
+/* SEPIA THEME (Warm Reading) */
+[data-theme="sepia"] {
+  --primary-color: #f4ecd8;
+  --secondary-color: #8b6914;
+  --third-color: #e8dfc4;
+  --four-color: #f0e6cf;
+  --card-color: #ebe2cf;
+  --altern-color: #e3d6b8;
+  --altern-secondary-color: #c9a227;
+
+  --window-color: #faf6ed;
+  --preview-color: #f5ebd6;
+  --font-color-title: #3d3426;
+  --font-color-text: #6b5c42;
+  --border-color: #d4c4a8;
+}
+
+/* OCEAN THEME (Cool Blues)  */
+[data-theme="ocean"] {
+  --primary-color: #e0f2fe;
+  --secondary-color: #0284c7;
+  --third-color: #bae6fd;
+  --four-color: #f0f9ff;
+  --card-color: #e0f2fe;
+  --altern-color: #7dd3fc;
+  --altern-secondary-color: #0369a1;
+
+  --window-color: #f0f9ff;
+  --preview-color: #e0f2fe;
+  --font-color-title: #0c4a6e;
+  --font-color-text: #475569;
+  --border-color: #7dd3fc;
+}
+
+/* FOREST THEME (Nature Greens) */
+[data-theme="forest"] {
+  --primary-color: #ecfdf5;
+  --secondary-color: #059669;
+  --third-color: #a7f3d0;
+  --four-color: #f0fdf4;
+  --card-color: #d1fae5;
+  --altern-color: #6ee7b7;
+  --altern-secondary-color: #047857;
+
+  --window-color: #f0fdf4;
+  --preview-color: #ecfdf5;
+  --font-color-title: #064e3b;
+  --font-color-text: #374151;
+  --border-color: #a7f3d0;
 }
 
 * {
