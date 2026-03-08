@@ -51,16 +51,15 @@ const PageNavigator = forwardRef<HTMLDivElement, PageNavigatorProps>(
       <>
         {/* Botón flotante */}
         <button
-          className={`${styles.toggleButton} ${
-            isOpen ? styles.toggleShift : ""
-          }`}
+          className={`${styles.toggleButton} ${isOpen ? styles.toggleShift : ""
+            }`}
           onClick={() => setIsOpen(!isOpen)}
           aria-label="Toggle navegación"
         >
           {isOpen ? (
-            <X size={16} color="var(--primary-color)" />
+            <X size={16} color="var(--font-color-title)" />
           ) : (
-            <List size={16} color="var(--primary-color)" />
+            <List size={16} color="var(--font-color-title)" />
           )}
         </button>
 
@@ -71,7 +70,7 @@ const PageNavigator = forwardRef<HTMLDivElement, PageNavigatorProps>(
             disabled={currentPage <= 1}
             className={styles.iconButton}
           >
-            <ChevronLeft size={16} color="var(--primary-color)" />
+            <ChevronLeft size={16} color="var(--font-color-title)" />
           </button>
 
           <span className={styles.pageText}>
@@ -83,7 +82,7 @@ const PageNavigator = forwardRef<HTMLDivElement, PageNavigatorProps>(
             disabled={currentPage >= totalPages}
             className={styles.iconButton}
           >
-            <ChevronRight size={16} color="var(--primary-color)" />
+            <ChevronRight size={16} color="var(--font-color-title)" />
           </button>
         </div>
 
@@ -105,9 +104,8 @@ const PageNavigator = forwardRef<HTMLDivElement, PageNavigatorProps>(
                   onNavigateToPage(pageNumber);
                   setIsOpen(false);
                 }}
-                className={`${styles.pageItem} ${
-                  currentPage === pageNumber ? styles.pageItemActive : ""
-                }`}
+                className={`${styles.pageItem} ${currentPage === pageNumber ? styles.pageItemActive : ""
+                  }`}
               >
                 Página {pageNumber}
                 {currentPage === pageNumber && (

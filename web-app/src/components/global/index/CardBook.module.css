@@ -1,6 +1,6 @@
 .card {
   border: 1px solid var(--border-color);
-  border-radius: 12px;
+  border-radius: 5px;
   padding: 20px;
   background: var(--card-color);
   transition: box-shadow 0.2s ease;
@@ -25,7 +25,7 @@
 
 .iconWrapper {
   background: var(--third-color);
-  border-radius: 8px;
+  border-radius: 5px;
   display: flex;
   padding: 10px;
   height: 50px;
@@ -74,7 +74,7 @@
 .primaryButton {
   flex: 1;
   padding: 8px 12px;
-  border-radius: 6px;
+  border-radius: 5px;
   border: none;
   cursor: pointer;
   background: var(--secondary-color);

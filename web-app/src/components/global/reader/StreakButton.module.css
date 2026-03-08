@@ -35,7 +35,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px;
+  padding: 10px 12px;
   border-radius: 6px;
   border: none;
   cursor: pointer;
@@ -44,7 +44,7 @@
 }
 
 .notCompleted {
-  background: #f97316;
+  background: var(--secondary-color);
   color: white;
 }
 

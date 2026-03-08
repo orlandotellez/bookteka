@@ -50,6 +50,6 @@ body {
 button {
   border: none;
   background-color: var(--secondary-color);
-  border-radius: 7px;
+  border-radius: 5px;
   cursor: pointer;
 }

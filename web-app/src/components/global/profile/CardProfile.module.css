@@ -12,7 +12,7 @@
 
 .section {
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: 5px;
   padding: 16px;
   margin-bottom: 20px;
 }
@@ -61,7 +61,7 @@
   display: inline-block;
   margin-top: 8px;
   padding: 4px 8px;
-  border-radius: 12px;
+  border-radius: 5px;
   font-size: 12px;
   font-weight: 500;
 }
@@ -75,7 +75,6 @@
   background-color: #fff3cd;
   color: #856404;
 }
-
 
 .detailsList {
   list-style: none;

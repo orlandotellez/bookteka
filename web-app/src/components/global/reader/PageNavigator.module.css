@@ -9,7 +9,7 @@
   height: 40px;
   border-radius: 50%;
   border: 1px solid var(--border-color);
-  background: var(--font-color-title);
+  background: var(--window-color);
   backdrop-filter: blur(6px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   cursor: pointer;
@@ -32,8 +32,8 @@
   padding: 8px 12px;
   border-radius: 999px;
   border-right: 1px solid var(--border-color);
-  background: var(--font-color-title);
-  color: var(--primary-color);
+  background: var(--window-color);
+  color: var(--font-color-title);
   backdrop-filter: blur(6px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
@@ -108,7 +108,7 @@
   width: 100%;
   text-align: left;
   padding: 10px 12px;
-  border-radius: 8px;
+  border-radius: 5px;
   border: none;
   background: transparent;
   cursor: pointer;

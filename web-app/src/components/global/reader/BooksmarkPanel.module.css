@@ -18,6 +18,7 @@
   from {
     transform: translateX(100%);
   }
+
   to {
     transform: translateX(0);
   }
@@ -44,7 +45,7 @@
   border: none;
   cursor: pointer;
   padding: 6px;
-  border-radius: 6px;
+  border-radius: 5px;
 }
 
 /* Add section */
@@ -56,7 +57,7 @@
 .addButton {
   width: 100%;
   padding: 10px;
-  border-radius: 8px;
+  border-radius: 5px;
   background: var(--secondary-color);
   color: var(--font-color-title);
   font-weight: bold;
@@ -82,7 +83,7 @@
 .input {
   flex: 1;
   padding: 8px;
-  border-radius: 6px;
+  border-radius: 5px;
   border: 1px solid #ddd;
 }
 
@@ -116,7 +117,7 @@
 /* Bookmark item */
 .bookmarkItem {
   padding: 12px;
-  border-radius: 8px;
+  border-radius: 5px;
   background: var(--window-color);
   border: 1px solid var(--border-color);
   cursor: pointer;

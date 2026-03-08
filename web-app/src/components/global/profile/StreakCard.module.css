@@ -3,7 +3,7 @@
   background: var(--altern-color);
   border: 1px solid #f9731633;
   padding: 16px;
-  border-radius: 12px;
+  border-radius: 5px;
   margin-bottom: 24px;
   display: flex;
   justify-content: space-between;
@@ -59,7 +59,7 @@
   background: var(--primary-color);
   border: 1px solid var(--border-color);
   padding: 20px;
-  border-radius: 8px;
+  border-radius: 5px;
   display: flex;
   flex-direction: column;
   gap: 6px;
