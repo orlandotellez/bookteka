@@ -6,16 +6,15 @@ import { useBookStore } from "@/store/bookStore";
 import styles from "./Library.module.css";
 import {
   Book as BookIcon,
-  ChevronDown,
   Grid,
   Menu,
-  Search,
   Plus,
 } from "lucide-react";
 import { CardBookList } from "./CardBookList";
 import { normalizeText } from "@/utils/text";
 import { ShowUploaderModal } from "@/components/modals/ShowUploaderModal";
 import { Loading } from "@/components/common/Loading";
+import { FilterBook } from "./FilterBook";
 
 type SortBy = "recent" | "name" | "time";
 type FilterStatus = "all" | "reading" | "unstarted";
@@ -164,76 +163,22 @@ export const Library = () => {
       {books.length > 0 ? (
         <div className={styles.toolbar}>
           {/* Search */}
-          <div className={styles.searchWrapper}>
-            <div className={styles.searchIcon}>
-              <Search width={16} />
-            </div>
-            <input
-              type="text"
-              placeholder="Buscar libros..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className={styles.searchInput}
-            />
-          </div>
 
-          <div className={`dropdown-filter ${styles.dropdown}`}>
-            <button
-              className={styles.dropdownTrigger}
-              onClick={() => setIsFilterOpen(!isFilterOpen)}
-              aria-expanded={isFilterOpen}
-            >
-              {filterLabels[filterStatus]}
 
-              <ChevronDown width={16} />
-            </button>
-            <div
-              className={`${styles.dropdownContent} ${isFilterOpen ? styles.open : ""
-                }`}
-            >
-              {(Object.keys(filterLabels) as FilterStatus[]).map((key) => (
-                <button
-                  key={key}
-                  className={styles.dropdownItem}
-                  onClick={() => {
-                    setFilterStatus(key);
-                    setIsFilterOpen(false);
-                  }}
-                >
-                  {filterLabels[key]}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className={`dropdown-sort ${styles.dropdown}`}>
-            <button
-              className={styles.dropdownTrigger}
-              onClick={() => setIsSortOpen(!isSortOpen)}
-              aria-expanded={isSortOpen}
-            >
-              {sortLabels[sortBy]}
-
-              <ChevronDown width={16} />
-            </button>
-            <div
-              className={`${styles.dropdownContent} ${isSortOpen ? styles.open : ""
-                }`}
-            >
-              {(Object.keys(sortLabels) as SortBy[]).map((key) => (
-                <button
-                  key={key}
-                  className={styles.dropdownItem}
-                  onClick={() => {
-                    setSortBy(key);
-                    setIsSortOpen(false);
-                  }}
-                >
-                  {sortLabels[key]}
-                </button>
-              ))}
-            </div>
-          </div>
+          <FilterBook
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            isFilterOpen={isFilterOpen}
+            setIsFilterOpen={() => setIsFilterOpen(!isFilterOpen)}
+            filterStatus={filterStatus}
+            setFilterStatus={setFilterStatus}
+            sortBy={sortBy}
+            setSortBy={setSortBy}
+            isSortOpen={isSortOpen}
+            setIsSortOpen={() => setIsSortOpen(!isSortOpen)}
+            filterLabels={filterLabels}
+            sortLabels={sortLabels}
+          />
 
           <div className={styles.viewToggle}>
             <button

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useTheme, themes, type ThemeName } from "@/context/ThemeContext";
 import styles from "./ThemeSelector.module.css";
+import { ChevronDown } from "lucide-react";
 
 export const ThemeSelector = () => {
   const { theme, setTheme } = useTheme();
@@ -29,17 +30,8 @@ export const ThemeSelector = () => {
       >
         <span className={styles.currentIcon}>{currentTheme?.icon}</span>
         <span className={styles.currentName}>{currentTheme?.name}</span>
-        <svg
-          className={`${styles.chevron} ${isOpen ? styles.chevronOpen : ""}`}
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-        >
-          <path d="M6 9l6 6 6-6" />
-        </svg>
+        <ChevronDown width={16} className={`${styles.chevron} ${isOpen ? styles.chevronOpen : ""}`}
+        />
       </button>
 
       {isOpen && (
