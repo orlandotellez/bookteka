@@ -20,9 +20,7 @@ import {
 import { generateId } from "@/utils/generateId";
 import { authClient } from "@/lib/auth-client";
 import { processBookForReading } from "@/lib/pdfService";
-import { uploadBook } from "@/api/book";
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+import { deleteBookInCloud, uploadBook } from "@/api/book";
 
 type View = "library" | "reader" | "profile";
 
@@ -188,19 +186,13 @@ export const useBookStore = create<BookStore>((set) => ({
         throw new Error("No hay sesión activa");
       }
 
-      const response = await fetch(`${API_URL}/books/${id}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
+      if (!id) return
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || "Error al eliminar el libro del servidor");
-      }
+      // Eliminar del storage usando la api del backend
+      await deleteBookInCloud(id)
 
       // Eliminar de la base de datos local (IndexedDB)
       await deleteBookFromDB(id);
-
       set((state) => ({
         books: state.books.filter((book) => book.id !== id),
       }));

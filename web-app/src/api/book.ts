@@ -24,3 +24,20 @@ export const uploadBook = async (formData: FormData) => {
     throw new Error("UPLOAD_FAILED");
   }
 }
+
+export const deleteBookInCloud = async (id: string) => {
+  try {
+    const response = await fetch(`${API_URL}/books/${id}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || "Error al eliminar el libro del servidor");
+    }
+  } catch {
+    console.error("Error al subir el libro")
+    throw new Error("UPLOAD_FAILED");
+  }
+}
