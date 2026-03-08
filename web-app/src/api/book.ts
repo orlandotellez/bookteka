@@ -25,9 +25,30 @@ export const uploadBook = async (formData: FormData) => {
   }
 }
 
-export const deleteBookInCloud = async (id: string) => {
+export const downloadBook = async (bookId: string) => {
   try {
-    const response = await fetch(`${API_URL}/books/${id}`, {
+    const response = await fetch(
+      `${API_URL}/books/${bookId}/download`,
+      {
+        credentials: "include"
+      }
+    );
+
+    if (!response.ok) throw new Error("No se pudo obtener el enlace");
+
+    const { url } = await response.json();
+
+    return url
+  } catch {
+    console.error("Error al descargar el libro")
+    throw new Error("DOWNLOAD_FAILED");
+
+  }
+}
+
+export const deleteBookInCloud = async (bookId: string) => {
+  try {
+    const response = await fetch(`${API_URL}/books/${bookId}`, {
       method: "DELETE",
       credentials: "include",
     });
@@ -37,7 +58,7 @@ export const deleteBookInCloud = async (id: string) => {
       throw new Error(errorData.error || "Error al eliminar el libro del servidor");
     }
   } catch {
-    console.error("Error al subir el libro")
-    throw new Error("UPLOAD_FAILED");
+    console.error("Error al eliminar el libro")
+    throw new Error("DELETE_FAILED");
   }
 }

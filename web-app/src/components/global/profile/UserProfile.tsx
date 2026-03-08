@@ -16,8 +16,7 @@ import { StreakCard } from "./StreakCard";
 import { LogoutButton } from "@/components/auth/LogoutButton";
 import { CardProfile } from "./CardProfile";
 import type { StreakData } from "@/types/reading";
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+import { downloadBook } from "@/api/book";
 
 interface UserProfileProps {
   books: Book[];
@@ -79,15 +78,7 @@ const UserProfile = ({
 
   const handleDownload = async (bookId: string, fileName: string) => {
     try {
-      const response = await fetch(
-        `${API_URL}/api/books/${bookId}/download`,
-        {
-          credentials: "include"
-        }
-      );
-      if (!response.ok) throw new Error("No se pudo obtener el enlace");
-
-      const { url } = await response.json();
+      const url = await downloadBook(bookId)
 
       // Forzar la descarga en el navegador
       const link = document.createElement("a");
