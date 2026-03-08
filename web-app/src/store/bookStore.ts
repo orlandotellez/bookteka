@@ -20,6 +20,7 @@ import {
 import { generateId } from "@/utils/generateId";
 import { authClient } from "@/lib/auth-client";
 import { processBookForReading } from "@/lib/pdfService";
+import { uploadBook } from "@/api/book";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
@@ -141,22 +142,13 @@ export const useBookStore = create<BookStore>((set) => ({
     if (file) {
       try {
         const formData = new FormData();
+
         formData.append("pdf", file);
         formData.append("title", name);
 
-        const response = await fetch(`${API_URL}/api/books/upload`, {
-          method: "POST",
-          body: formData,
-          credentials: "include",
-        });
+        const id = await uploadBook(formData)
 
-        if (!response.ok) {
-          throw new Error("Error al subir el libro al servidor");
-        }
-
-        const cloudBook = await response.json();
-        cloudBookId = cloudBook.id;
-        console.log("Libro subido al backend:", cloudBook);
+        cloudBookId = id;
       } catch (error) {
         console.error("Error al subir al backend:", error);
       }
@@ -196,7 +188,7 @@ export const useBookStore = create<BookStore>((set) => ({
         throw new Error("No hay sesión activa");
       }
 
-      const response = await fetch(`http://localhost:3000/api/books/${id}`, {
+      const response = await fetch(`${API_URL}/books/${id}`, {
         method: "DELETE",
         credentials: "include",
       });
