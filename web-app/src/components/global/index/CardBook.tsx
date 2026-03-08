@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Book as BookIcon, Trash2, Clock, Download } from "lucide-react";
+import { Book as BookIcon, Trash2, Clock } from "lucide-react";
 import styles from "./CardBook.module.css";
 import type { Book } from "@/types/book";
 

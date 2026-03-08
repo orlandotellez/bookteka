@@ -13,7 +13,7 @@ export async function downloadAndExtractPdfText(
   try {
     onProgress?.(10);
 
-    const response = await fetch(`${API_URL}/api/books/${bookId}/stream`, {
+    const response = await fetch(`${API_URL}/books/${bookId}/stream`, {
       credentials: "include",
     });
 
@@ -71,7 +71,7 @@ export async function downloadPdfToBlob(fileUrl: string): Promise<Blob> {
 
 // Obtiene una URL firmado para descargar el PDF (si el backend lo requiere)
 export async function getSignedDownloadUrl(bookId: string): Promise<string> {
-  const response = await fetch(`${API_URL}/api/books/${bookId}/download`, {
+  const response = await fetch(`${API_URL}/books/${bookId}/download`, {
     credentials: "include",
   });
 

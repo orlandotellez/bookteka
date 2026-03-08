@@ -11,26 +11,26 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 interface ReaderDBSchema extends DBSchema {
   books: {
     key: string;
-    value: Book & { userId: string };
+    value: Book;
     indexes: { "by-lastRead": number; "by-userId": string };
   };
   bookmarks: {
     key: string;
-    value: Bookmark & { userId: string };
+    value: Bookmark;
     indexes: { "by-bookId": string; "by-userId": string };
   };
   highlights: {
     key: string;
-    value: Highlight & { userId: string };
+    value: Highlight;
     indexes: { "by-bookId": string; "by-userId": string };
   };
   userProfile: {
     key: string;
-    value: UserProfile & { userId: string };
+    value: UserProfile;
   };
   streaks: {
     key: string;
-    value: StreakData & { userId: string };
+    value: StreakData;
   };
 }
 
@@ -55,7 +55,7 @@ export async function getDatabase(): Promise<IDBPDatabase<ReaderDBSchema>> {
   if (dbInstance) return dbInstance;
 
   dbInstance = await openDB<ReaderDBSchema>(DB_NAME, DB_VERSION, {
-    upgrade(db, oldVersion, newVersion, transaction) {
+    upgrade(db, oldVersion, _newVersion, transaction) {
 
       // Store de libros
       if (!db.objectStoreNames.contains("books")) {
@@ -320,7 +320,7 @@ export async function saveStreakData(streakData: StreakData): Promise<void> {
 
   const db = await getDatabase();
   await db.put("streaks", {
-    id: currentUserId,
+    userId: currentUserId,
     ...streakData,
   });
 }
@@ -330,7 +330,7 @@ export async function saveStreakData(streakData: StreakData): Promise<void> {
 export async function syncBooksFromCloud(): Promise<Book[]> {
   if (!currentUserId) throw new Error("No hay usuario autenticado");
 
-  const response = await fetch(`${API_URL}/api/books`, {
+  const response = await fetch(`${API_URL}/books`, {
     credentials: "include",
   });
 
@@ -346,7 +346,7 @@ export async function syncBooksFromCloud(): Promise<Book[]> {
   for (const cloudBook of cloudBooks) {
     // Obtener el libro local existente
     const localBook = await db.get("books", cloudBook.id);
-    
+
     // Merge: priorizar datos locales sobre los del servidor
     // El servidor tiene metadatos (nombre, fileUrl), pero el progreso es local
     const mergedBook: Book & { userId: string } = {
@@ -398,7 +398,7 @@ export async function syncBooksToCloud(): Promise<void> {
   if (!currentUserId) throw new Error("No hay usuario autenticado");
 
   const localBooks = await getAllBooks();
-  
+
   if (localBooks.length === 0) {
     console.log("No hay libros locales para sincronizar");
     return;

@@ -13,7 +13,10 @@ export interface ReadingSettings {
 }
 
 export interface StreakData {
+  userId?: string;
   currentStreak: number;
   startDate: string | null;
   lastActiveDate: string | null;
+  hasCompletedToday: boolean;
+
 }

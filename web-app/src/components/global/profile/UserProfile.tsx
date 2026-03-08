@@ -15,17 +15,14 @@ import { StatCard } from "./StatCard";
 import { StreakCard } from "./StreakCard";
 import { LogoutButton } from "@/components/auth/LogoutButton";
 import { CardProfile } from "./CardProfile";
+import type { StreakData } from "@/types/reading";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 interface UserProfileProps {
   books: Book[];
   onEditTime?: (book: Book) => void;
-  streakData?: {
-    currentStreak: number;
-    hasCompletedToday: boolean;
-    startDate: string | null;
-  };
+  streakData?: StreakData
   onCompleteDay?: () => Promise<boolean | undefined>;
   onInitializeStreak?: (days: number, startDate?: string) => Promise<void>;
   isStreakLoading?: boolean;
