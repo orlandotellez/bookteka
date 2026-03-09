@@ -360,6 +360,9 @@ export async function syncBooksFromCloud(): Promise<Book[]> {
       text: localBook?.text || cloudBook.text || "",
       // Preservar fileBlob si existe (no viene del servidor)
       fileBlob: localBook?.fileBlob,
+      // Preservar estado de sincronización: si ya estaba sincronizado localmente, mantenerlo
+      // Si viene de la nube, también marcar como sincronizado
+      isSynced: localBook?.isSynced ?? true,
     };
 
     await db.put("books", mergedBook);

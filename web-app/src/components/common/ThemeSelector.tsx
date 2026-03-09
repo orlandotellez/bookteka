@@ -29,7 +29,6 @@ export const ThemeSelector = () => {
         aria-label="Cambiar tema"
       >
         <span className={styles.currentIcon}>{currentTheme?.icon}</span>
-        <span className={styles.currentName}>{currentTheme?.name}</span>
         <ChevronDown width={16} className={`${styles.chevron} ${isOpen ? styles.chevronOpen : ""}`}
         />
       </button>
