@@ -1,4 +1,4 @@
-import { Book, Trash2, Clock, ChevronRight } from "lucide-react";
+import { Book, Trash2, Clock, ChevronRight, Cloud, CloudOff } from "lucide-react";
 import { useState } from "react";
 import { formatTime } from "@/utils/time";
 import type { Book as BookType } from "@/types/book";
@@ -14,7 +14,13 @@ interface BookListItemProps {
   downloadProgress?: number;
 }
 
-export const CardBookList = ({ book, onOpen, onDelete, isDownloading, downloadProgress }: BookListItemProps) => {
+export const CardBookList = ({ 
+  book, 
+  onOpen, 
+  onDelete, 
+  isDownloading, 
+  downloadProgress,
+}: BookListItemProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const lastRead = new Date(book.lastReadAt).toLocaleDateString("es-ES", {
@@ -81,6 +87,15 @@ export const CardBookList = ({ book, onOpen, onDelete, isDownloading, downloadPr
           <Trash2 className={styles.deleteIcon} />
         </button>
       )}
+
+      {/* Indicador de sincronización */}
+      <div className={styles.syncIndicator} title={book.isSynced ? "Sincronizado en la nube" : "Solo en este dispositivo"}>
+        {book.isSynced ? (
+          <Cloud size={16} color="var(--secondary-color)" />
+        ) : (
+          <CloudOff size={16} color="var(--font-color-text)" />
+        )}
+      </div>
 
       {!isDownloading && <ChevronRight className={styles.chevron} />}
 

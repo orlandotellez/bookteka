@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Book as BookIcon, Trash2, Clock } from "lucide-react";
+import { Book as BookIcon, Trash2, Clock, Cloud, CloudOff } from "lucide-react";
 import styles from "./CardBook.module.css";
 import type { Book } from "@/types/book";
 
@@ -15,7 +15,13 @@ interface BookCardProps {
   downloadProgress?: number;
 }
 
-export const CardBook = ({ book, onOpen, onDelete, isDownloading, downloadProgress }: BookCardProps) => {
+export const CardBook = ({ 
+  book, 
+  onOpen, 
+  onDelete, 
+  isDownloading, 
+  downloadProgress,
+}: BookCardProps) => {
   const [showConfirm, setShowConfirm] = useState(false);
 
   const lastRead = new Date(book.lastReadAt).toLocaleDateString("es-ES", {
@@ -75,6 +81,15 @@ export const CardBook = ({ book, onOpen, onDelete, isDownloading, downloadProgre
               "Empezar a leer"
             )}
           </button>
+
+          {/* Indicador de sincronización */}
+          <div className={styles.syncIndicator} title={book.isSynced ? "Sincronizado en la nube" : "Solo en este dispositivo"}>
+            {book.isSynced ? (
+              <Cloud size={16} color="var(--secondary-color)" />
+            ) : (
+              <CloudOff size={16} color="var(--font-color-text)" />
+            )}
+          </div>
 
           <button
             className={styles.deleteButton}

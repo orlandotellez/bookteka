@@ -102,6 +102,36 @@
   background: transparent;
 }
 
+.syncIndicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+}
+
+.uploadButton {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.uploadButton:hover {
+  background: var(--third-color);
+  border-color: var(--secondary-color);
+}
+
+.uploadButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 .overlay {
   position: fixed;
   inset: 0;
