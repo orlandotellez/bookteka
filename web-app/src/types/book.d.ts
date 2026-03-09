@@ -16,6 +16,7 @@ export interface Book {
   // Campos para sincronización con cloud
   fileUrl?: string;
   fileKey?: string;
+  isSynced?: boolean; // true si está subido a la nube
 }
 
 export interface Bookmark {

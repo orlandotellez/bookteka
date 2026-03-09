@@ -21,6 +21,7 @@ import { generateId } from "@/utils/generateId";
 import { authClient } from "@/lib/auth-client";
 import { processBookForReading } from "@/lib/pdfService";
 import { deleteBookInCloud, uploadBook } from "@/api/book";
+import { useUserPreferences } from "./userPreferencesStore";
 
 type View = "library" | "reader" | "profile";
 
@@ -35,7 +36,8 @@ interface BookStore {
   isSyncing: boolean;
   isProcessingPdf: boolean;
   pdfProgress: number;
-  downloadingBookId: string | null;
+  downloadingBookId: string;
+  uploadingBookId: string | null;
 
   // Acciones CRUD
   addBook: (name: string, text: string, totalPages?: number, file?: File) => Promise<Book>;
@@ -63,6 +65,10 @@ interface BookStore {
   loadHighlights: (bookId: string) => Promise<Highlight[]>;
   addHighlight: (highlight: Highlight) => Promise<void>;
   removeHighlight: (id: string) => Promise<void>;
+
+  // Acciones de sincronización manual
+  uploadBookToCloud: (bookId: string) => Promise<void>;
+  downloadBookFromCloud: (bookId: string) => Promise<void>;
 }
 
 export const useBookStore = create<BookStore>((set) => ({
@@ -76,7 +82,8 @@ export const useBookStore = create<BookStore>((set) => ({
   isSyncing: false,
   isProcessingPdf: false,
   pdfProgress: 0,
-  downloadingBookId: null,
+  downloadingBookId: "",
+  uploadingBookId: null,
 
   // Cargar todos los libros (desde cache local)
   loadBooks: async () => {
@@ -134,25 +141,33 @@ export const useBookStore = create<BookStore>((set) => ({
     }
     setCurrentUserId(session.user.id);
 
-    let bookId: string;
-    let cloudBookId: string | undefined;
+    // Obtener preferencia del usuario
+    const cloudSyncEnabled = useUserPreferences.getState().cloudSyncEnabled;
 
-    if (file) {
+    let bookId: string;
+    let isSynced = false;
+
+    // Solo subir a la nube si está habilitado Y hay archivo
+    if (file && cloudSyncEnabled) {
       try {
         const formData = new FormData();
 
         formData.append("pdf", file);
         formData.append("title", name);
 
-        const id = await uploadBook(formData)
+        const id = await uploadBook(formData);
 
-        cloudBookId = id;
+        bookId = id;
+        isSynced = true;
       } catch (error) {
         console.error("Error al subir al backend:", error);
+        // Si falla la subida, guardamos igual pero sin sincronizar
+        bookId = generateId();
       }
+    } else {
+      // Sin archivo o sin sync, generar ID local
+      bookId = generateId();
     }
-
-    bookId = cloudBookId || generateId();
 
     const newBook: Book = {
       id: bookId,
@@ -164,6 +179,7 @@ export const useBookStore = create<BookStore>((set) => ({
       scrollPosition: 0,
       totalPages,
       fileBlob: file,
+      isSynced,
     };
 
     try {
@@ -188,8 +204,17 @@ export const useBookStore = create<BookStore>((set) => ({
 
       if (!id) return
 
-      // Eliminar del storage usando la api del backend
-      await deleteBookInCloud(id)
+      // Obtener el libro para ver si está sincronizado
+      const bookToDelete = await getBook(id);
+
+      // SIEMPRE eliminar del cloud si el libro está sincronizado (isSynced = true)
+      if (bookToDelete?.isSynced) {
+        try {
+          await deleteBookInCloud(id);
+        } catch (error) {
+          console.error("Error al eliminar del cloud:", error);
+        }
+      }
 
       // Eliminar de la base de datos local (IndexedDB)
       await deleteBookFromDB(id);
@@ -247,7 +272,7 @@ export const useBookStore = create<BookStore>((set) => ({
           console.error("Error downloading PDF:", pdfError);
           set({ error: "Error al procesar el PDF" });
         } finally {
-          set({ isProcessingPdf: false, pdfProgress: 0, downloadingBookId: null });
+          set({ isProcessingPdf: false, pdfProgress: 0, downloadingBookId: undefined });
         }
       }
 
@@ -371,6 +396,137 @@ export const useBookStore = create<BookStore>((set) => ({
     } catch (error) {
       console.error("Error removing highlight:", error);
       set({ error: "Error al eliminar resaltado" });
+      throw error;
+    }
+  },
+
+  // Subir un libro específico a la nube manualmente
+  uploadBookToCloud: async (bookId: string) => {
+    try {
+      const { data: session } = await authClient.getSession();
+      if (!session?.user?.id) {
+        throw new Error("No hay sesión activa");
+      }
+
+      setCurrentUserId(session.user.id);
+
+      // Obtener el libro
+      const book = await getBook(bookId);
+      if (!book) {
+        throw new Error("Libro no encontrado");
+      }
+
+      // Verificar que tiene archivo para subir
+      if (!book.fileBlob && !book.fileUrl) {
+        throw new Error("El libro no tiene archivo para subir");
+      }
+
+      set({ uploadingBookId: bookId });
+
+      // Si tiene fileBlob, subirlo
+      if (book.fileBlob) {
+        const formData = new FormData();
+        formData.append("pdf", book.fileBlob);
+        formData.append("title", book.name);
+
+        const cloudId = await uploadBook(formData);
+
+        // Actualizar el libro con el ID del cloud y marcar como sincronizado
+        const updatedBook: Book = {
+          ...book,
+          id: cloudId,
+          isSynced: true,
+        };
+
+        // IMPORTANTE: Eliminar el libro viejo de local y crear uno nuevo con el ID del cloud porque el ID cambió al subirlo
+        await deleteBookFromDB(book.id);
+        await saveBook(updatedBook);
+
+        set((state) => ({
+          books: state.books.map((b) =>
+            b.id === bookId ? updatedBook : b
+          ),
+          uploadingBookId: null,
+        }));
+      } else {
+        // Si solo tiene fileUrl (vino de la nube), simplemente marcar como sincronizado
+        const updatedBook: Book = {
+          ...book,
+          isSynced: true,
+        };
+
+        await saveBook(updatedBook);
+
+        set((state) => ({
+          books: state.books.map((b) =>
+            b.id === bookId ? updatedBook : b
+          ),
+          uploadingBookId: null,
+        }));
+      }
+    } catch (error) {
+      console.error("Error uploading book to cloud:", error);
+      set({ error: "Error al subir el libro a la nube", uploadingBookId: null });
+      throw error;
+    }
+  },
+
+  // Descargar un libro desde la nube manualmente
+  downloadBookFromCloud: async (bookId: string) => {
+    try {
+      const { data: session } = await authClient.getSession();
+      if (!session?.user?.id) {
+        throw new Error("No hay sesión activa");
+      }
+
+      setCurrentUserId(session.user.id);
+
+      // Obtener el libro
+      const book = await getBook(bookId);
+      if (!book) {
+        throw new Error("Libro no encontrado");
+      }
+
+      if (!book.fileUrl) {
+        throw new Error("El libro no tiene URL en la nube");
+      }
+
+      set({ downloadingBookId: bookId, isProcessingPdf: true, pdfProgress: 0 });
+
+      // Descargar y procesar el PDF
+      const processedBook = await processBookForReading(book, (progress) => {
+        set({ pdfProgress: progress });
+      });
+
+      // Preservar el progreso de lectura existente
+      const bookWithProgress: Book = {
+        ...processedBook,
+        readingTimeSeconds: book.readingTimeSeconds,
+        scrollPosition: book.scrollPosition,
+        lastReadAt: book.lastReadAt,
+        isSynced: true, // Ya viene de la nube, así que está sincronizado
+      };
+
+      // Guardar en IndexedDB
+      await saveBook(bookWithProgress);
+
+      // Actualizar en la lista de libros
+      set((state) => ({
+        books: state.books.map((b) =>
+          b.id === bookId ? bookWithProgress : b
+        ),
+        downloadingBookId: "",
+        isProcessingPdf: false,
+        pdfProgress: 0,
+      }));
+    } catch (error) {
+      console.error("Error downloading book from cloud:", error);
+      set({
+        error: "Error al descargar el libro desde la nube",
+        downloadingBookId: "",
+        isProcessingPdf: false,
+        pdfProgress: 0
+      });
       throw error;
     }
   },
