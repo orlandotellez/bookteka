@@ -6,7 +6,7 @@ import type { Book } from "@/types/book";
 import { useStreakStore } from "@/store/streakStore";
 
 const Profile = () => {
-  const { books, loadBooks, setReadingTime } = useBookStore();
+  const { books, loadBooks, setReadingTime, uploadBookToCloud, uploadingBookId } = useBookStore();
   const {
     streakData,
     loadStreakData,
@@ -38,6 +38,8 @@ const Profile = () => {
       <UserProfile
         books={books}
         onEditTime={handleEditTime}
+        onUploadToCloud={uploadBookToCloud}
+        isUploadingBookId={uploadingBookId}
         streakData={streakData || undefined}
         onCompleteDay={completeDay}
         onInitializeStreak={initializeStreak}
