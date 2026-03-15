@@ -13,9 +13,4 @@ export default defineConfig({
   optimizeDeps: {
     include: ["pdfjs-dist"],
   },
-  server: {
-    mimeTypes: {
-      ".mjs": "application/javascript",
-    },
-  },
 });

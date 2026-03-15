@@ -132,8 +132,8 @@ export const useStreakStore = create<StreakStore>((set) => ({
     }
   },
 
-  // Inicializar la racha(esto es para hacerlo manualmente)
-  initializeStreak: async (days: number, startDate?: string) => {
+  // Inicializar la racha (recibe solo la fecha de inicio, el backend calcula los días)
+  initializeStreak: async (_days: number, startDate?: string) => {
     set({ isStreakLoading: true });
     const today = getTodayDate();
 
