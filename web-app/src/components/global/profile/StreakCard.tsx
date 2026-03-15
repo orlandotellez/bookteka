@@ -9,8 +9,7 @@ export const StreakCard = ({
   isLoading,
 }: any) => {
   const [showSettings, setShowSettings] = useState(false);
-  const [days, setDays] = useState("14");
-  const [date, setDate] = useState("");
+  const [startDate, setStartDate] = useState("");
 
   const handleCompleteDay = async () => {
     if (!onCompleteDay) return;
@@ -20,19 +19,46 @@ export const StreakCard = ({
   };
 
   const handleInit = async () => {
-    if (!onInitializeStreak) return;
-    const d = parseInt(days, 10);
-    if (isNaN(d) || d < 1) {
-      alert("Número inválido");
+    if (!onInitializeStreak || !startDate) {
+      alert("Selecciona una fecha de inicio");
       return;
     }
-    await onInitializeStreak(d, date || undefined);
+
+    await onInitializeStreak(0, startDate);
     setShowSettings(false);
+    setStartDate("");
   };
 
-  const formatDate = (str: string | null) => {
+  // Función para formatear fecha - maneja diferentes formatos
+  const formatDate = (str: any) => {
     if (!str) return "No iniciada";
-    return new Date(str).toLocaleDateString();
+
+    // Convertir a string por seguridad
+    const dateStr = String(str);
+
+    // Si viene con formato ISO (contiene T), extraer solo la fecha
+    let cleanDate = dateStr;
+    if (dateStr.includes("T")) {
+      cleanDate = dateStr.split("T")[0];
+    }
+
+    // La fecha debe ser YYYY-MM-DD
+    const parts = cleanDate.split("-");
+    if (parts.length !== 3) {
+      // Si no se puede parsear, mostrar algo legible
+      try {
+        const date = new Date(str);
+        if (!isNaN(date.getTime())) {
+          return date.toLocaleDateString("es-ES");
+        }
+      } catch (e) {
+        return "No iniciada";
+      }
+      return "No iniciada";
+    }
+
+    const [year, month, day] = parts;
+    return `${day}/${month}/${year}`;
   };
 
   return (
@@ -76,19 +102,15 @@ export const StreakCard = ({
 
         {showSettings && (
           <div className={styles.popover}>
-            <label>Días iniciales</label>
-            <input
-              type="number"
-              value={days}
-              onChange={(e) => setDays(e.target.value)}
-            />
-
-            <label>Fecha inicio</label>
+            <label>Fecha de inicio de la racha</label>
             <input
               type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
             />
+            <p style={{ fontSize: "12px", color: "#666", marginTop: "4px" }}>
+              Selecciona desde qué día empezaste a leer
+            </p>
 
             <button className={styles.primaryButton} onClick={handleInit}>
               Establecer racha
