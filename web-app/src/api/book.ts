@@ -1,6 +1,6 @@
 import type { Book } from "@/types/book";
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_API_URL || "";
 
 export const uploadBook = async (formData: FormData) => {
   try {
