@@ -5,7 +5,7 @@ import type { UserProfile } from "@/types/user";
 import type { StreakData } from "@/types/reading";
 export type { StreakData };
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+const API_URL = import.meta.env.VITE_API_URL || "";
 
 // Esquema de la base de datos IndexedDB
 interface ReaderDBSchema extends DBSchema {
