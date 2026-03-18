@@ -4,7 +4,7 @@ import type { Book } from "@/types/book";
 // Configurar el worker de pdf.js desde la carpeta public
 pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
 
-const API_URL = import.meta.env.VITE_API_URL || "";
+const API_URL = import.meta.env.VITE_API_URL || "/api";
 
 export async function downloadAndExtractPdfText(
   bookId: string,
