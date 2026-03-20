@@ -59,7 +59,7 @@ export const FilterBook = ({
             {filterLabels[filterStatus]}
 
             <ChevronDown width={16}
-              className={`${styles.chevron} ${isSortOpen ? styles.chevronOpen : ""}`}
+              className={`${styles.chevron} ${isFilterOpen ? styles.chevronOpen : ""}`}
             />
           </button>
           <div

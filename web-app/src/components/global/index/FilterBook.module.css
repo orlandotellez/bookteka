@@ -1,7 +1,6 @@
 .filters {
   width: 100%;
   display: flex;
-  overflow: hidden;
   min-width: 0;
   gap: 10px;
 }
@@ -51,10 +50,16 @@
   border-radius: 5px;
   font-size: 14px;
   cursor: pointer;
-  transition: background-color 0.15s;
+  transition: all 0.15s;
   border: 1px solid var(--border-color);
   background-color: var(--preview-color);
   color: var(--font-color-title);
+  white-space: nowrap;
+}
+
+.dropdownTrigger:hover {
+  border-color: var(--secondary-color);
+  background-color: var(--window-color);
 }
 
 .dropdownTrigger:focus {
@@ -66,7 +71,7 @@
   width: 14px;
   height: 14px;
   transition: transform 0.2s ease;
-  color: white;
+  color: var(--font-color-text);
 }
 
 .chevronOpen {
@@ -77,16 +82,18 @@
   position: absolute;
   top: calc(100% + 4px);
   left: 0;
-  min-width: 160px;
+  min-width: 140px;
   background: var(--primary-color);
   color: white;
   border-radius: 5px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  z-index: 50;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 100;
   opacity: 0;
   visibility: hidden;
-  transform: translateY(-4px);
-  transition: all 0.15s ease;
+  transform: translateY(-8px);
+  transition: all 0.2s ease;
+  overflow: hidden;
 }
 
 .dropdownContent.open {
@@ -98,12 +105,25 @@
 .dropdownItem {
   display: block;
   width: 100%;
-  padding: 8px 12px;
-  border: 1px solid var(--border-color);
-  background: var(--primary-color);
-  color: white;
+  padding: 10px 14px;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.9);
   text-align: left;
   font-size: 14px;
   cursor: pointer;
-  transition: background-color 0.15s;
+  transition: all 0.15s;
+}
+
+.dropdownItem:hover {
+  background: var(--secondary-color);
+  color: white;
+}
+
+.dropdownItem:first-child {
+  border-radius: 5px 5px 0 0;
+}
+
+.dropdownItem:last-child {
+  border-radius: 0 0 5px 5px;
 }
