@@ -13,7 +13,6 @@
 
 .toolbar {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
   margin-bottom: 20px;
@@ -101,4 +100,14 @@
   border-radius: 5px;
   cursor: pointer;
   transition: background-color 0.15s ease;
+}
+
+@media only screen and (max-width: 1024px) {
+  .toolbar {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    overflow: hidden;
+  }
+
 }

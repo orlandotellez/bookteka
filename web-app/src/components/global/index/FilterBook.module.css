@@ -1,8 +1,15 @@
+.filters {
+  width: 100%;
+  display: flex;
+  overflow: hidden;
+  min-width: 0;
+  gap: 10px;
+}
+
 .searchWrapper {
   position: relative;
+  min-width: 0;
   flex: 1;
-  min-width: 180px;
-  max-width: 400px;
 }
 
 .searchIcon {

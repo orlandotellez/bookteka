@@ -35,80 +35,82 @@ export const FilterBook = ({
 }: FilterBookProps) => {
   return (
     <>
-      {/* Search */}
-      <div className={styles.searchWrapper}>
-        <div className={styles.searchIcon}>
-          <Search width={16} />
-        </div>
-        <input
-          type="text"
-          placeholder="Buscar libros..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className={styles.searchInput}
-        />
-      </div>
-
-      <div className={`dropdown-filter ${styles.dropdown}`}>
-        <button
-          className={styles.dropdownTrigger}
-          onClick={setIsFilterOpen}
-          aria-expanded={isFilterOpen}
-        >
-          {filterLabels[filterStatus]}
-
-          <ChevronDown width={16}
-            className={`${styles.chevron} ${isSortOpen ? styles.chevronOpen : ""}`}
+      <div className={styles.filters}>
+        {/* Search */}
+        <div className={styles.searchWrapper}>
+          <div className={styles.searchIcon}>
+            <Search width={16} />
+          </div>
+          <input
+            type="text"
+            placeholder="Buscar libros..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className={styles.searchInput}
           />
-        </button>
-        <div
-          className={`${styles.dropdownContent} ${isFilterOpen ? styles.open : ""
-            }`}
-        >
-          {(Object.keys(filterLabels) as FilterStatus[]).map((key) => (
-            <button
-              key={key}
-              className={styles.dropdownItem}
-              onClick={() => {
-                setFilterStatus(key);
-                setIsFilterOpen();
-              }}
-            >
-              {filterLabels[key]}
-            </button>
-          ))}
         </div>
-      </div>
 
-      <div className={`dropdown-sort ${styles.dropdown}`}>
-        <button
-          className={styles.dropdownTrigger}
-          onClick={setIsSortOpen}
-          aria-expanded={isSortOpen}
-        >
-          {sortLabels[sortBy]}
+        <div className={`dropdown-filter ${styles.dropdown}`}>
+          <button
+            className={styles.dropdownTrigger}
+            onClick={setIsFilterOpen}
+            aria-expanded={isFilterOpen}
+          >
+            {filterLabels[filterStatus]}
 
-          <ChevronDown width={16}
-            className={`${styles.chevron} ${isSortOpen ? styles.chevronOpen : ""}`}
-          />
+            <ChevronDown width={16}
+              className={`${styles.chevron} ${isSortOpen ? styles.chevronOpen : ""}`}
+            />
+          </button>
+          <div
+            className={`${styles.dropdownContent} ${isFilterOpen ? styles.open : ""
+              }`}
+          >
+            {(Object.keys(filterLabels) as FilterStatus[]).map((key) => (
+              <button
+                key={key}
+                className={styles.dropdownItem}
+                onClick={() => {
+                  setFilterStatus(key);
+                  setIsFilterOpen();
+                }}
+              >
+                {filterLabels[key]}
+              </button>
+            ))}
+          </div>
+        </div>
 
-        </button>
-        <div
-          className={`${styles.dropdownContent} ${isSortOpen ? styles.open : ""
-            }`}
-        >
-          {(Object.keys(sortLabels) as SortBy[]).map((key) => (
-            <button
-              key={key}
-              className={styles.dropdownItem}
-              onClick={() => {
-                setSortBy(key);
-                setIsSortOpen();
-              }}
-            >
-              {sortLabels[key]}
-            </button>
-          ))}
+        <div className={`dropdown-sort ${styles.dropdown}`}>
+          <button
+            className={styles.dropdownTrigger}
+            onClick={setIsSortOpen}
+            aria-expanded={isSortOpen}
+          >
+            {sortLabels[sortBy]}
+
+            <ChevronDown width={16}
+              className={`${styles.chevron} ${isSortOpen ? styles.chevronOpen : ""}`}
+            />
+
+          </button>
+          <div
+            className={`${styles.dropdownContent} ${isSortOpen ? styles.open : ""
+              }`}
+          >
+            {(Object.keys(sortLabels) as SortBy[]).map((key) => (
+              <button
+                key={key}
+                className={styles.dropdownItem}
+                onClick={() => {
+                  setSortBy(key);
+                  setIsSortOpen();
+                }}
+              >
+                {sortLabels[key]}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </>
