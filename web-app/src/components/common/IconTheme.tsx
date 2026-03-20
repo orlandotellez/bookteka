@@ -4,11 +4,11 @@ import styles from "./IconTheme.module.css";
 import { useTheme } from "@/context/ThemeContext";
 
 export const IconTheme = () => {
-  const { theme } = useTheme();
-  const isDark = theme === "dark" || theme === "midnight";
-  
+  const { theme, toggleTheme } = useTheme();
+  const isDark = theme === "dark"
+
   return (
-    <button className={styles.buttonTheme}>
+    <button onClick={toggleTheme} className={styles.buttonTheme}>
       {isDark ? (
         <img src={sun} alt="sun icon" />
       ) : (

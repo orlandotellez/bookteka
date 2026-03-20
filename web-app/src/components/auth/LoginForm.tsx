@@ -9,10 +9,10 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { authClient } from "@/lib/auth-client.ts";
 import { useState } from "react";
-import { ThemeSelector } from "../common/ThemeSelector.tsx";
 import logoDark from "../../assets/logoDark.svg";
 import logoLight from "../../assets/logoLight.svg";
 import { useTheme } from "@/context/ThemeContext";
+import { IconTheme } from "../common/IconTheme.tsx";
 
 export const LoginForm = () => {
   const navigate = useNavigate();
@@ -60,7 +60,7 @@ export const LoginForm = () => {
   return (
     <article className={styles.container}>
       <div className={styles.iconContainer}>
-        <ThemeSelector />
+        <IconTheme />
       </div>
 
       <div className={styles.logo}>

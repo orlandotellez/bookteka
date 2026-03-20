@@ -86,3 +86,24 @@
 .iconProfile:hover {
   background: var(--window-color);
 }
+
+@media only screen and (max-width: 1024px) {
+  .addBookSpan {
+    display: none;
+  }
+
+  .article p {
+    display: none;
+  }
+
+  .buttons {
+    display: flex;
+    gap: 10px;
+  }
+
+  .buttonContainer {
+    gap: 5px;
+  }
+
+
+}
