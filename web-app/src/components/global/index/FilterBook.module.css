@@ -82,7 +82,7 @@
   position: absolute;
   top: calc(100% + 4px);
   left: 0;
-  min-width: 140px;
+  min-width: 100%;
   background: var(--primary-color);
   color: white;
   border-radius: 5px;
