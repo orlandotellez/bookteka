@@ -10,11 +10,15 @@ import { Link, useNavigate } from "react-router-dom";
 import { authClient } from "@/lib/auth-client.ts";
 import { useState } from "react";
 import { ThemeSelector } from "../common/ThemeSelector.tsx";
+import logoDark from "../../assets/logoDark.svg";
+import logoLight from "../../assets/logoLight.svg";
+import { useTheme } from "@/context/ThemeContext";
 
 export const LoginForm = () => {
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const { theme } = useTheme();
 
   const {
     register,
@@ -57,6 +61,19 @@ export const LoginForm = () => {
     <article className={styles.container}>
       <div className={styles.iconContainer}>
         <ThemeSelector />
+      </div>
+
+      <div className={styles.logo}>
+        {theme == "dark" ? (
+          <>
+            <img src={logoDark} alt="logo bookteka" />
+          </>
+        ) : (
+          <>
+            <img src={logoLight} alt="logo bookteka" />
+          </>
+        )}
+        <h1>Bookteka</h1>
       </div>
 
       <form className={styles.form} onSubmit={handleSubmit(onSubmit, onError)}>

@@ -68,3 +68,43 @@
 .notAccount a:hover {
   border-bottom: 1px solid var(--secondary-color);
 }
+
+.logo {
+  display: none;
+}
+
+@media only screen and (max-width: 1024px) {
+  .logo {
+    display: flex;
+    width: 100px;
+    margin-bottom: 40px;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .container {
+    height: 100%;
+    padding: 20px;
+  }
+
+  .form {
+    width: 100%;
+    max-width: 500px;
+    background: var(--preview-color);
+    padding: 20px;
+    border-radius: 5px;
+    border: 1px solid var(--border-color);
+  }
+
+  .form h4 {
+    font-size: 1.5rem;
+  }
+
+  .form p {
+    color: var(--font-color-text);
+    width: 100%;
+  }
+
+
+}

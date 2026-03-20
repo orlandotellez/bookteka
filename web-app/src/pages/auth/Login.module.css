@@ -16,8 +16,4 @@
     justify-content: center;
     background-color: var(--preview-color);
   }
-
-  .container img {
-    width: 200px;
-  }
 }
