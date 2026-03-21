@@ -76,3 +76,10 @@
   color: var(--font-color-title);
   padding: 5px;
 }
+
+
+@media only screen and (max-width: 768px) {
+  .primaryButton span {
+    display: none;
+  }
+}

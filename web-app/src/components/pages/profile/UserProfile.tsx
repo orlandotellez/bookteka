@@ -126,7 +126,7 @@ const UserProfile = ({
 
       <main className={styles.main}>
         <CloudSyncToggle />
-        
+
         <StreakCard
           streakData={
             streakData ?? {
@@ -180,7 +180,7 @@ const UserProfile = ({
                   {/* Indicador de sync + Botón acción */}
                   <div className={styles.cloudActions}>
                     {/* Indicador visual */}
-                    <div 
+                    <div
                       className={styles.syncBadge}
                       title={book.isSynced ? "Sincronizado en la nube" : "Solo en este dispositivo"}
                     >

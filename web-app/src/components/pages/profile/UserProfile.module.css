@@ -218,3 +218,14 @@
   display: flex;
   justify-content: end;
 }
+
+@media only screen and (max-width: 768px) {
+  .article {
+    width: 100%;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+}

@@ -84,11 +84,17 @@ export const StreakCard = ({
         >
           {streakData.hasCompletedToday ? (
             <>
-              <Check size={16} /> Completado
+              <Check size={16} />
+              <span>
+                Completado
+              </span>
             </>
           ) : (
             <>
-              <Flame size={16} /> Completar día
+              <Flame size={16} />
+              <span>
+                Completar día
+              </span>
             </>
           )}
         </button>
