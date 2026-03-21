@@ -62,3 +62,28 @@ export const deleteBookInCloud = async (bookId: string) => {
     throw new Error("DELETE_FAILED");
   }
 }
+
+export const updateBookProgress = async (
+  bookId: string,
+  data: {
+    readingTimeSeconds?: number;
+    scrollPosition?: number;
+    lastReadAt?: number;
+  }
+) => {
+  try {
+    const response = await fetch(`${API_URL}/books/${bookId}/progress`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+      credentials: "include",
+    });
+    if (!response.ok) {
+      throw new Error("Error al actualizar el progreso");
+    }
+    return await response.json();
+  } catch {
+    console.error("Error al actualizar el progreso en el servidor");
+    throw new Error("UPDATE_PROGRESS_FAILED");
+  }
+}
