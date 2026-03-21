@@ -20,7 +20,7 @@ import {
 import { generateId } from "@/utils/generateId";
 import { authClient } from "@/lib/auth-client";
 import { processBookForReading } from "@/lib/pdfService";
-import { deleteBookInCloud, uploadBook } from "@/api/book";
+import { deleteBookInCloud, updateBookProgress, uploadBook } from "@/api/book";
 import { useUserPreferences } from "./userPreferencesStore";
 
 type View = "library" | "reader" | "profile";
@@ -288,13 +288,25 @@ export const useBookStore = create<BookStore>((set) => ({
   updateReadingTime: async (id: string, seconds: number) => {
     try {
       await updateBookReadingTime(id, seconds);
-      set((state) => ({
-        books: state.books.map((book) =>
-          book.id === id
-            ? { ...book, readingTimeSeconds: book.readingTimeSeconds + seconds }
-            : book,
-        ),
-      }));
+
+      set((state) => {
+        const book = state.books.find(b => b.id === id);
+        const newTime = (book?.readingTimeSeconds || 0) + seconds;
+
+        // Si está sincronizado, actualizar en el cloud
+        if (book?.isSynced) {
+          updateBookProgress(id, {
+            readingTimeSeconds: newTime,
+            lastReadAt: Date.now()
+          }).catch(console.error);
+        }
+
+        return {
+          books: state.books.map((b) =>
+            b.id === id ? { ...b, readingTimeSeconds: newTime } : b,
+          ),
+        };
+      });
     } catch (error) {
       console.error("Error updating reading time:", error);
       set({ error: "Error al actualizar tiempo de lectura" });
@@ -305,11 +317,24 @@ export const useBookStore = create<BookStore>((set) => ({
   setReadingTime: async (id: string, totalSeconds: number) => {
     try {
       await setBookReadingTime(id, totalSeconds);
-      set((state) => ({
-        books: state.books.map((book) =>
-          book.id === id ? { ...book, readingTimeSeconds: totalSeconds } : book,
-        ),
-      }));
+
+      set((state) => {
+        const book = state.books.find(b => b.id === id);
+
+        // Si está sincronizado, actualizar en el cloud
+        if (book?.isSynced) {
+          updateBookProgress(id, {
+            readingTimeSeconds: totalSeconds,
+            lastReadAt: Date.now()
+          }).catch(console.error);
+        }
+
+        return {
+          books: state.books.map((b) =>
+            b.id === id ? { ...b, readingTimeSeconds: totalSeconds } : b,
+          ),
+        };
+      });
     } catch (error) {
       console.error("Error setting reading time:", error);
       set({ error: "Error al establecer tiempo de lectura" });
@@ -320,11 +345,24 @@ export const useBookStore = create<BookStore>((set) => ({
   updateScrollPosition: async (id: string, position: number) => {
     try {
       await updateBookScrollPosition(id, position);
-      set((state) => ({
-        books: state.books.map((book) =>
-          book.id === id ? { ...book, scrollPosition: position } : book,
-        ),
-      }));
+
+      set((state) => {
+        const book = state.books.find(b => b.id === id);
+
+        // Si está sincronizado, actualizar en el cloud
+        if (book?.isSynced) {
+          updateBookProgress(id, {
+            scrollPosition: position,
+            lastReadAt: Date.now()
+          }).catch(console.error);
+        }
+
+        return {
+          books: state.books.map((b) =>
+            b.id === id ? { ...b, scrollPosition: position } : b,
+          ),
+        };
+      });
     } catch (error) {
       console.error("Error updating scroll position:", error);
       set({ error: "Error al actualizar posición de scroll" });
@@ -423,11 +461,15 @@ export const useBookStore = create<BookStore>((set) => ({
 
       set({ uploadingBookId: bookId });
 
+      console.log(book)
+
       // Si tiene fileBlob, subirlo
       if (book.fileBlob) {
         const formData = new FormData();
         formData.append("pdf", book.fileBlob);
         formData.append("title", book.name);
+        formData.append("readingTimeSeconds", book.readingTimeSeconds.toString());
+        formData.append("scrollPosition", book.scrollPosition.toString());
 
         const cloudId = await uploadBook(formData);
 
