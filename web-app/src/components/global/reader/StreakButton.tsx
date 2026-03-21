@@ -54,12 +54,10 @@ export const StreakButton = ({
         {hasCompletedToday ? (
           <>
             <Check size={16} />
-            Hecho
           </>
         ) : (
           <>
             <Flame size={16} />
-            Completar día
           </>
         )}
       </button>

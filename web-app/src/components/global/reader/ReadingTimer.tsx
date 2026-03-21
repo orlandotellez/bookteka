@@ -24,11 +24,10 @@ export const ReadingTimer = ({
       </button>
 
       <div className={styles.timeContainer}>
-        <Clock size={14} color="var(--primary-color)" />
+        <Clock size={14} color="var(--font-color-title)" />
         <span
-          className={`${styles.time} ${
-            isRunning ? styles.running : styles.paused
-          }`}
+          className={`${styles.time} ${isRunning ? styles.running : styles.paused
+            }`}
         >
           {formatTimeShort(sessionSeconds)}
         </span>

@@ -63,7 +63,10 @@ export const ReadingControls = ({
         {/* Fuente */}
         <div className={styles.dropdown}>
           <button onClick={() => setShowFontMenu((prev) => !prev)}>
-            <Type size={16} /> Fuente
+            <Type size={16} />
+            <span>
+              Fuente
+            </span>
           </button>
 
           {showFontMenu && (
@@ -91,7 +94,10 @@ export const ReadingControls = ({
         {/* Interlineado */}
         <div className={styles.dropdown}>
           <button onClick={() => setShowLineHeight((prev) => !prev)}>
-            <AlignJustify size={16} /> Líneas
+            <AlignJustify size={16} />
+            <span>
+              Líneas
+            </span>
           </button>
 
           {showLineHeight && (
@@ -115,7 +121,10 @@ export const ReadingControls = ({
         {/* Ancho */}
         <div className={styles.dropdown}>
           <button onClick={() => setShowWidth((prev) => !prev)}>
-            <MoveHorizontal size={16} /> Ancho
+            <MoveHorizontal size={16} />
+            <span>
+              Ancho
+            </span>
           </button>
 
           {showWidth && (

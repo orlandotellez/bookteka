@@ -20,6 +20,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
 }
 
 .logoContainer img {
@@ -37,6 +38,7 @@
 .titleContainer {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .title {
@@ -61,6 +63,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-shrink: 0;
 }
 
 .iconButton {
@@ -74,4 +77,47 @@
 
 .iconButton:hover {
   background: var(--primary-color);
+}
+
+/* Tablet */
+@media (max-width: 768px) {
+  .title {
+    font-size: 16px;
+  }
+
+  .fileName {
+    max-width: 150px;
+    font-size: 12px;
+  }
+
+  .logoContainer img {
+    width: 20px;
+  }
+
+  .right {
+    gap: 4px;
+  }
+
+  .iconButton {
+    padding: 6px;
+  }
+}
+
+@media only screen and (max-width: 480px) {
+  .titleContainer {
+    display: none;
+  }
+
+  .logoContainer {
+    gap: 8px;
+  }
+
+  .logoContainer img {
+    width: 28px;
+  }
+
+
+  .iconButton {
+    padding: 6px;
+  }
 }
