@@ -73,7 +73,6 @@
   font-weight: 500;
   color: var(--font-color-title);
   font-weight: bold;
-  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   margin: 0;
