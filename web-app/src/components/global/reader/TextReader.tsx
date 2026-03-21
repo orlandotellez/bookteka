@@ -2,7 +2,7 @@ import { useMemo, useRef, useEffect, useCallback, useState } from "react";
 import type { ReadingSettings } from "./ReadingControls";
 import type { Highlight, HighlightColor } from "@/types/book";
 import { HighlightToolbar } from "./HighlightToolbar";
-import PageNavigator from "./PageNavigator";
+import { PageNavigator } from "./PageNavigator";
 import styles from "./TextReader.module.css";
 
 interface TextReaderProps {
@@ -21,6 +21,8 @@ interface TextReaderProps {
   ) => void;
   onAddBookmark?: (text: string) => void;
   showPageNavigator?: boolean;
+  isZenMode?: boolean;
+  onToggleZenMode?: () => void;
 }
 
 const HIGHLIGHT_CLASS_MAP: Record<HighlightColor, string> = {
@@ -41,6 +43,8 @@ export const TextReader = ({
   onAddHighlight,
   onAddBookmark,
   showPageNavigator = true,
+  isZenMode = false,
+  onToggleZenMode,
 }: TextReaderProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const hasRestoredPosition = useRef(false);
@@ -357,6 +361,8 @@ export const TextReader = ({
           totalPages={totalPages || pageMarkers.length || 1}
           pageMarkers={pageMarkers}
           onNavigateToPage={handleNavigateToPage}
+          isZenMode={isZenMode}
+          onToggleZenMode={onToggleZenMode}
         />
       )}
 
@@ -365,7 +371,7 @@ export const TextReader = ({
           position={selection.position}
           selectedText={selection.text}
           onHighlight={handleAddHighlight}
-          onAddBookmark={onAddBookmark || (() => {})}
+          onAddBookmark={onAddBookmark || (() => { })}
           onClose={() => setSelection(null)}
         />
       )}

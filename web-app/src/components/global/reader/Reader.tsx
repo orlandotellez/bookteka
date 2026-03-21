@@ -57,6 +57,7 @@ export const Reader = ({ book }: ReaderProps) => {
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [showBookmarks, setShowBookmarks] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(true);
+  const [isZenMode, setIsZenMode] = useState(false);
 
   // Cargar datos al montar el componente
   useEffect(() => {
@@ -178,7 +179,7 @@ export const Reader = ({ book }: ReaderProps) => {
 
   return (
     <div className={styles.reader}>
-      <header className={styles.header}>
+      <header className={`${styles.header} ${isZenMode ? styles.hidden : ""}`}>
         <ReaderHeader
           fileName={book.name}
           onClose={handleClose}
@@ -199,7 +200,7 @@ export const Reader = ({ book }: ReaderProps) => {
         <ReadingControls settings={settings} onSettingsChange={setSettings} />
       </header>
 
-      <main className={styles.readerContent}>
+      <main className={`${styles.readerContent} ${isZenMode ? styles.zenModeContent : ""}`}>
         <TextReader
           text={book.text}
           settings={settings}
@@ -209,6 +210,8 @@ export const Reader = ({ book }: ReaderProps) => {
           onScrollPositionChange={handleScrollPositionChange}
           onAddHighlight={handleAddHighlight}
           onAddBookmark={handleAddBookmark}
+          isZenMode={isZenMode}
+          onToggleZenMode={() => setIsZenMode(!isZenMode)}
         />
       </main>
 

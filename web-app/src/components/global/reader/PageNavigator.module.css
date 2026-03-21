@@ -151,3 +151,52 @@
   background: rgba(0, 0, 0, 0.2);
   z-index: 10;
 }
+
+.zenModeToggle {
+  position: fixed;
+  bottom: 24px;
+  right: 16px;
+  z-index: 30;
+  border-radius: 999px;
+  border: 1px solid var(--border-color);
+  background: var(--window-color);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 15px 16px;
+}
+
+.zenModeToggle:hover {
+  background: var(--secondary-color);
+  transform: scale(1.05);
+}
+
+.zenModeButton {
+  position: fixed;
+  bottom: 24px;
+  right: 16px;
+  z-index: 5000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 15px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--border-color);
+  background: var(--window-color);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--font-color-title);
+}
+
+.zenModeButton:hover {
+  background: var(--secondary-color);
+  transform: scale(1.05);
+}
