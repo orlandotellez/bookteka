@@ -34,18 +34,20 @@ export const LoginForm = () => {
     setError(null);
 
     try {
-      const { error: signInError } = await authClient.signIn.email({
+      await authClient.signIn.email({
         email: dataForm.email,
         password: dataForm.password,
-      });
-
-      if (signInError) {
-        setLoading(false);
-        setError(signInError.message || "Error al iniciar sesión");
-        return;
-      }
-
-      navigate("/");
+      },
+        {
+          onSuccess: () => {
+            navigate("/")
+          },
+          onError: (ctx) => {
+            setError(ctx.error.message);
+            setLoading(false);
+          }
+        }
+      );
     } catch (err) {
       console.error("Error inesperado:", err);
       setError("Ocurrió un error inesperado.");
