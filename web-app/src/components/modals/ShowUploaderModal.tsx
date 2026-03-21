@@ -1,5 +1,5 @@
 import styles from "./ShowUploaderModal.module.css";
-import PDFUploader from "@/components/global/index/PDFUploader";
+import PDFUploader from "@/components/pages/index/PDFUploader";
 import { useState, useCallback } from "react";
 import { isValidPDF, extractTextFromPDF } from "@/lib/pdfExtractor";
 import { toast } from "sonner";

@@ -1,5 +1,5 @@
 import { Header } from "./Header";
-import { Reader } from "@/components/global/reader/Reader";
+import { Reader } from "@/components/pages/reader/Reader";
 import { useBookStore } from "@/store/bookStore";
 import styles from "./Layout.module.css";
 import { useLocation } from "react-router-dom";
