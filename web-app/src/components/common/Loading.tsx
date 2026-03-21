@@ -10,13 +10,12 @@ export const Loading = ({ text, subtext }: LoadingProps) => {
   return (
     <>
       <div className={styles.container}>
+        <Spinner />
         <div className={styles.content}>
-          <Spinner />
           <span>{text}</span>
           <span>{subtext}</span>
         </div>
       </div>
-
     </>
   )
 }
