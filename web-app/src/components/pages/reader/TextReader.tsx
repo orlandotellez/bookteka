@@ -89,24 +89,6 @@ export const TextReader = ({
     return map;
   }, [highlights]);
 
-  const containerStyle = {
-    maxWidth: `${settings.textWidth}%`,
-  };
-
-  // Mapping de valores de fuente a familias CSS reales
-  const fontFamilyMap: Record<string, string> = {
-    serif: '"Crimson Pro", serif',
-    serifAlt: '"Merriweather", serif',
-    sans: '"Inter", sans-serif',
-    sansAlt: '"Open Sans", sans-serif',
-  };
-
-  const textStyle = {
-    fontSize: `${settings.fontSize}px`,
-    lineHeight: settings.lineHeight,
-    fontFamily: fontFamilyMap[settings.fontFamily] || '"Inter", sans-serif',
-  };
-
   useEffect(() => {
     if (
       containerRef.current &&
@@ -329,10 +311,17 @@ export const TextReader = ({
 
   return (
     <div ref={containerRef} className={styles.readerContainer}>
-      <article className={styles.article} style={containerStyle}>
+      <article
+        className={styles.article}
+        style={{ maxWidth: `${settings.textWidth}%` }}
+      >
         <div
           className={styles.readerContent}
-          style={textStyle}
+          data-font-family={settings.fontFamily}
+          style={{
+            fontSize: settings.fontSize,
+            lineHeight: settings.lineHeight,
+          }}
         >
           {paragraphs.map((paragraph, index) => (
             <p

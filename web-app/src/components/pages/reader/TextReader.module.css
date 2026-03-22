@@ -8,24 +8,30 @@
   padding: 20px;
 }
 
+/* Contenido con variables CSS para cambios fluidos */
 .readerContent {
   color: var(--font-color-title);
+  font-size: var(--reader-font-size, 18px);
+  line-height: var(--reader-line-height, 1.6);
+  font-family: var(--reader-font-family, "Inter", sans-serif);
+  max-width: var(--reader-width, 100%);
+  transition: font-size 0.15s ease, line-height 0.15s ease, font-family 0.15s ease;
 }
 
-/* Familias de fuentes */
-.serif {
+/* Familias de fuentes predefinidas */
+.readerContent[data-font-family="serif"] {
   font-family: "Crimson Pro", serif;
 }
 
-.serifAlt {
+.readerContent[data-font-family="serifAlt"] {
   font-family: "Merriweather", serif;
 }
 
-.sans {
+.readerContent[data-font-family="sans"] {
   font-family: "Inter", sans-serif;
 }
 
-.sansAlt {
+.readerContent[data-font-family="sansAlt"] {
   font-family: "Open Sans", sans-serif;
 }
 
