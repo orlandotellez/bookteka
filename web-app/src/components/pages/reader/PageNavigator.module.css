@@ -25,7 +25,6 @@
   position: fixed;
   bottom: 24px;
   left: 16px;
-  z-index: 4000;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -156,7 +155,6 @@
   position: fixed;
   bottom: 24px;
   right: 16px;
-  z-index: 30;
   border-radius: 999px;
   border: 1px solid var(--border-color);
   background: var(--window-color);
@@ -179,7 +177,6 @@
   position: fixed;
   bottom: 24px;
   right: 16px;
-  z-index: 5000;
   display: flex;
   align-items: center;
   gap: 8px;
