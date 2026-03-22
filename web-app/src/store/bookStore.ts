@@ -85,7 +85,7 @@ export const useBookStore = create<BookStore>((set) => ({
   downloadingBookId: "",
   uploadingBookId: null,
 
-  // Cargar todos los libros (desde cache local)
+  // Cargar todos los libros (desde cache local + sincronizar con nube)
   loadBooks: async () => {
     set({ isLoading: true, error: null });
     try {
@@ -95,6 +95,15 @@ export const useBookStore = create<BookStore>((set) => ({
         setCurrentUserId(session.user.id);
       }
 
+      // Sincronizar con la nube primero para obtener datos actualizados de otros dispositivos
+      try {
+        await syncBooksFromCloud();
+      } catch (syncError) {
+        // Si falla la sincronización, continuamos con datos locales
+        console.warn("No se pudo sincronizar con la nube, usando datos locales:", syncError);
+      }
+
+      // Cargar libros después de sincronizar
       const loadedBooks = await getAllBooks();
       set({ books: loadedBooks, isLoading: false });
     } catch (error) {

@@ -461,27 +461,31 @@ export async function syncBooksFromCloud(): Promise<Book[]> {
 
   const db = await getDatabase();
 
-  // Guardar cada libro en IndexedDB haciendo merge con datos locales
+  // Guardar cada libro en IndexedDB haciendo merge de datos
   for (const cloudBook of cloudBooks) {
     // Obtener el libro local existente
     const localBook = await db.get("books", cloudBook.id);
 
-    // Merge: priorizar datos locales sobre los del servidor
-    // El servidor tiene metadatos (nombre, fileUrl), pero el progreso es local
+    const localTime = localBook?.readingTimeSeconds ?? 0;
+    const cloudTime = cloudBook.readingTimeSeconds ?? 0;
+    const localScroll = localBook?.scrollPosition ?? 0;
+    const cloudScroll = cloudBook.scrollPosition ?? 0;
+    const localLastRead = localBook?.lastReadAt ?? 0;
+    const cloudLastRead = cloudBook.lastReadAt ?? 0;
+
     const mergedBook: Book & { userId: string } = {
       ...cloudBook,
       userId: currentUserId,
-      // Preservar datos locales importantes
-      readingTimeSeconds: localBook?.readingTimeSeconds ?? cloudBook.readingTimeSeconds ?? 0,
-      scrollPosition: localBook?.scrollPosition ?? cloudBook.scrollPosition ?? 0,
-      lastReadAt: localBook?.lastReadAt ?? cloudBook.lastReadAt ?? Date.now(),
+      // Siempre tomar el mayor para no perder progreso
+      readingTimeSeconds: Math.max(localTime, cloudTime),
+      scrollPosition: Math.max(localScroll, cloudScroll),
+      lastReadAt: Math.max(localLastRead, cloudLastRead) || Date.now(),
       // Preservar el contenido del PDF si existe localmente
       text: localBook?.text || cloudBook.text || "",
       // Preservar fileBlob si existe (no viene del servidor)
       fileBlob: localBook?.fileBlob,
-      // Preservar estado de sincronización: si ya estaba sincronizado localmente, mantenerlo
-      // Si viene de la nube, también marcar como sincronizado
-      isSynced: localBook?.isSynced ?? true,
+      // Marcar como sincronizado ya que viene de la nube
+      isSynced: true,
     };
 
     await db.put("books", mergedBook);
