@@ -12,7 +12,7 @@ export const LogoutButton = () => {
     setLoading(true);
 
     try {
-      toast.info("Guardando datos...");
+      toast.info("Cerrando sesión...");
       try {
       } catch (syncError) {
         console.warn("Error al sincronizar al logout:", syncError);
