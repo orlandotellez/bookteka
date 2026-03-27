@@ -8,7 +8,7 @@ import {
   updateBookReadingTime,
   updateBookScrollPosition,
   setBookReadingTime,
-} from "@/lib/database";
+} from "@/database";
 
 /**
  * Hook para gestionar la biblioteca de libros

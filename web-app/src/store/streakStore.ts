@@ -1,4 +1,4 @@
-import { getStreakData, saveStreakData, syncStreakFromCloud, completeDayInCloud, initializeStreakInCloud } from "@/lib/database";
+import { getStreakData, saveStreakData, syncStreakFromCloud, completeDayInCloud, initializeStreakInCloud } from "@/database";
 
 import type { StreakData } from "@/types/reading";
 import { create } from "zustand";

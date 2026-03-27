@@ -16,7 +16,7 @@ import {
   deleteHighlight as deleteHighlightFromDB,
   setCurrentUserId,
   syncBooksFromCloud,
-} from "@/lib/database";
+} from "@/database";
 import { generateId } from "@/utils/generateId";
 import { authClient } from "@/lib/auth-client";
 import { processBookForReading } from "@/lib/pdfService";

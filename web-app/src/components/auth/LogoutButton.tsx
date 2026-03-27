@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { authClient } from "@/lib/auth-client.ts";
-import { clearDatabase, resetDatabase } from "@/lib/database";
+import { clearDatabase, resetDatabase } from "@/database";
 import { toast } from "sonner";
 
 export const LogoutButton = () => {
