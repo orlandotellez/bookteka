@@ -15,6 +15,9 @@ import { normalizeText } from "@/utils/text";
 import { ShowUploaderModal } from "@/components/modals/ShowUploaderModal";
 import { Loading } from "@/components/common/Loading";
 import { FilterBook } from "./FilterBook";
+import { Pagination } from "./Pagination";
+
+const ITEMS_PER_PAGE = 6;
 
 type SortBy = "recent" | "name" | "time";
 type FilterStatus = "all" | "reading" | "unstarted";
@@ -26,6 +29,7 @@ export const Library = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isSortOpen, setIsSortOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list" | "shelf">("grid");
+  const [currentPage, setCurrentPage] = useState(1);
 
   const {
     books,
@@ -57,6 +61,11 @@ export const Library = () => {
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
+
+  // Resetear a página 1 cuando cambian los filtros
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, filterStatus, sortBy]);
 
   const handleOpenBook = useCallback(
     async (book: Book) => {
@@ -95,6 +104,15 @@ export const Library = () => {
 
     return filtered;
   }, [books, searchQuery, filterStatus, sortBy]);
+
+  // Paginación
+  const paginatedBooks = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    const end = start + ITEMS_PER_PAGE;
+    return processedBooks.slice(start, end);
+  }, [processedBooks, currentPage]);
+
+  const totalPages = Math.ceil(processedBooks.length / ITEMS_PER_PAGE);
 
   const filterLabels: Record<FilterStatus, string> = {
     all: "Todos",
@@ -227,7 +245,15 @@ export const Library = () => {
           </div>
         </>
       )}
-      <article>{renderBooks(processedBooks)}</article>
+      <article>{renderBooks(paginatedBooks)}</article>
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={processedBooks.length}
+        itemsPerPage={ITEMS_PER_PAGE}
+        onPageChange={setCurrentPage}
+      />
 
       {showUploader && (
         <ShowUploaderModal
