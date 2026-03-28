@@ -6,7 +6,7 @@ import type { Book } from "@/types/book";
 import { useStreakStore } from "@/store/streakStore";
 
 const Profile = () => {
-  const { books, loadBooks, setReadingTime, uploadBookToCloud, uploadingBookId } = useBookStore();
+  const { books, setReadingTime, uploadBookToCloud, uploadingBookId } = useBookStore();
   const {
     streakData,
     loadStreakData,
@@ -17,9 +17,9 @@ const Profile = () => {
   const [editingBook, setEditingBook] = useState<Book | null>(null);
 
   useEffect(() => {
-    loadBooks();
+    // Solo cargar datos de racha, los libros ya están cargados en el store
     loadStreakData();
-  }, [loadBooks, loadStreakData]);
+  }, [loadStreakData]);
 
   const handleEditTime = (book: Book) => {
     setEditingBook(book);

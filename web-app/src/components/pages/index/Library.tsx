@@ -38,7 +38,6 @@ export const Library = () => {
     getBookById,
     setCurrentBook,
     setCurrentView,
-    loadBooks,
     showUploader,
     setShowUploader,
     addBook,
@@ -46,10 +45,6 @@ export const Library = () => {
     pdfProgress,
     downloadingBookId,
   } = useBookStore();
-
-  useEffect(() => {
-    loadBooks();
-  }, [loadBooks]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
