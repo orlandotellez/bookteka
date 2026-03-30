@@ -74,16 +74,18 @@
   background: var(--primary-color);
   border: 1px solid var(--border-color);
   border-radius: 5px;
-  padding: 16px;
+  padding: 20px;
   width: 100%;
 }
 
 .sectionTitle {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   margin-bottom: 12px;
   color: var(--font-color-title);
+  font-size: 16px;
+  font-weight: 600;
 }
 
 .bookRow {

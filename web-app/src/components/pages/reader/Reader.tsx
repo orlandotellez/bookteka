@@ -5,6 +5,7 @@ import { BookmarksPanel } from "./BooksmarksPanel";
 import { useBookStore } from "@/store/bookStore";
 import { useReadingTimer } from "@/hooks/useReadingTimer";
 import { useStreakStore } from "@/store/streakStore";
+import { useUserPreferences } from "@/store/userPreferencesStore";
 import { ReadingControls, type ReadingSettings } from "./ReadingControls";
 import type { Highlight, HighlightColor, Bookmark } from "@/types/book";
 import styles from "./Reader.module.css";
@@ -19,13 +20,6 @@ interface ReaderProps {
     totalPages?: number;
   };
 }
-
-const DEFAULT_SETTINGS: ReadingSettings = {
-  fontSize: 18,
-  fontFamily: "sans",
-  lineHeight: 1.7,
-  textWidth: 70,
-};
 
 export const Reader = ({ book }: ReaderProps) => {
   const {
@@ -52,7 +46,16 @@ export const Reader = ({ book }: ReaderProps) => {
     initializeStreak,
     isStreakLoading,
   } = useStreakStore();
-  const [settings, setSettings] = useState<ReadingSettings>(DEFAULT_SETTINGS);
+  const { defaultReadingSettings } = useUserPreferences();
+
+  // Inicializar settings con las preferencias del usuario (ajustando textWidth para móvil)
+  const [settings, setSettings] = useState<ReadingSettings>(() => {
+    const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+    return {
+      ...defaultReadingSettings,
+      textWidth: isMobile ? 100 : defaultReadingSettings.textWidth,
+    };
+  });
   const [highlights, setHighlights] = useState<Highlight[]>([]);
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [showBookmarks, setShowBookmarks] = useState(false);

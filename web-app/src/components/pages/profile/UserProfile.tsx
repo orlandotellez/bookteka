@@ -12,13 +12,14 @@ import {
 } from "lucide-react";
 import { formatTime } from "@/utils/time";
 import type { Book } from "@/types/book";
+import type { ReadingSettings, StreakData } from "@/types/reading";
 import styles from "./UserProfile.module.css";
 import { Link } from "react-router-dom";
 import { StatCard } from "./StatCard";
 import { StreakCard } from "./StreakCard";
 import { LogoutButton } from "@/components/auth/LogoutButton";
 import { CardProfile } from "./CardProfile";
-import type { StreakData } from "@/types/reading";
+import { ReadingSettingsCard } from "./ReadingSettingsCard";
 import { downloadBook } from "@/api/book";
 import { CloudSyncToggle } from "@/components/common/CloudSyncToggle";
 import { Spinner } from "@/components/common/Spinner";
@@ -32,6 +33,9 @@ interface UserProfileProps {
   onCompleteDay?: () => Promise<boolean | undefined>;
   onInitializeStreak?: (days: number, startDate?: string) => Promise<void>;
   isStreakLoading?: boolean;
+  readingSettings?: ReadingSettings;
+  onReadingSettingsChange?: (settings: ReadingSettings) => void;
+  onReadingSettingsReset?: () => void;
 }
 
 const UserProfile = ({
@@ -43,6 +47,9 @@ const UserProfile = ({
   onCompleteDay,
   onInitializeStreak,
   isStreakLoading,
+  readingSettings,
+  onReadingSettingsChange,
+  onReadingSettingsReset,
 }: UserProfileProps) => {
   const totalBooks = books.length;
   const totalReadingTime = books.reduce(
@@ -141,6 +148,15 @@ const UserProfile = ({
         />
 
         <CardProfile />
+
+        {readingSettings && onReadingSettingsChange && onReadingSettingsReset && (
+          <ReadingSettingsCard
+            settings={readingSettings}
+            onChange={onReadingSettingsChange}
+            onReset={onReadingSettingsReset}
+          />
+        )}
+
         <article className={styles.article}>
           {/* Stats */}
           <div className={styles.statsGrid}>

@@ -4,6 +4,8 @@ import { EditTimeModal } from "@/components/modals/EditTimeModal";
 import { useBookStore } from "@/store/bookStore";
 import type { Book } from "@/types/book";
 import { useStreakStore } from "@/store/streakStore";
+import { useUserPreferences } from "@/store/userPreferencesStore";
+import type { ReadingSettings } from "@/types/reading";
 
 const Profile = () => {
   const { books, setReadingTime, uploadBookToCloud, uploadingBookId } = useBookStore();
@@ -14,6 +16,11 @@ const Profile = () => {
     initializeStreak,
     isStreakLoading,
   } = useStreakStore();
+  const {
+    defaultReadingSettings,
+    setDefaultReadingSettings,
+    resetReadingSettings,
+  } = useUserPreferences();
   const [editingBook, setEditingBook] = useState<Book | null>(null);
 
   useEffect(() => {
@@ -33,6 +40,14 @@ const Profile = () => {
     setEditingBook(null);
   };
 
+  const handleReadingSettingsChange = (settings: ReadingSettings) => {
+    setDefaultReadingSettings(settings);
+  };
+
+  const handleReadingSettingsReset = () => {
+    resetReadingSettings();
+  };
+
   return (
     <>
       <UserProfile
@@ -44,6 +59,9 @@ const Profile = () => {
         onCompleteDay={completeDay}
         onInitializeStreak={initializeStreak}
         isStreakLoading={isStreakLoading}
+        readingSettings={defaultReadingSettings}
+        onReadingSettingsChange={handleReadingSettingsChange}
+        onReadingSettingsReset={handleReadingSettingsReset}
       />
       {editingBook && (
         <EditTimeModal
