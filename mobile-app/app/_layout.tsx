@@ -1,6 +1,6 @@
 import { Stack } from 'expo-router';
 
-type RootRoutes = "(tabs)";
+type RootRoutes = "(tabs)" | "+not-found";
 
 interface StackConfig {
   name: RootRoutes;
@@ -14,6 +14,10 @@ const ROOT_STACK: StackConfig[] = [
     name: "(tabs)",
     headerShown: false
   },
+  {
+    name: "+not-found",
+    headerShown: false
+  }
 ];
 
 export default function RootLayout() {
