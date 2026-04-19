@@ -32,13 +32,13 @@ function getBookColor(name: string) {
 function getBookThickness(name: string) {
   let hash = 0;
   for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 3) - hash);
-  return 38 + (Math.abs(hash) % 30);
+  return 40 + (Math.abs(hash) % 30);
 }
 
 function getBookHeight(name: string) {
   let hash = 0;
   for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 4) - hash);
-  return 140 + (Math.abs(hash) % 30);
+  return 200 + (Math.abs(hash) % 30);
 }
 
 function formatTime(seconds: number) {
