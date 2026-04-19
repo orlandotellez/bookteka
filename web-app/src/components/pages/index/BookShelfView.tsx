@@ -93,7 +93,7 @@ const ShelfBook = ({
           <div
             className={styles.spine}
             style={{
-              background: `linear-gradient(to right, ${color.spine}, #eee)`,
+              background: `linear-gradient(to right, ${color.spine})`,
             }}
           />
         </div>
