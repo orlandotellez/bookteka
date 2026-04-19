@@ -1,0 +1,154 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.shelfUnit {
+  position: relative;
+}
+
+.booksRow {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  padding: 30px 20px 0;
+  min-height: 200px;
+}
+
+.shelf {
+  height: 10px;
+  background: #5a3e2b;
+  border-radius: 2px;
+}
+
+/* Book */
+
+.bookWrapper {
+  position: relative;
+}
+
+.bookButton {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.book {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  border-radius: 3px;
+  box-shadow: inset -4px 0 8px rgba(0, 0, 0, 0.3);
+  transition: transform 0.25s;
+}
+
+.bookWrapper:hover .book {
+  transform: translateY(-8px) scale(1.03);
+}
+
+.title {
+  writing-mode: vertical-rl;
+  font-size: 9px;
+  text-align: center;
+  padding: 6px;
+}
+
+.spine {
+  position: absolute;
+  right: 0;
+  top: 2px;
+  bottom: 2px;
+  width: 6px;
+}
+
+.progress {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 3px;
+  height: 30%;
+  background: green;
+}
+
+/* Tooltip */
+
+.tooltip {
+  position: absolute;
+  bottom: 110%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 180px;
+  background: white;
+  border: 1px solid #ccc;
+  padding: 10px;
+  font-size: 12px;
+  opacity: 0;
+  pointer-events: none;
+  transition: 0.2s;
+}
+
+.bookWrapper:hover .tooltip {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.tooltipTitle {
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+
+.tooltipInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tooltipActions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+
+.tooltipActions button {
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+/* Modal */
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 300px;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.deleteBtn {
+  background: red;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+}

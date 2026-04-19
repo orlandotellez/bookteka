@@ -16,6 +16,7 @@ import { ShowUploaderModal } from "@/components/modals/ShowUploaderModal";
 import { Loading } from "@/components/common/Loading";
 import { FilterBook } from "./FilterBook";
 import { Pagination } from "./Pagination";
+import BookShelfView from "./BookShelfView";
 
 const ITEMS_PER_PAGE = 6;
 
@@ -167,6 +168,16 @@ export const Library = () => {
         </div>
       );
     }
+
+    if (viewMode === "shelf") {
+      return (
+        <BookShelfView
+          books={booksToRender}
+          onOpen={handleOpenBook}
+          onDelete={handleDelete}
+        />
+      );
+    }
   };
 
   if (isLoading) return <Loading text="Cargando libros..." />;
@@ -240,15 +251,17 @@ export const Library = () => {
           </div>
         </>
       )}
-      <article>{renderBooks(paginatedBooks)}</article>
+      <article>{viewMode === "shelf" ? renderBooks(processedBooks) : renderBooks(paginatedBooks)}</article>
 
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        totalItems={processedBooks.length}
-        itemsPerPage={ITEMS_PER_PAGE}
-        onPageChange={setCurrentPage}
-      />
+      {viewMode !== "shelf" && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={processedBooks.length}
+          itemsPerPage={ITEMS_PER_PAGE}
+          onPageChange={setCurrentPage}
+        />
+      )}
 
       {showUploader && (
         <ShowUploaderModal
