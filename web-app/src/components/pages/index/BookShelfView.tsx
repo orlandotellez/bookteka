@@ -1,18 +1,12 @@
 import { useMemo, useState } from "react";
 import { Clock, BookOpen, Trash2 } from "lucide-react";
 import styles from "./BookShelfView.module.css";
+import type { Book } from "@/database";
 
-interface Book {
-  id: string;
-  name: string;
-  scrollPosition: number;
-  readingTimeSeconds: number;
-  totalPages?: number;
-}
 
 interface BookShelfViewProps {
   books: Book[];
-  onOpen: (book: Book) => void;
+  onOpen: (book: Book) => Promise<void>;
   onDelete: (id: string) => void;
 }
 
