@@ -11,7 +11,7 @@ const upload = multer({
 
 book.get("/", getUserBooks)
 
-book.post("/upload", upload.single("file"), uploadBook)
+book.post("/upload", upload.single("pdf"), uploadBook)
 
 book.get("/:id/download", downloadBookWithUrl);
 

@@ -26,55 +26,73 @@ export function getDbInstance(): IDBPDatabase<ReaderDBSchema> | null {
 export async function getDatabase(): Promise<IDBPDatabase<ReaderDBSchema>> {
   if (dbInstance) return dbInstance;
 
-  dbInstance = await openDB<ReaderDBSchema>(DB_NAME, DB_VERSION, {
-    upgrade(db, oldVersion, _newVersion, transaction) {
-      // Store de libros
+  try {
+    dbInstance = await tryOpenDB(DB_NAME, DB_VERSION);
+  } catch (err) {
+    // Si falla por versión (stored DB es más nueva), eliminar y recrear desde cero
+    console.warn("Error al abrir DB, eliminando y recreando:", err);
+    await deleteDB(DB_NAME);
+    dbInstance = await tryOpenDB(DB_NAME, DB_VERSION);
+  }
+
+  return dbInstance;
+}
+
+async function tryOpenDB(name: string, version: number): Promise<IDBPDatabase<ReaderDBSchema>> {
+  return openDB<ReaderDBSchema>(name, version, {
+    upgrade(db, _oldVersion, _newVersion, transaction) {
+      // BOOKS
       if (!db.objectStoreNames.contains("books")) {
         const bookStore = db.createObjectStore("books", { keyPath: "id" });
         bookStore.createIndex("by-lastRead", "lastReadAt");
         bookStore.createIndex("by-userId", "userId");
-      } else if (oldVersion < 4) {
+      } else {
+        // Asegurar índices en upgrades
         const bookStore = transaction.objectStore("books");
-        bookStore.createIndex("by-userId", "userId");
+        if (!bookStore.indexNames.contains("by-userId")) {
+          bookStore.createIndex("by-userId", "userId");
+        }
       }
 
-      // Store de marcadores
+      // BOOKMARKS
       if (!db.objectStoreNames.contains("bookmarks")) {
         const bookmarkStore = db.createObjectStore("bookmarks", {
           keyPath: "id",
         });
         bookmarkStore.createIndex("by-bookId", "bookId");
         bookmarkStore.createIndex("by-userId", "userId");
-      } else if (oldVersion < 4) {
+      } else {
         const bookmarkStore = transaction.objectStore("bookmarks");
-        bookmarkStore.createIndex("by-userId", "userId");
+        if (!bookmarkStore.indexNames.contains("by-userId")) {
+          bookmarkStore.createIndex("by-userId", "userId");
+        }
       }
 
-      // Store del perfil de usuario
+      // --- USER PROFILE ---
       if (!db.objectStoreNames.contains("userProfile")) {
         db.createObjectStore("userProfile", { keyPath: "id" });
       }
 
-      // Store de highlights
+      // HIGHLIGHTS 
       if (!db.objectStoreNames.contains("highlights")) {
         const highlightStore = db.createObjectStore("highlights", {
           keyPath: "id",
         });
         highlightStore.createIndex("by-bookId", "bookId");
         highlightStore.createIndex("by-userId", "userId");
-      } else if (oldVersion < 4) {
+      } else {
         const highlightStore = transaction.objectStore("highlights");
-        highlightStore.createIndex("by-userId", "userId");
+        if (!highlightStore.indexNames.contains("by-userId")) {
+          highlightStore.createIndex("by-userId", "userId");
+        }
       }
 
-      // Store de streaks
+      // STREAKS 
       if (!db.objectStoreNames.contains("streaks")) {
         db.createObjectStore("streaks", { keyPath: "id" });
       }
     },
   });
-
-  return dbInstance;
 }
 
 // Elimina toda la base de datos local (para logout)

@@ -3,6 +3,9 @@ import { pool } from "@/config/db.js";
 import { env } from "@/config/env.js";
 import { sendEmail } from "./email.js";
 
+// En producción (HTTPS) usamos cookies secure; en desarrollo (HTTP local) no
+const isProduction = env.BETTER_AUTH_URL.startsWith("https");
+
 export const auth = betterAuth({
   baseURL: env.BETTER_AUTH_URL,
   database: pool,
@@ -60,12 +63,12 @@ export const auth = betterAuth({
     "https://bookteka-api.up.railway.app", // Para testing directo
   ],
   advanced: {
-    useSecureCookies: true,
+    useSecureCookies: isProduction,
   },
   cookie: {
     name: "better-auth.session_token",
-    secure: true,
-    sameSite: "lax",
+    secure: isProduction,
+    sameSite: isProduction ? "lax" : "lax",
     httpOnly: true,
     maxAge: 60 * 60 * 24 * 7,
     path: "/"

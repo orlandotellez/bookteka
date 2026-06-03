@@ -15,7 +15,8 @@ export async function syncBooksFromCloud(): Promise<Book[]> {
   });
 
   if (!response.ok) {
-    throw new Error("Error al obtener libros del servidor");
+    const body = await response.text().catch(() => "sin cuerpo");
+    throw new Error(`Error al obtener libros del servidor: ${response.status} ${response.statusText} — ${body}`);
   }
 
   const cloudBooks: Book[] = await response.json();

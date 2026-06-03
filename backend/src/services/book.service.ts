@@ -5,7 +5,7 @@ import { BookRepository } from "@/repositories/book.repository.js";
 import { DeleteBookInput, DownloadBookInput, StreamBookInput, UpdateBookProgressInput, UploadBookInput } from "@/types/book.js";
 import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { env } from "better-auth";
+import { env } from "@/config/env.js";
 
 const bookRepository = new BookRepository()
 
@@ -15,15 +15,16 @@ export class BookService {
 
     return userBooks.map((ub) => ({
       id: ub.book.id,
-      title: ub.book.title,
+      name: ub.book.title,
       author: ub.book.author || "",
       createdAt: ub.book.createdAt.getTime(),
       lastReadAt: ub.lastReadAt?.getTime() || ub.book.createdAt.getTime(),
       readingTimeSeconds: ub.readingTimeSeconds || 0,
       scrollPosition: ub.scrollPosition || 0,
-      totalPages: undefined,
+      currentPage: ub.currentPage || 0,
       fileUrl: ub.book.fileUrl,
       fileKey: ub.book.fileKey,
+      isSynced: true,
     }));
   };
 

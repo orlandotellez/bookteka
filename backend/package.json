@@ -22,6 +22,7 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/multer": "^2.0.0",
+    "@types/node": "^25.9.1",
     "@types/pg": "^8.16.0",
     "prisma": "^6.19.2",
     "tsc-alias": "^1.8.16",
@@ -45,5 +46,14 @@
     "resend": "^6.9.4",
     "supertest": "^7.2.2",
     "ts-jest": "^29.4.9"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/client",
+      "@prisma/engines",
+      "prisma",
+      "esbuild",
+      "better-sqlite3"
+    ]
   }
 }

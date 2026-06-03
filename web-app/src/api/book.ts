@@ -14,9 +14,9 @@ export const uploadBook = async (formData: FormData) => {
       throw new Error("Error al subir el libro al servidor");
     }
 
-    const book: Book = await response.json();
+    const data = await response.json();
 
-    const id = book.id
+    const id = data.bookId || data.id
 
     return id
   } catch {
