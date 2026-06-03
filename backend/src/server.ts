@@ -39,10 +39,10 @@ app.use("/api/books", bookRoutes)
 app.use("/api/books", bookmarkRoutes)
 app.use("/api", streakRoutes)
 
-if (import.meta.main) {
-  app.listen(env.PORT, () =>
-    console.log(`Server initialize in http://localhost:${env.PORT}`),
-  );
-}
+// Nota: `import.meta.main` es de Deno/Bun. En Node.js necesitamos ≥20.11.0.
+// Para compatibilidad, arrancamos siempre directo.
+app.listen(env.PORT, () =>
+  console.log(`Server initialize in http://localhost:${env.PORT}`),
+);
 
 export default app

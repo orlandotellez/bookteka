@@ -15,6 +15,11 @@ COPY . .
 # Build de la app (esto genera los archivos estáticos en /dist)
 RUN pnpm build
 
+ARG VITE_API_URL=/api
+ARG VITE_BETTER_AUTH_CLIENT=http://localhost:8080
+ENV VITE_API_URL=$VITE_API_URL
+ENV VITE_BETTER_AUTH_CLIENT=$VITE_BETTER_AUTH_CLIENT
+
 # Stage 2: Servir con Nginx
 FROM nginx:alpine
 
