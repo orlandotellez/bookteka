@@ -1,0 +1,96 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model book {
+  id        String   @id @default(uuid())
+  title     String
+  author    String?
+  fileUrl   String
+  fileKey   String
+  fileHash  String   @unique
+  size      Int?
+
+  createdAt DateTime @default(now())
+
+  userBooks user_book[]
+
+  @@index([fileHash])
+}
+
+/* USER BOOK (progreso de lectura) */
+model user_book {
+  id String @id @default(uuid())
+
+  userId String
+  bookId String
+
+  currentPage        Int      @default(0)
+  scrollPosition     Int      @default(0)
+  readingTimeSeconds Int      @default(0)
+  lastReadAt         DateTime?
+
+  createdAt DateTime @default(now())
+
+  book      book       @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  bookmarks bookmark[]
+
+  @@index([userId])
+  @@index([bookId])
+  @@unique([userId, bookId])
+}
+
+model bookmark {
+  id String @id @default(uuid())
+
+  userId String
+  userBookId String
+
+  name        String?
+  pageNumber  Int
+  textPreview String?
+
+  createdAt DateTime @default(now())
+
+  userBook user_book @relation(fields: [userBookId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userBookId])
+}
+
+model user_streak {
+  id String @id @default(uuid())
+
+  userId String @unique
+
+  currentStreak  Int @default(0)
+  startDate      DateTime?
+  lastActiveDate DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model audit_log {
+  id String @id @default(uuid())
+
+  action     String
+  entityType String
+  entityId   String
+  userId     String
+
+  metadata Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@index([createdAt])
+}

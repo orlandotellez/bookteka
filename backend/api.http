@@ -1,0 +1,164 @@
+### BOOKS ENDPOINTS ###
+
+# Obtener todos los libros del usuario
+
+GET http://localhost:3000/api/books HTTP/1.1
+Content-Type: application/json
+
+
+### 
+
+# Subir un libro (multipart/form-data)
+# NOTA: Requiere archivo PDF y campos del formulario
+
+POST http://localhost:3000/api/books/upload HTTP/1.1
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
+
+------WebKitFormBoundary
+Content-Disposition: form-data; name="file"; filename="mi-libro.pdf"
+Content-Type: application/pdf
+
+< ./mock/book.pdf
+------WebKitFormBoundary
+Content-Disposition: form-data; name="title"
+
+Mi Libro
+------WebKitFormBoundary
+Content-Disposition: form-data; name="author"
+
+Autor Ejemplo
+------WebKitFormBoundary--
+
+
+### 
+
+# Descargar libro (devuelve URL de descarga)
+
+GET http://localhost:3000/api/books/<book-id>/download HTTP/1.1
+Content-Type: application/json
+
+
+### 
+
+# Hacer streaming del PDF (evita CORS)
+
+GET http://localhost:3000/api/books/<book-id>/stream HTTP/1.1
+Content-Type: application/json
+
+
+### 
+
+# Actualizar progreso de lectura
+
+PATCH http://localhost:3000/api/books/<book-id>/progress HTTP/1.1
+Content-Type: application/json
+
+{
+  "currentPage": 150,
+  "percentageRead": 50,
+  "totalPages": 300
+}
+
+
+### 
+
+# Eliminar un libro
+
+DELETE http://localhost:3000/api/books/<book-id> HTTP/1.1
+Content-Type: application/json
+
+
+### 
+
+
+### BOOKMARKS ENDPOINTS ###
+
+# Obtener todos los bookmarks de un libro
+
+GET http://localhost:3000/api/books/<book-id>/bookmarks HTTP/1.1
+Content-Type: application/json
+
+
+### 
+
+# Crear un nuevo bookmark
+
+POST http://localhost:3000/api/books/<book-id>/bookmarks HTTP/1.1
+Content-Type: application/json
+
+{
+  "name": "Capítulo 5",
+  "pageNumber": 120,
+  "textPreview": "Este es el texto de ejemplo en la página 120..."
+}
+
+
+### 
+
+# Eliminar un bookmark
+
+DELETE http://localhost:3000/api/books/<book-id>/bookmarks/<bookmark-id> HTTP/1.1
+Content-Type: application/json
+
+
+### 
+
+
+### STREAKS ENDPOINTS ###
+
+# Obtener racha del usuario
+
+GET http://localhost:3000/api/streak HTTP/1.1
+Content-Type: application/json
+
+
+### 
+
+# Completar el día actual
+
+POST http://localhost:3000/api/streak/complete HTTP/1.1
+Content-Type: application/json
+
+{
+  "clientDate": "2026-05-01",
+  "clientTimestamp": "2026-05-01T14:30:00.000Z"
+}
+
+
+### 
+
+# Inicializar racha manualmente
+
+POST http://localhost:3000/api/streak/initialize HTTP/1.1
+Content-Type: application/json
+
+{
+  "startDate": "2026-05-01"
+}
+
+
+### 
+
+
+### AUTH DEBUG ENDPOINTS (SOLO DESARROLLO) ###
+
+# Verificar email manualmente (debug)
+
+POST http://localhost:3000/api/verify-email-debug HTTP/1.1
+Content-Type: application/json
+
+{
+  "email": "usuario@ejemplo.com",
+  "userId": "user-id-ejemplo"
+}
+
+
+### 
+
+# Ver estado de un usuario (debug)
+
+GET http://localhost:3000/api/user-debug?userId=<user-id>&email=<email> HTTP/1.1
+Content-Type: application/json
+
+
+### 
