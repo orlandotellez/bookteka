@@ -31,6 +31,7 @@ export const Reader = ({ book }: ReaderProps) => {
     removeBookmark,
     loadHighlights,
     addHighlight,
+    removeHighlight,
   } = useBookStore();
   const { isRunning, sessionSeconds, start, pause } = useReadingTimer({
     onTimeUpdate: (seconds) => {
@@ -97,6 +98,14 @@ export const Reader = ({ book }: ReaderProps) => {
       start();
     }
   };
+
+  const handleRemoveHighlight = useCallback(
+    async (id: string) => {
+      await removeHighlight(id);
+      setHighlights((prev) => prev.filter((h) => h.id !== id));
+    },
+    [removeHighlight],
+  );
 
   // Manejar highlights
   const handleAddHighlight = useCallback(
@@ -212,6 +221,7 @@ export const Reader = ({ book }: ReaderProps) => {
           totalPages={book.totalPages}
           onScrollPositionChange={handleScrollPositionChange}
           onAddHighlight={handleAddHighlight}
+          onRemoveHighlight={handleRemoveHighlight}
           onAddBookmark={handleAddBookmark}
           isZenMode={isZenMode}
           onToggleZenMode={() => setIsZenMode(!isZenMode)}

@@ -19,6 +19,7 @@ interface TextReaderProps {
     startOffset: number,
     endOffset: number,
   ) => void;
+  onRemoveHighlight?: (id: string) => void;
   onAddBookmark?: (text: string) => void;
   showPageNavigator?: boolean;
   isZenMode?: boolean;
@@ -45,7 +46,8 @@ const Paragraph = React.memo<{
   paragraph: string;
   highlights: Highlight[];
   HIGHLIGHT_CLASS_MAP: Record<HighlightColor, string>;
-}>(({ paragraph, highlights, HIGHLIGHT_CLASS_MAP }) => {
+  onRemoveHighlight?: (id: string) => void;
+}>(({ paragraph, highlights, HIGHLIGHT_CLASS_MAP, onRemoveHighlight }) => {
   if (highlights.length === 0) {
     return <>{paragraph}</>;
   }
@@ -70,12 +72,15 @@ const Paragraph = React.memo<{
       <mark
         key={h.id}
         className={`${styles.highlight} ${HIGHLIGHT_CLASS_MAP[h.color]}`}
+        data-highlight-id={h.id}
+        onClick={() => onRemoveHighlight?.(h.id)}
+        title="Click para eliminar subrayado"
       >
-        {paragraph.slice(h.startOffset, h.startOffset + h.text.length)}
+        {paragraph.slice(h.startOffset, h.endOffset)}
       </mark>,
     );
 
-    lastEnd = h.startOffset + h.text.length;
+    lastEnd = h.endOffset;
   });
 
   if (lastEnd < paragraph.length) {
@@ -97,6 +102,7 @@ export const TextReader = ({
   totalPages,
   onScrollPositionChange,
   onAddHighlight,
+  onRemoveHighlight,
   onAddBookmark,
   showPageNavigator = true,
   isZenMode = false,
@@ -205,15 +211,25 @@ export const TextReader = ({
         const paragraphText = paragraphs[paragraphIndex];
 
         if (paragraphText) {
-          const startOffset = range.startOffset;
-          const endOffset = range.endOffset;
+          // Calcular offsets relativos al párrafo completo
+          // (range.startOffset/endOffset son relativos al text node individual)
+          const preRange = document.createRange();
+          preRange.selectNodeContents(paragraphElement);
+
+          preRange.setEnd(range.startContainer, range.startOffset);
+          const paraStartOffset = preRange.toString().length;
+
+          preRange.selectNodeContents(paragraphElement);
+          preRange.setEnd(range.endContainer, range.endOffset);
+          const paraEndOffset = preRange.toString().length;
+
           const rect = range.getBoundingClientRect();
 
           setSelection({
             text: selectedText,
             paragraphIndex,
-            startOffset,
-            endOffset,
+            startOffset: paraStartOffset,
+            endOffset: paraEndOffset,
             position: {
               x: rect.left,
               y: rect.top - 10,
@@ -347,6 +363,7 @@ export const TextReader = ({
                 paragraph={paragraph}
                 highlights={highlightsByParagraph[index] || []}
                 HIGHLIGHT_CLASS_MAP={HIGHLIGHT_CLASS_MAP}
+                onRemoveHighlight={onRemoveHighlight}
               />
             </p>
           ))}
