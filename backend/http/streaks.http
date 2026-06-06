@@ -1,0 +1,27 @@
+### STREAKS ENDPOINTS ###
+# Base: http://localhost:3000/api/streak
+
+### Obtener racha del usuario
+GET http://localhost:3000/api/streak HTTP/1.1
+Content-Type: application/json
+
+###
+
+### Completar el día actual
+POST http://localhost:3000/api/streak/complete HTTP/1.1
+Content-Type: application/json
+
+{
+  "clientDate": "2026-05-01",
+  "clientTimestamp": "2026-05-01T14:30:00.000Z"
+}
+
+###
+
+### Inicializar racha manualmente
+POST http://localhost:3000/api/streak/initialize HTTP/1.1
+Content-Type: application/json
+
+{
+  "startDate": "2026-05-01"
+}

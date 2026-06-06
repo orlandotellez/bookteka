@@ -1,0 +1,77 @@
+### BOOKS ENDPOINTS ###
+
+# Base: http://localhost:3000/api/books
+
+
+### Obtener todos los libros del usuario
+
+GET http://localhost:3000/api/books HTTP/1.1
+Content-Type: application/json
+
+
+### 
+
+
+### Subir un libro (multipart/form-data)
+
+# NOTA: Requiere archivo PDF y campos del formulario
+
+POST http://localhost:3000/api/books/upload HTTP/1.1
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
+
+------WebKitFormBoundary
+Content-Disposition: form-data; name="pdf"; filename="mi-libro.pdf"
+Content-Type: application/pdf
+
+//< ./mock/book.pdf
+------WebKitFormBoundary
+Content-Disposition: form-data; name="title"
+
+Mi Libro
+------WebKitFormBoundary
+Content-Disposition: form-data; name="author"
+
+Autor Ejemplo
+------WebKitFormBoundary--
+
+
+### 
+
+
+### Descargar libro (devuelve URL de descarga)
+
+GET http://localhost:3000/api/books/<book-id>/download HTTP/1.1
+Content-Type: application/json
+
+
+### 
+
+
+### Hacer streaming del PDF (evita CORS)
+
+GET http://localhost:3000/api/books/<book-id>/stream HTTP/1.1
+Content-Type: application/json
+
+
+### 
+
+
+### Actualizar progreso de lectura
+
+PATCH http://localhost:3000/api/books/<book-id>/progress HTTP/1.1
+Content-Type: application/json
+
+{
+  "currentPage": 150,
+  "percentageRead": 50,
+  "totalPages": 300
+}
+
+
+### 
+
+
+### Eliminar un libro
+
+DELETE http://localhost:3000/api/books/<book-id> HTTP/1.1
+Content-Type: application/json
