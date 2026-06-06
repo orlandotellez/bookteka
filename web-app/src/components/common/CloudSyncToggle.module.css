@@ -5,7 +5,7 @@
   padding: 16px;
   background: var(--card-color);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: 5px;
   margin-bottom: 20px;
 }
 
@@ -68,10 +68,10 @@
   border-radius: 50%;
 }
 
-.toggle input:checked + .slider {
+.toggle input:checked+.slider {
   background-color: var(--secondary-color);
 }
 
-.toggle input:checked + .slider:before {
+.toggle input:checked+.slider:before {
   transform: translateX(24px);
 }
