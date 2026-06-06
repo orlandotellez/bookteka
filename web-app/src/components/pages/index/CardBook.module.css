@@ -8,6 +8,7 @@
   flex-direction: column;
   justify-content: space-between;
   width: 100%;
+  max-width: 500px;
   transition: all 0.2s;
 }
 
