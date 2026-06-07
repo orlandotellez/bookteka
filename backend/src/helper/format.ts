@@ -7,7 +7,7 @@ export const normalizedFileName = (name: string) => {
 
 }
 
-export const generateFileHash = (file: any) => {
-  return crypto.createHash("sha256").update(file.buffer).digest("hex")
+export const generateFileHash = (buffer: Buffer) => {
+  return crypto.createHash("sha256").update(buffer).digest("hex")
 }
 

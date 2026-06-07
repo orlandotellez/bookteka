@@ -1,9 +1,13 @@
-import React, { useMemo, useRef, useEffect, useCallback, useState } from "react";
+import React, { useMemo, useRef, useEffect, useCallback, useState, useImperativeHandle, forwardRef } from "react";
 import type { ReadingSettings } from "./ReadingControls";
 import type { Highlight, HighlightColor } from "@/types/book";
 import { HighlightToolbar } from "./HighlightToolbar";
 import { PageNavigator } from "./PageNavigator";
 import styles from "./TextReader.module.css";
+
+export interface TextReaderHandle {
+  navigateToPage: (pageNumber: number) => void;
+}
 
 interface TextReaderProps {
   text: string;
@@ -21,6 +25,7 @@ interface TextReaderProps {
   ) => void;
   onRemoveHighlight?: (id: string) => void;
   onAddBookmark?: (text: string) => void;
+  onPageChange?: (page: number) => void;
   showPageNavigator?: boolean;
   isZenMode?: boolean;
   onToggleZenMode?: () => void;
@@ -94,7 +99,7 @@ const Paragraph = React.memo<{
 
 Paragraph.displayName = "Paragraph";
 
-export const TextReader = ({
+export const TextReader = forwardRef<TextReaderHandle, TextReaderProps>(({
   text,
   settings,
   highlights,
@@ -104,14 +109,16 @@ export const TextReader = ({
   onAddHighlight,
   onRemoveHighlight,
   onAddBookmark,
+  onPageChange,
   showPageNavigator = true,
   isZenMode = false,
   onToggleZenMode,
-}: TextReaderProps) => {
+}, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const hasRestoredPosition = useRef(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [selection, setSelection] = useState<any>(null);
+  const noop = useCallback(() => { }, []);
 
   // Aplicar estilos directamente al DOM sin causar re-renders
   useEffect(() => {
@@ -286,6 +293,10 @@ export const TextReader = ({
 
       setCurrentPage(currentPageFromScroll);
 
+      if (onPageChange) {
+        onPageChange(currentPageFromScroll);
+      }
+
       if (onScrollPositionChange) {
         onScrollPositionChange(scrollY);
       }
@@ -341,6 +352,11 @@ export const TextReader = ({
     [pageMarkers, totalPages],
   );
 
+  // Exponer navigateToPage para que el Reader pueda navegar desde bookmarks
+  useImperativeHandle(ref, () => ({
+    navigateToPage: handleNavigateToPage,
+  }), [handleNavigateToPage]);
+
   return (
     <div ref={containerRef} className={styles.readerContainer}>
       <article className={styles.article}>
@@ -386,10 +402,10 @@ export const TextReader = ({
           position={selection.position}
           selectedText={selection.text}
           onHighlight={handleAddHighlight}
-          onAddBookmark={onAddBookmark || (() => { })}
+          onAddBookmark={onAddBookmark || noop}
           onClose={() => setSelection(null)}
         />
       )}
     </div>
   );
-};
+});

@@ -24,7 +24,7 @@ export interface Bookmark {
   userId?: string;
   bookId: string;
   name: string;
-  scrollPosition: number;
+  pageNumber: number;
   textPreview: string;
   createdAt: number;
 }

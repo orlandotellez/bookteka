@@ -9,6 +9,7 @@ import {
   updateBookScrollPosition,
   setBookReadingTime,
   getBookmarksByBook,
+  getBookmark,
   saveBookmark,
   deleteBookmark as deleteBookmarkFromDB,
   getHighlightsByBook,
@@ -21,6 +22,10 @@ import { generateId } from "@/utils/generateId";
 import { authClient } from "@/lib/auth-client";
 import { processBookForReading } from "@/lib/pdfService";
 import { deleteBookInCloud, updateBookProgress, uploadBook } from "@/api/book";
+import {
+  createBookmark as createBookmarkApi,
+  deleteBookmark as deleteBookmarkApi,
+} from "@/api/bookmark";
 import { useUserPreferences } from "./userPreferencesStore";
 
 type View = "library" | "reader" | "profile";
@@ -58,7 +63,7 @@ interface BookStore {
 
   // Acciones de bookmarks
   loadBookmarks: (bookId: string) => Promise<Bookmark[]>;
-  addBookmark: (bookmark: Bookmark) => Promise<void>;
+  addBookmark: (bookmark: Bookmark) => Promise<Bookmark>;
   removeBookmark: (id: string) => Promise<void>;
 
   // Acciones de highlights
@@ -393,10 +398,38 @@ export const useBookStore = create<BookStore>((set) => ({
     }
   },
 
-  // Agregar bookmark
-  addBookmark: async (bookmark: Bookmark) => {
+  // Agregar bookmark (local + sync a backend si el libro está en la nube)
+  addBookmark: async (bookmark: Bookmark): Promise<Bookmark> => {
     try {
       await saveBookmark(bookmark);
+
+      // Sincronizar con backend si el libro está en la nube
+      const book = useBookStore.getState().books.find(b => b.id === bookmark.bookId);
+      if (book?.isSynced) {
+        try {
+          const serverBm = await createBookmarkApi(bookmark.bookId, {
+            name: bookmark.name,
+            pageNumber: bookmark.pageNumber,
+            textPreview: bookmark.textPreview,
+          });
+
+          // Actualizar el ID local con el del servidor
+          const syncedBookmark: Bookmark = {
+            ...bookmark,
+            id: serverBm.id,
+            userId: serverBm.userId,
+          };
+          await deleteBookmarkFromDB(bookmark.id);
+          await saveBookmark(syncedBookmark);
+
+          return syncedBookmark;
+        } catch (apiError) {
+          // Si falla la sync, el marcador sigue existiendo localmente
+          console.error("Error syncing bookmark to backend:", apiError);
+        }
+      }
+
+      return bookmark;
     } catch (error) {
       console.error("Error adding bookmark:", error);
       set({ error: "Error al añadir marcador" });
@@ -404,9 +437,26 @@ export const useBookStore = create<BookStore>((set) => ({
     }
   },
 
-  // Eliminar bookmark
+  // Eliminar bookmark (local + backend si el libro está en la nube)
   removeBookmark: async (id: string) => {
     try {
+      // Obtener el bookmark para conocer el bookId
+      const bookmark = await getBookmark(id);
+      if (!bookmark) {
+        console.warn("Bookmark no encontrado para eliminar:", id);
+        return;
+      }
+
+      // Sincronizar eliminación con backend si el libro está en la nube
+      const book = useBookStore.getState().books.find(b => b.id === bookmark.bookId);
+      if (book?.isSynced) {
+        try {
+          await deleteBookmarkApi(bookmark.bookId, id);
+        } catch (apiError) {
+          console.error("Error deleting bookmark from backend:", apiError);
+        }
+      }
+
       await deleteBookmarkFromDB(id);
     } catch (error) {
       console.error("Error removing bookmark:", error);

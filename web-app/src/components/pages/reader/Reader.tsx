@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { ReaderHeader } from "./ReaderHeader";
-import { TextReader } from "./TextReader";
+import { TextReader, type TextReaderHandle } from "./TextReader";
 import { BookmarksPanel } from "./BooksmarksPanel";
 import { useBookStore } from "@/store/bookStore";
 import { useReadingTimer } from "@/hooks/useReadingTimer";
@@ -57,8 +57,10 @@ export const Reader = ({ book }: ReaderProps) => {
       textWidth: isMobile ? 100 : defaultReadingSettings.textWidth,
     };
   });
+  const textReaderRef = useRef<TextReaderHandle>(null);
   const [highlights, setHighlights] = useState<Highlight[]>([]);
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
   const [showBookmarks, setShowBookmarks] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [isZenMode, setIsZenMode] = useState(false);
@@ -136,41 +138,44 @@ export const Reader = ({ book }: ReaderProps) => {
   // Manejar bookmarks (desde toolbar o desde panel)
   const handleAddBookmark = useCallback(
     async (nameOrText: string, textPreview?: string) => {
-      const scrollY = window.scrollY;
+      try {
+        const bookmarkName = nameOrText.trim();
 
-      if (nameOrText.includes("|||")) {
-        const [name, selectedText] = nameOrText.split("|||");
+        if (!bookmarkName) {
+          console.warn("[Bookmark] Nombre vacío, no se guarda");
+          return;
+        }
+
+        let name: string;
+        let preview: string;
+
+        if (nameOrText.includes("|||")) {
+          const parts = nameOrText.split("|||");
+          name = parts[0]?.trim() || bookmarkName;
+          preview = parts.slice(1).join("|||") || "";
+        } else {
+          name = bookmarkName;
+          preview = textPreview || "Texto seleccionado...";
+        }
 
         const newBookmark: Bookmark = {
           id: crypto.randomUUID(),
           bookId: book.id,
-          name: name.trim(),
-          textPreview: selectedText,
-          scrollPosition: scrollY,
+          name,
+          textPreview: preview,
+          pageNumber: currentPage,
           createdAt: Date.now(),
         };
 
-        await addBookmark(newBookmark);
-        setBookmarks((prev) => [...prev, newBookmark]);
-        return;
+        console.debug("[Bookmark] Guardando:", newBookmark);
+        const savedBookmark = await addBookmark(newBookmark);
+        setBookmarks((prev) => [...prev, savedBookmark]);
+        console.debug("[Bookmark] Guardado exitoso:", savedBookmark.id);
+      } catch (error) {
+        console.error("[Bookmark] Error al guardar marcador:", error);
       }
-
-      const name = nameOrText;
-      const preview = textPreview || "Texto seleccionado...";
-
-      const newBookmark: Bookmark = {
-        id: crypto.randomUUID(),
-        bookId: book.id,
-        name,
-        textPreview: preview,
-        scrollPosition: scrollY,
-        createdAt: Date.now(),
-      };
-
-      await addBookmark(newBookmark);
-      setBookmarks((prev) => [...prev, newBookmark]);
     },
-    [book.id, addBookmark],
+    [book.id, addBookmark, currentPage],
   );
 
   const handleDeleteBookmark = useCallback(
@@ -182,7 +187,7 @@ export const Reader = ({ book }: ReaderProps) => {
   );
 
   const handleNavigateToBookmark = useCallback((bookmark: Bookmark) => {
-    window.scrollTo({ top: bookmark.scrollPosition, behavior: "smooth" });
+    textReaderRef.current?.navigateToPage(bookmark.pageNumber);
   }, []);
 
   if (isLoadingData) {
@@ -214,6 +219,7 @@ export const Reader = ({ book }: ReaderProps) => {
 
       <main className={`${styles.readerContent} ${isZenMode ? styles.zenModeContent : ""}`}>
         <TextReader
+          ref={textReaderRef}
           text={book.text}
           settings={settings}
           highlights={highlights}
@@ -223,6 +229,7 @@ export const Reader = ({ book }: ReaderProps) => {
           onAddHighlight={handleAddHighlight}
           onRemoveHighlight={handleRemoveHighlight}
           onAddBookmark={handleAddBookmark}
+          onPageChange={setCurrentPage}
           isZenMode={isZenMode}
           onToggleZenMode={() => setIsZenMode(!isZenMode)}
         />
