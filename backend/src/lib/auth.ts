@@ -57,13 +57,13 @@ export const auth = betterAuth({
     },
   },
   trustedOrigins: [
-    env.FRONTEND_URL,
+    ...env.FRONTEND_URL.split(",").map(s => s.trim()),
     "http://localhost:5173",
-    "https://bookteka.up.railway.app",
-    "https://bookteka-api.up.railway.app", // Para testing directo
+    "http://192.168.0.9:8081",
   ],
   advanced: {
     useSecureCookies: isProduction,
+    disableOriginCheck: true,
   },
   cookie: {
     name: "better-auth.session_token",

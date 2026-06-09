@@ -10,9 +10,13 @@ import { bookmark as bookmarkRoutes } from "./routes/bookmark.routes.js";
 
 const app: Express = express();
 
+const allowedOrigins = [
+  ...env.FRONTEND_URL.split(",").map(s => s.trim()),
+];
+
 app.use(
   cors({
-    origin: env.FRONTEND_URL,
+    origin: allowedOrigins,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     credentials: true,
   }),
