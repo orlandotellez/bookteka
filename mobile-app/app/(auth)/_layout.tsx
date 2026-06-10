@@ -4,6 +4,29 @@ import { useEffect, useState } from "react"
 import { getCachedSession } from "@/shared/lib/auth"
 import { ActivityIndicator, View } from "react-native"
 
+type AuthRoutes = "login" | "register";
+
+interface AuthConfig {
+  name: AuthRoutes;
+  title?: string;
+  presentation?: "modal" | "card" | "fullScreenModal";
+  headerShown: boolean;
+}
+
+const AUTH_ROUTES: AuthConfig[] = [
+  {
+    name: "login",
+    title: "Iniciar Sesión",
+    headerShown: false
+  },
+  {
+    name: "register",
+    title: "Crear Cuenta",
+    headerShown: false
+  },
+];
+
+
 export default function AuthLayout() {
   const { theme } = useAppTheme()
   const [isChecking, setIsChecking] = useState(true)
@@ -47,26 +70,25 @@ export default function AuthLayout() {
   return (
     <Stack
       screenOptions={{
+        headerShown: false,
+        animation: "none",
         headerStyle: { backgroundColor: theme.primary },
         headerTintColor: theme.fontColorTitle,
         headerTitleStyle: { fontWeight: "600" },
         contentStyle: { backgroundColor: theme.primary },
+
       }}
     >
-      <Stack.Screen
-        name="login"
-        options={{
-          title: "Iniciar Sesión",
-          headerShown: false,
-        }}
-      />
-      <Stack.Screen
-        name="register"
-        options={{
-          title: "Crear Cuenta",
-          headerShown: false,
-        }}
-      />
+      {AUTH_ROUTES.map((route) => (
+        <Stack.Screen
+          key={route.name}
+          name={route.name}
+          options={{
+            title: route.title,
+            presentation: route.presentation,
+          }}
+        />
+      ))}
     </Stack>
   )
 }
