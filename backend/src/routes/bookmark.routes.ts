@@ -4,14 +4,35 @@ import {
   createBookmark,
   deleteBookmark,
 } from "@/controllers/bookmark.controller.js";
+import { validate } from "@/middleware/validate.js";
+import { requireAuth } from "@/middleware/requireAuth.js";
+import {
+  BookIdParamSchema,
+  BookmarkIdParamSchema,
+  CreateBookmarkBodySchema,
+} from "@/schema/bookmark.schema.js";
 
 export const bookmark: Router = Router({ mergeParams: true });
 
-// Obtener todos los bookmarks de un libro
-bookmark.get("/:bookId/bookmarks", getBookmarks);
+bookmark.use(requireAuth);
 
-// Crear un nuevo bookmark
-bookmark.post("/:bookId/bookmarks", createBookmark);
+bookmark.get(
+  "/:bookId/bookmarks",
+  validate({ params: BookIdParamSchema }),
+  getBookmarks,
+);
 
-// Eliminar un bookmark
-bookmark.delete("/:bookId/bookmarks/:bookmarkId", deleteBookmark);
+bookmark.post(
+  "/:bookId/bookmarks",
+  validate({
+    params: BookIdParamSchema,
+    body: CreateBookmarkBodySchema,
+  }),
+  createBookmark,
+);
+
+bookmark.delete(
+  "/:bookId/bookmarks/:bookmarkId",
+  validate({ params: BookmarkIdParamSchema }),
+  deleteBookmark,
+);

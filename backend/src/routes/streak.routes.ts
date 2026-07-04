@@ -1,13 +1,30 @@
 import { Router } from "express";
-import { getUserStreak, completeDay, initializeStreak } from "@/controllers/streak.controller.js";
+import {
+  getUserStreak,
+  completeDay,
+  initializeStreak,
+} from "@/controllers/streak.controller.js";
+import { validate } from "@/middleware/validate.js";
+import { requireAuth } from "@/middleware/requireAuth.js";
+import {
+  CompleteDayBodySchema,
+  InitializeStreakBodySchema,
+} from "@/schema/streak.schema.js";
 
 export const streak: Router = Router();
 
-// Obtener racha del usuario
+streak.use(requireAuth);
+
 streak.get("/streak", getUserStreak);
 
-// Completar el día actual
-streak.post("/streak/complete", completeDay);
+streak.post(
+  "/streak/complete",
+  validate({ body: CompleteDayBodySchema }),
+  completeDay,
+);
 
-// Inicializar racha manualmente
-streak.post("/streak/initialize", initializeStreak);
+streak.post(
+  "/streak/initialize",
+  validate({ body: InitializeStreakBodySchema }),
+  initializeStreak,
+);
