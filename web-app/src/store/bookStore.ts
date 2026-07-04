@@ -20,7 +20,7 @@ import {
   syncBooksFromCloud,
 } from "@/database";
 import { generateId } from "@/utils/generateId";
-import { authClient } from "@/lib/auth-client";
+import { getCachedSession } from "@/lib/sessionCache";
 import { processBookForReading } from "@/lib/pdfService";
 import { deleteBookInCloud, updateBookProgress, uploadBook } from "@/api/book";
 import {
@@ -212,7 +212,7 @@ export const useBookStore = create<BookStore>((set) => ({
   loadBooks: async () => {
     set({ isLoading: true, error: null });
     try {
-      const { data: session } = await authClient.getSession();
+      const session = await getCachedSession();
       if (session?.user?.id) {
         // Establecer el usuario actual en la base de datos
         setCurrentUserId(session.user.id);
@@ -239,7 +239,7 @@ export const useBookStore = create<BookStore>((set) => ({
   syncBooks: async () => {
     set({ isSyncing: true, error: null });
     try {
-      const { data: session } = await authClient.getSession();
+      const session = await getCachedSession();
       if (!session?.user?.id) {
         throw new Error("No hay sesión activa");
       }
@@ -267,7 +267,7 @@ export const useBookStore = create<BookStore>((set) => ({
     file?: File,
   ): Promise<Book> => {
     // Verificar que hay sesión activa y establecer el usuario actual
-    const { data: session } = await authClient.getSession();
+    const session = await getCachedSession();
     if (!session?.user?.id) {
       throw new Error("No hay sesión activa");
     }
@@ -328,7 +328,7 @@ export const useBookStore = create<BookStore>((set) => ({
   // Eliminar un libro
   deleteBook: async (id: string) => {
     try {
-      const { data: session } = await authClient.getSession();
+      const session = await getCachedSession();
 
       if (!session) {
         throw new Error("No hay sesión activa");
@@ -645,7 +645,7 @@ export const useBookStore = create<BookStore>((set) => ({
   // Subir un libro específico a la nube manualmente
   uploadBookToCloud: async (bookId: string) => {
     try {
-      const { data: session } = await authClient.getSession();
+      const session = await getCachedSession();
       if (!session?.user?.id) {
         throw new Error("No hay sesión activa");
       }
@@ -720,7 +720,7 @@ export const useBookStore = create<BookStore>((set) => ({
   // Descargar un libro desde la nube manualmente
   downloadBookFromCloud: async (bookId: string) => {
     try {
-      const { data: session } = await authClient.getSession();
+      const session = await getCachedSession();
       if (!session?.user?.id) {
         throw new Error("No hay sesión activa");
       }
