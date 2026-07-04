@@ -1,0 +1,17 @@
+.env
+.env.*
+!.env.example
+
+*.log
+pnpm-debug.log*
+.DS_Store
+.idea
+.vscode
+
+node_modules
+dist
+dist-ssr
+
+coverage
+*.test.ts
+*.test.tsx

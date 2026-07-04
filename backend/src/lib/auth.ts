@@ -2,12 +2,31 @@ import { betterAuth } from "better-auth";
 import { pool } from "@/config/db.js";
 import { env } from "@/config/env.js";
 import { logger } from "@/lib/logger.js";
-import { ALLOWED_ORIGINS, isProductionEnv } from "@/lib/origins.js";
+import { ALLOWED_ORIGINS, isProductionEnv, originsForRequest } from "@/lib/origins.js";
 import { sendEmail } from "./email.js";
 
 export const auth = betterAuth({
   baseURL: env.BETTER_AUTH_URL,
   database: pool,
+  // IMPORTANTE: better-auth usa el array `trustedOrigins` directamente
+  // para escribir `Access-Control-Allow-Origin` y Node lo serializa con
+  // join(","), produciendo un header inválido ("http://a,http://b")
+  // que el navegador siempre rechaza. Devolvemos SIEMPRE un array de
+  // una sola entrada — el Origin que matchea —, o vacío si no matchea.
+  // Así better-auth emite un header single-origin correcto.
+  trustedOrigins: async (request?: Request) => {
+    if (!request) return [];
+    const headers: Record<string, string> = {};
+    request.headers.forEach((value, key) => {
+      headers[key.toLowerCase()] = value;
+    });
+    const valid = originsForRequest({ headers } as Parameters<typeof originsForRequest>[0]);
+    const reqOrigin = request.headers.get("origin");
+    if (reqOrigin && valid.includes(reqOrigin)) {
+      return [reqOrigin];
+    }
+    return [];
+  },
   emailAndPassword: {
     enabled: true,
     sendResetPassword: async ({ user, url }) => {
@@ -53,7 +72,6 @@ export const auth = betterAuth({
       });
     },
   },
-  trustedOrigins: ALLOWED_ORIGINS,
   advanced: {
     useSecureCookies: isProductionEnv,
   },

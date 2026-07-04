@@ -1,7 +1,7 @@
 import cors from "cors";
 import type { Request, Response, NextFunction } from "express";
 
-import { isAllowedOrigin } from "@/lib/origins.js";
+import { isRequestOriginAllowed } from "@/lib/origins.js";
 import { AppError } from "@/helper/errors.js";
 
 export const corsOptions: cors.CorsOptions = {
@@ -16,7 +16,7 @@ export const corsOriginGuard = (
   next: NextFunction,
 ): void => {
   const origin = req.headers.origin;
-  if (origin !== undefined && !isAllowedOrigin(origin)) {
+  if (origin !== undefined && !isRequestOriginAllowed(req, origin)) {
     return next(
       new AppError(
         "FORBIDDEN",

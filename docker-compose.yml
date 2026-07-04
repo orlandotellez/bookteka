@@ -20,9 +20,10 @@ services:
     environment:
       PORT: 3000
       DATABASE_URL: postgres://bookteka:bookteka123@db:5432/bookteka_db?schema=public
-      FRONTEND_URL: http://localhost:8080
+      FRONTEND_URL: http://localhost:8081,http://192.168.0.10:8081
+      TRUST_BACKEND_ORIGINS: "true"
       BETTER_AUTH_SECRET: WsEGMicmTmVF0Tln8NEkfwZkrEmIePQB
-      BETTER_AUTH_URL: http://localhost:3000
+      BETTER_AUTH_URL: http://192.168.0.10:8081
       R2_ACCESS_KEY_ID: dummy
       R2_SECRET_ACCESS_KEY: dummy
       R2_ENDPOINT: https://dummy.r2.com
@@ -31,7 +32,7 @@ services:
       RESEND_API_KEY: re_dummy
       RESEND_FROM_EMAIL: dummy@resend.dev
     ports:
-      - "3000:3000"
+      - "3001:3000"
     depends_on:
       db:
         condition: service_healthy
@@ -41,9 +42,8 @@ services:
       context: ./web-app
       args:
         VITE_API_URL: /api
-        VITE_BETTER_AUTH_CLIENT: http://localhost:8080
     ports:
-      - "8080:8080"
+      - "8081:8080"
     depends_on:
       - backend
 
