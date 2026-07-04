@@ -1,5 +1,6 @@
 import { S3Client } from "@aws-sdk/client-s3";
 import { env } from "@/config/env.js";
+import { logger } from "@/lib/logger.js";
 
 const R2_ACCESS_KEY = env.R2_ACCESS_KEY;
 const R2_SECRET_KEY = env.R2_SECRET_KEY;
@@ -18,3 +19,5 @@ export const r2 = new S3Client({
     secretAccessKey: R2_SECRET_KEY!,
   },
 });
+
+logger.info({ bucket: R2_BUCKET, endpoint: R2_S3_API }, "R2 client initialized");

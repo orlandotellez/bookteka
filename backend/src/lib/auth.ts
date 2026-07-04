@@ -1,19 +1,17 @@
 import { betterAuth } from "better-auth";
 import { pool } from "@/config/db.js";
 import { env } from "@/config/env.js";
+import { logger } from "@/lib/logger.js";
+import { ALLOWED_ORIGINS, isProductionEnv } from "@/lib/origins.js";
 import { sendEmail } from "./email.js";
-
-// En producción (HTTPS) usamos cookies secure; en desarrollo (HTTP local) no
-const isProduction = env.BETTER_AUTH_URL.startsWith("https");
 
 export const auth = betterAuth({
   baseURL: env.BETTER_AUTH_URL,
   database: pool,
   emailAndPassword: {
     enabled: true,
-    // Password reset config
     sendResetPassword: async ({ user, url }) => {
-      console.log(`📧 Enviando email de reset a ${user.email}`);
+      logger.info({ email: user.email }, "Sending password reset email");
       await sendEmail({
         to: user.email,
         subject: "🔐 Reset your password - Bookteka",
@@ -30,14 +28,13 @@ export const auth = betterAuth({
           </div>
         `,
       });
-    }
+    },
   },
-  // Email Verification config
   emailVerification: {
-    sendOnSignUp: true, // Enviar email de verificación al registrarse
-    autoSignInAfterVerification: true, // Auto loguear después de verificar
+    sendOnSignUp: true,
+    autoSignInAfterVerification: true,
     sendVerificationEmail: async ({ user, url }) => {
-      console.log(`📧 Enviando email de verificación a ${user.email}`);
+      logger.info({ email: user.email }, "Sending verification email");
       await sendEmail({
         to: user.email,
         subject: "✅ Verify your email - Bookteka",
@@ -56,22 +53,17 @@ export const auth = betterAuth({
       });
     },
   },
-  trustedOrigins: [
-    ...env.FRONTEND_URL.split(",").map(s => s.trim()),
-    "http://localhost:5173",
-    "http://192.168.0.9:8081",
-  ],
+  trustedOrigins: ALLOWED_ORIGINS,
   advanced: {
-    useSecureCookies: isProduction,
-    disableOriginCheck: true,
+    useSecureCookies: isProductionEnv,
   },
   cookie: {
     name: "better-auth.session_token",
-    secure: isProduction,
-    sameSite: isProduction ? "lax" : "lax",
+    secure: isProductionEnv,
+    sameSite: isProductionEnv ? "none" : "lax",
     httpOnly: true,
     maxAge: 60 * 60 * 24 * 7,
-    path: "/"
+    path: "/",
   },
   session: {
     expiresIn: 60 * 60 * 24 * 7,
