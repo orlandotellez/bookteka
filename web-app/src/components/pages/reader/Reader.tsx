@@ -2,7 +2,10 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { ReaderHeader } from "./ReaderHeader";
 import { TextReader, type TextReaderHandle } from "./TextReader";
 import { BookmarksPanel } from "./BooksmarksPanel";
-import { useBookStore } from "@/store/bookStore";
+import {
+  useBookStore,
+  flushPendingCloudProgress,
+} from "@/store/bookStore";
 import { useReadingTimer } from "@/hooks/useReadingTimer";
 import { useStreakStore } from "@/store/streakStore";
 import { useUserPreferences } from "@/store/userPreferencesStore";
@@ -89,6 +92,29 @@ export const Reader = ({ book }: ReaderProps) => {
     loadStreakData(); // Cargar datos de racha
   }, [book.id, loadHighlights, loadBookmarks, loadStreakData]);
 
+  useEffect(() => {
+    const flushWithKeepalive = () => {
+      flushPendingCloudProgress(book.id, { keepalive: true });
+    };
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") flushWithKeepalive();
+    };
+
+    window.addEventListener("pagehide", flushWithKeepalive);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener("pagehide", flushWithKeepalive);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [book.id]);
+
+  useEffect(() => {
+    return () => {
+      flushPendingCloudProgress(book.id);
+    };
+  }, [book.id]);
+
   const handleClose = () => {
     pause();
     setCurrentView("library");
@@ -166,15 +192,15 @@ export const Reader = ({ book }: ReaderProps) => {
           preview = textPreview || "";
         }
 
-      const newBookmark: Bookmark = {
-        id: crypto.randomUUID(),
-        bookId: book.id,
-        name,
-        textPreview: preview,
-        pageNumber: currentPage,
-        color: getRandomBookmarkColor(),
-        createdAt: Date.now(),
-      };
+        const newBookmark: Bookmark = {
+          id: crypto.randomUUID(),
+          bookId: book.id,
+          name,
+          textPreview: preview,
+          pageNumber: currentPage,
+          color: getRandomBookmarkColor(),
+          createdAt: Date.now(),
+        };
 
         console.debug("[Bookmark] Guardando:", newBookmark);
         const savedBookmark = await addBookmark(newBookmark);

@@ -79,6 +79,121 @@ interface BookStore {
   downloadBookFromCloud: (bookId: string) => Promise<void>;
 }
 
+type PendingCloudProgress = {
+  scrollPosition?: number;
+  readingTimeSeconds?: number;
+  lastReadAt?: number;
+};
+
+// Coalescer de PATCH /progress por libro. Cada llamada a
+// `scheduleCloudProgress(bookId, patch)` mezcla los campos nuevos en un
+// registro `pending` por libro y reinicia un timer. Cuando vence el timer
+// se envía 1 fetch con TODOS los campos pendientes mezclados, evitando
+// storms de PATCH cuando concurren scroll + reading timer.
+const CLOUD_COALESCE_MS = 3000;
+const cloudCoalescers = new Map<
+  string,
+  { pending: PendingCloudProgress; timer: ReturnType<typeof setTimeout> | null }
+>();
+
+function flushCoalescerNow(
+  bookId: string,
+  pending: PendingCloudProgress,
+  options: { keepalive?: boolean } = {},
+): void {
+  const payload: PendingCloudProgress = { ...pending };
+  if (Object.keys(payload).length === 0) return;
+  const book = useBookStore.getState().books.find((b) => b.id === bookId);
+  if (!book?.isSynced) return;
+  // Aseguramos siempre un `lastReadAt` fresco si vamos a persistir.
+  if (payload.lastReadAt === undefined) {
+    payload.lastReadAt = Date.now();
+  }
+  updateBookProgress(bookId, payload, options).catch((err) => {
+    console.error("[Progress] Cloud sync failed:", err);
+  });
+}
+
+function scheduleCloudProgress(
+  bookId: string,
+  patch: PendingCloudProgress,
+): void {
+  let entry = cloudCoalescers.get(bookId);
+  if (!entry) {
+    entry = { pending: {}, timer: null };
+    cloudCoalescers.set(bookId, entry);
+  }
+  if (patch.scrollPosition !== undefined) {
+    entry.pending.scrollPosition = patch.scrollPosition;
+  }
+  if (patch.readingTimeSeconds !== undefined) {
+    entry.pending.readingTimeSeconds = patch.readingTimeSeconds;
+  }
+  if (patch.lastReadAt !== undefined) {
+    entry.pending.lastReadAt = patch.lastReadAt;
+  }
+
+  if (entry.timer !== null) clearTimeout(entry.timer);
+  entry.timer = setTimeout(() => {
+    entry!.timer = null;
+    const pending = entry!.pending;
+    entry!.pending = {};
+    flushCoalescerNow(bookId, pending);
+  }, CLOUD_COALESCE_MS);
+}
+
+/**
+ * Fuerza el envío inmediato de cualquier PATCH pendiente. Útil en
+ * `pagehide`, `visibilitychange:hidden`, antes de cerrar la pestaña o
+ * al desmontar el reader. El flag `keepalive` permite que la request
+ * sobreviva al unload del navegador (la posición final llega aunque el
+ * usuario cierre la ventana de inmediato).
+ *
+ * Si no se pasa `bookId`, flushea todas las colas pendientes
+ * (comportamiento usado en eventos a nivel de window).
+ */
+export function flushPendingCloudProgress(
+  bookId?: string,
+  options: { keepalive?: boolean } = {},
+): void {
+  if (bookId !== undefined) {
+    const entry = cloudCoalescers.get(bookId);
+    if (!entry) return;
+    if (entry.timer !== null) {
+      clearTimeout(entry.timer);
+      entry.timer = null;
+    }
+    const pending = entry.pending;
+    entry.pending = {};
+    flushCoalescerNow(bookId, pending, options);
+    return;
+  }
+  for (const [id, entry] of cloudCoalescers) {
+    if (entry.timer !== null) {
+      clearTimeout(entry.timer);
+      entry.timer = null;
+    }
+    const pending = entry.pending;
+    entry.pending = {};
+    flushCoalescerNow(id, pending, options);
+  }
+}
+
+/**
+ * Elimina la entrada del coalescer para un libro. Sin esto el
+ * `cloudCoalescers` Map crece sin límite a lo largo de sesiones largas
+ * (cada libro tocado deja un entry). Llamado desde `deleteBook`.
+ */
+export function deleteCloudCoalescer(bookId: string): void {
+  const entry = cloudCoalescers.get(bookId);
+  if (!entry) return;
+  if (entry.timer !== null) {
+    clearTimeout(entry.timer);
+    entry.timer = null;
+  }
+  cloudCoalescers.delete(bookId);
+}
+
 export const useBookStore = create<BookStore>((set) => ({
   // Estado inicial
   books: [],
@@ -221,6 +336,10 @@ export const useBookStore = create<BookStore>((set) => ({
 
       if (!id) return
 
+      // Descartar cualquier PATCH pendiente del libro antes de borrarlo,
+      // así no terminamos enviando updates de un libro que ya no existe.
+      deleteCloudCoalescer(id);
+
       // Obtener el libro para ver si está sincronizado
       const bookToDelete = await getBook(id);
 
@@ -301,85 +420,75 @@ export const useBookStore = create<BookStore>((set) => ({
     }
   },
 
-  // Actualizar tiempo de lectura (incrementar)
+  // Actualizar tiempo de lectura (incrementar).
+  // El PATCH al cloud se agenda SINCRÓNICAMENTE antes del await a
+  // IndexedDB: si `flushPendingCloudProgress` corre por `pagehide`
+  // mientras esta función sigue ejecutando, queremos que el pending
+  // ya tenga el valor nuevo. La coalescer de 3s + el keepalive del
+  // flush se encargan del resto.
   updateReadingTime: async (id: string, seconds: number) => {
     try {
-      await updateBookReadingTime(id, seconds);
-
+      let newTime = 0;
       set((state) => {
         const book = state.books.find(b => b.id === id);
-        const newTime = (book?.readingTimeSeconds || 0) + seconds;
-
-        // Si está sincronizado, actualizar en el cloud
-        if (book?.isSynced) {
-          updateBookProgress(id, {
-            readingTimeSeconds: newTime,
-            lastReadAt: Date.now()
-          }).catch(console.error);
-        }
-
+        newTime = (book?.readingTimeSeconds || 0) + seconds;
         return {
           books: state.books.map((b) =>
             b.id === id ? { ...b, readingTimeSeconds: newTime } : b,
           ),
         };
       });
+
+      scheduleCloudProgress(id, {
+        readingTimeSeconds: newTime,
+        lastReadAt: Date.now(),
+      });
+
+      await updateBookReadingTime(id, seconds);
     } catch (error) {
       console.error("Error updating reading time:", error);
       set({ error: "Error al actualizar tiempo de lectura" });
     }
   },
 
-  // Establecer tiempo de lectura (valor absoluto)
+  // Establecer tiempo de lectura (valor absoluto). Mismo orden:
+  // coalesce cloud sync ANTES del await a IndexedDB.
   setReadingTime: async (id: string, totalSeconds: number) => {
     try {
-      await setBookReadingTime(id, totalSeconds);
-
-      set((state) => {
-        const book = state.books.find(b => b.id === id);
-
-        // Si está sincronizado, actualizar en el cloud
-        if (book?.isSynced) {
-          updateBookProgress(id, {
-            readingTimeSeconds: totalSeconds,
-            lastReadAt: Date.now()
-          }).catch(console.error);
-        }
-
-        return {
-          books: state.books.map((b) =>
-            b.id === id ? { ...b, readingTimeSeconds: totalSeconds } : b,
-          ),
-        };
+      scheduleCloudProgress(id, {
+        readingTimeSeconds: totalSeconds,
+        lastReadAt: Date.now(),
       });
+
+      set((state) => ({
+        books: state.books.map((b) =>
+          b.id === id ? { ...b, readingTimeSeconds: totalSeconds } : b,
+        ),
+      }));
+
+      await setBookReadingTime(id, totalSeconds);
     } catch (error) {
       console.error("Error setting reading time:", error);
       set({ error: "Error al establecer tiempo de lectura" });
     }
   },
 
-  // Actualizar posición de scroll
+  // Actualizar posición de scroll. Mismo orden: coalesce cloud sync
+  // ANTES del await a IndexedDB para evitar race en pagehide.
   updateScrollPosition: async (id: string, position: number) => {
     try {
-      await updateBookScrollPosition(id, position);
-
-      set((state) => {
-        const book = state.books.find(b => b.id === id);
-
-        // Si está sincronizado, actualizar en el cloud
-        if (book?.isSynced) {
-          updateBookProgress(id, {
-            scrollPosition: position,
-            lastReadAt: Date.now()
-          }).catch(console.error);
-        }
-
-        return {
-          books: state.books.map((b) =>
-            b.id === id ? { ...b, scrollPosition: position } : b,
-          ),
-        };
+      scheduleCloudProgress(id, {
+        scrollPosition: position,
+        lastReadAt: Date.now(),
       });
+
+      set((state) => ({
+        books: state.books.map((b) =>
+          b.id === id ? { ...b, scrollPosition: position } : b,
+        ),
+      }));
+
+      await updateBookScrollPosition(id, position);
     } catch (error) {
       console.error("Error updating scroll position:", error);
       set({ error: "Error al actualizar posición de scroll" });

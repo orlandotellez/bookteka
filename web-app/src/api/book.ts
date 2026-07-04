@@ -61,13 +61,25 @@ export const deleteBookInCloud = async (bookId: string) => {
   }
 }
 
+export interface UpdateBookProgressOptions {
+  /**
+   * Si es `true`, la request usa `keepalive: true` en `fetch` para que el
+   * navegador la mantenga viva unos segundos luego de que la pestaña se
+   * cierre. Util en `pagehide`/`beforeunload` cuando queremos garantizar
+   * que la última posición de scroll persiste aunque el usuario cierre la
+   * ventana sin dar tiempo al `await`.
+   */
+  keepalive?: boolean;
+}
+
 export const updateBookProgress = async (
   bookId: string,
   data: {
     readingTimeSeconds?: number;
     scrollPosition?: number;
     lastReadAt?: number;
-  }
+  },
+  options: UpdateBookProgressOptions = {},
 ) => {
   try {
     const response = await fetch(`${API_URL}/books/${bookId}/progress`, {
@@ -75,6 +87,7 @@ export const updateBookProgress = async (
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
       credentials: "include",
+      keepalive: options.keepalive ?? false,
     });
     if (!response.ok) {
       throw new Error("Error al actualizar el progreso");

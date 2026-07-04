@@ -3,6 +3,7 @@ import type { ReadingSettings } from "./ReadingControls";
 import type { Bookmark, Highlight, HighlightColor } from "@/types/book";
 import { HighlightToolbar } from "./HighlightToolbar";
 import { PageNavigator } from "./PageNavigator";
+import { trailingDebounce } from "@/utils/debounce";
 import styles from "./TextReader.module.css";
 
 export interface TextReaderHandle {
@@ -129,6 +130,24 @@ export const TextReader = forwardRef<TextReaderHandle, TextReaderProps>(({
   const [currentPage, setCurrentPage] = useState(1);
   const [selection, setSelection] = useState<any>(null);
   const noop = useCallback(() => { }, []);
+
+  const onScrollPositionChangeRef = useRef(onScrollPositionChange);
+  const onPageChangeRef = useRef(onPageChange);
+  useEffect(() => {
+    onScrollPositionChangeRef.current = onScrollPositionChange;
+    onPageChangeRef.current = onPageChange;
+  }, [onScrollPositionChange, onPageChange]);
+
+  const latestScrollYRef = useRef(0);
+
+  const scrollNotifyDebouncedRef = useRef<ReturnType<
+    typeof trailingDebounce<[number]>
+  > | null>(null);
+  if (scrollNotifyDebouncedRef.current === null) {
+    scrollNotifyDebouncedRef.current = trailingDebounce<[number]>((y) => {
+      onScrollPositionChangeRef.current?.(y);
+    }, 2500);
+  }
 
   // Aplicar estilos directamente al DOM sin causar re-renders
   useEffect(() => {
@@ -296,10 +315,18 @@ export const TextReader = forwardRef<TextReaderHandle, TextReaderProps>(({
       document.removeEventListener("selectionchange", handleSelectionChange);
   }, [paragraphs]);
 
-  // Detectar página actual según el scroll
+  // Detectar página actual según el scroll.
+  //
+  // El feedback visual (currentPage/onPageChange) sigue siendo sincrónico
+  // para que la UI responda pixel-perfect. La notificación al padre
+  // (`onScrollPositionChange`) está debounced a 2.5s para colapsar el
+  // storm de PATCH que se disparaba con cada evento de scroll nativo.
+  // El listener ya no depende de `onScrollPositionChange`/`onPageChange`
+  // porque usamos refs arriba para re-bind sin re-attach.
   useEffect(() => {
     const handleScroll = () => {
       const scrollY = window.scrollY;
+      latestScrollYRef.current = scrollY;
       const viewportHeight = window.innerHeight;
       const scrollCenter = scrollY + viewportHeight / 2;
 
@@ -338,20 +365,53 @@ export const TextReader = forwardRef<TextReaderHandle, TextReaderProps>(({
 
       setCurrentPage(currentPageFromScroll);
 
-      if (onPageChange) {
-        onPageChange(currentPageFromScroll);
-      }
+      onPageChangeRef.current?.(currentPageFromScroll);
 
-      if (onScrollPositionChange) {
-        onScrollPositionChange(scrollY);
-      }
+      scrollNotifyDebouncedRef.current?.call(scrollY);
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     handleScroll();
 
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [effectivePageMarkers, totalPages, onScrollPositionChange]);
+  }, [effectivePageMarkers, totalPages]);
+
+  // Flush del debouncer cuando la pestaña se oculta o se cierra.
+  // Sin esto, si el usuario deja de scrollear justo antes de cerrar,
+  // los últimos 2.5s de posición podrían no llegar al backend.
+  //
+  // Solo invocamos flush(): el debouncer ya retiene los últimos args
+  // (= la última scrollY conocida). Si no hay args pendientes (porque
+  // ya pasaron >2.5s desde el último scroll y el debouncer ya disparó)
+  // flush es no-op, que es el comportamiento correcto — esa posición
+  // ya fue enviada al store y, eventualmente, al cloud.
+  useEffect(() => {
+    const flushNow = () => {
+      scrollNotifyDebouncedRef.current?.flush();
+    };
+
+    const handlePageHide = () => flushNow();
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") flushNow();
+    };
+
+    window.addEventListener("pagehide", handlePageHide);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener("pagehide", handlePageHide);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
+
+  // Flush también al desmontar el componente (cambio a library, navegación
+  // con React Router, etc.). Tener un `useEffect` separado con cleanup nos
+  // garantiza flush incluso si el tab NO se oculta (ej. SPA navigation).
+  useEffect(() => {
+    return () => {
+      scrollNotifyDebouncedRef.current?.flush();
+    };
+  }, []);
 
   const handleAddHighlight = useCallback(
     (color: HighlightColor) => {
