@@ -5,55 +5,48 @@ import { CreateBookmarkInput } from "@/types/bookmark.js";
 const bookmarkRepository = new BookmarkRepository();
 
 export class BookmarkService {
-  // Obtener todos los bookmarks de un libro del usuario
-  static getBookmarks = async (userId: string, bookId: string) => {
-    const userBook = await bookmarkRepository.findUserBookAccess(userId, bookId);
+  constructor(private readonly repo: BookmarkRepository = bookmarkRepository) {}
+
+  async getBookmarks(userId: string, bookId: string) {
+    const userBook = await this.repo.findUserBookAccess(userId, bookId);
     if (!userBook) {
       throw new AppError("FORBIDDEN", 403, "No autorizado o libro no encontrado");
     }
 
-    return bookmarkRepository.getBookmarksByUserBookId(userBook.id);
-  };
+    return this.repo.getBookmarksByUserBookId(userBook.id);
+  }
 
-  // Crear un nuevo bookmark
-  static createBookmark = async (
+  async createBookmark(
     userId: string,
     bookId: string,
-    data: Omit<CreateBookmarkInput, "userId" | "userBookId">
-  ) => {
-    const userBook = await bookmarkRepository.findUserBookAccess(userId, bookId);
+    data: Omit<CreateBookmarkInput, "userId" | "userBookId">,
+  ) {
+    const userBook = await this.repo.findUserBookAccess(userId, bookId);
     if (!userBook) {
       throw new AppError("FORBIDDEN", 403, "No autorizado o libro no encontrado");
     }
 
-    if (!data.name || typeof data.pageNumber !== "number") {
-      throw new AppError("BAD_REQUEST", 400, "Faltan campos requeridos: name, pageNumber");
-    }
-
-    return bookmarkRepository.createBookmark({
+    return this.repo.createBookmark({
       userId,
       userBookId: userBook.id,
       ...data,
     });
-  };
+  }
 
-  // Eliminar un bookmark
-  static deleteBookmark = async (
-    userId: string,
-    bookId: string,
-    bookmarkId: string
-  ) => {
-    const userBook = await bookmarkRepository.findUserBookAccess(userId, bookId);
+  async deleteBookmark(userId: string, bookId: string, bookmarkId: string) {
+    const userBook = await this.repo.findUserBookAccess(userId, bookId);
     if (!userBook) {
       throw new AppError("FORBIDDEN", 403, "No autorizado o libro no encontrado");
     }
 
-    const bookmark = await bookmarkRepository.findBookmark(bookmarkId, userBook.id);
+    const bookmark = await this.repo.findBookmark(bookmarkId, userBook.id);
     if (!bookmark) {
       throw new AppError("NOT_FOUND", 404, "Bookmark no encontrado");
     }
 
-    await bookmarkRepository.deleteBookmark(bookmarkId);
+    await this.repo.deleteBookmark(bookmarkId);
     return { success: true };
-  };
+  }
 }
+
+export const bookmarkService = new BookmarkService();

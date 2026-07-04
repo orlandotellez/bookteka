@@ -1,208 +1,87 @@
-import { Request, Response } from "express"
-import { auth } from "@/lib/auth.js";
+import type { Request, RequestHandler, Response } from "express";
+
+type MulterFile = Express.Multer.File;
 import { pipeline } from "stream";
 import { promisify } from "util";
-import { UploadBookRequestDTO } from "@/dto/book/request.js";
-import { DeleteBookParamsDTO, StreamBookParamsDTO, UpdateBookParamsDTO } from "@/dto/book/params.js";
-import { BookService } from "@/services/book.service.js";
 import { AppError } from "@/helper/errors.js";
+import { bookService } from "@/services/book.service.js";
+import { bodyOf } from "@/helper/express.js";
+import type { UploadBookRequestDTO } from "@/dto/book/request.js";
+import type { UpdateBookProgressBodySchema } from "@/schema/book.schema.js";
+
+const streamPipeline = promisify(pipeline);
+
+interface UploadBookRequestBody extends UploadBookRequestDTO {}
 
 interface UploadBookRequest extends Request {
-  body: UploadBookRequestDTO;
-  file?: Express.Multer.File;
+  body: UploadBookRequestBody;
 }
 
-type DeleteBookRequest = Request<DeleteBookParamsDTO>
-type UpdateBookRequest = Request<UpdateBookParamsDTO>
-type DownloadRequest = Request<DeleteBookParamsDTO>;
-type StreamRequest = Request<StreamBookParamsDTO>;
-
-const streamPipeline = promisify(pipeline)
-
-// Obtener libros del usuario
-export const getUserBooks = async (req: Request, res: Response) => {
-  try {
-    const session = await auth.api.getSession({ headers: req.headers });
-
-    if (!session) {
-      return res.status(401).json({ error: "No autorizado" });
-    }
-
-    const books = await BookService.getUserBooks(session.user.id);
-
-    res.json(books);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Error al obtener libros" });
-  }
+export const getUserBooks: RequestHandler = async (req, res) => {
+  const userId = req.userId!;
+  const books = await bookService.getUserBooks(userId);
+  res.json(books);
 };
 
-// Subir libro a storage
-export const uploadBook = async (req: UploadBookRequest, res: Response) => {
-  try {
-    const session = await auth.api.getSession({
-      headers: req.headers,
-    });
+export const uploadBook = async (
+  req: UploadBookRequest,
+  res: Response,
+): Promise<void> => {
+  const userId = req.userId!;
 
-    if (!session) {
-      return res.status(401).json({ error: "Unauthorized" });
-    }
+  const files = req.files as { [k: string]: MulterFile[] | undefined } | undefined;
+  const file = files?.["file"]?.[0] ?? files?.["pdf"]?.[0];
+  if (!file) throw new AppError("BAD_REQUEST", 400, "File not found");
 
-    if (!req.file) {
-      return res.status(400).json({ error: "File not found" });
-    }
+  const result = await bookService.uploadBook({
+    userId,
+    file,
+    body: req.body,
+  });
 
-    const result = await BookService.uploadBook({
-      userId: session.user.id,
-      file: req.file,
-      body: req.body,
-    });
-
-    res.json(result);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      error: "Error interno al procesar el libro",
-    });
-  }
+  res.json(result);
 };
 
-// Eliminar libro del storage
-export const deleteBook = async (req: DeleteBookRequest, res: Response) => {
-  try {
-    const session = await auth.api.getSession({
-      headers: req.headers,
-    });
-
-    if (!session) {
-      return res.status(401).json({ error: "No autorizado" });
-    }
-
-    const result = await BookService.deleteBook({
-      userId: session.user.id,
-      bookId: req.params.id,
-    });
-
-    res.json(result);
-  } catch (err) {
-    if (err instanceof AppError) {
-      return res.status(err.statusCode).json({
-        error: err.message,
-      });
-    }
-    return res.status(500).json({
-      error: "Error interno al eliminar el libro",
-    });
-  }
+export const deleteBook: RequestHandler = async (req, res) => {
+  const userId = req.userId!;
+  const bookId = String(req.params.id ?? "");
+  const result = await bookService.deleteBook({ userId, bookId });
+  res.json(result);
 };
 
-// Actualiza el progreso de lectura de un libro
-export const updateBookProgress = async (req: UpdateBookRequest, res: Response) => {
-  try {
-    const session = await auth.api.getSession({
-      headers: req.headers,
-    });
-
-    if (!session) {
-      return res.status(401).json({ error: "No autorizado" });
-    }
-
-    const result = await BookService.updateBookProgress({
-      userId: session.user.id,
-      bookId: req.params.id,
-      body: req.body,
-    });
-
-    return res.json(result);
-
-  } catch (err) {
-    if (err instanceof AppError) {
-      return res.status(err.statusCode).json({
-        error: err.message,
-      });
-    }
-    return res.status(500).json({
-      error: "Error al actualizar el progreso",
-    });
-  }
+export const updateBookProgress: RequestHandler = async (req, res) => {
+  const userId = req.userId!;
+  const bookId = String(req.params.id ?? "");
+  const body = bodyOf<typeof UpdateBookProgressBodySchema>(req);
+  const result = await bookService.updateBookProgress({
+    userId,
+    bookId,
+    body,
+  });
+  res.json(result);
 };
 
-// Descargar libro (solo se devuelve el url al cliente para descargar)
-export const downloadBookWithUrl = async (
-  req: DownloadRequest,
-  res: Response
-) => {
-  try {
-    const session = await auth.api.getSession({
-      headers: req.headers,
-    });
-
-    if (!session) {
-      return res.status(401).json({ error: "No autorizado" });
-    }
-
-    const result = await BookService.downloadBookWithUrl({
-      userId: session.user.id,
-      bookId: req.params.id,
-    });
-
-    return res.json(result);
-
-  } catch (err) {
-    if (err instanceof AppError) {
-      return res.status(err.statusCode).json({
-        error: err.message,
-      });
-    }
-    return res.status(500).json({
-      error: "Error interno al descargar el libro",
-    });
-  }
+export const downloadBookWithUrl: RequestHandler = async (req, res) => {
+  const userId = req.userId!;
+  const bookId = String(req.params.id ?? "");
+  const result = await bookService.downloadBookWithUrl({ userId, bookId });
+  res.json(result);
 };
 
-// Endpoint para descargar el PDF como stream (proxy para evitar CORS)
-export const streamBookPdf = async (req: StreamRequest, res: Response) => {
-  try {
-    const session = await auth.api.getSession({
-      headers: req.headers,
-    });
+export const streamBookPdf: RequestHandler = async (req, res) => {
+  const userId = req.userId!;
+  const bookId = String(req.params.id ?? "");
+  const stream = await bookService.streamBookPdf({ userId, bookId });
 
-    if (!session) {
-      return res.status(401).json({ error: "No autorizado" });
-    }
+  res.setHeader("Content-Type", stream.headers.contentType);
+  res.setHeader("Content-Disposition", stream.headers.contentDisposition);
 
-    const stream = await BookService.streamBookPdf({
-      userId: session.user.id,
-      bookId: req.params.id,
-    });
-
-    // headers vienen del service
-    res.setHeader("Content-Type", stream.headers.contentType);
+  if (stream.headers.contentLength) {
     res.setHeader(
-      "Content-Disposition",
-      stream.headers.contentDisposition
+      "Content-Length",
+      stream.headers.contentLength.toString(),
     );
-
-    if (stream.headers.contentLength) {
-      res.setHeader(
-        "Content-Length",
-        stream.headers.contentLength.toString()
-      );
-    }
-
-    // streaming directo
-    await streamPipeline(stream.body, res);
-
-  } catch (err) {
-    if (err instanceof AppError) {
-      return res.status(err.statusCode).json({
-        error: err.message,
-      });
-    }
-
-    return res.status(500).json({
-      error: "Error al procesar el PDF",
-    });
   }
-};
 
+  await streamPipeline(stream.body, res);
+};
