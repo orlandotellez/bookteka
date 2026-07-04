@@ -67,3 +67,26 @@ export const deleteBookmark = async (
     throw new Error(errorData.error || "Error al eliminar marcador");
   }
 };
+
+export const updateBookmark = async (
+  bookId: string,
+  bookmarkId: string,
+  data: Partial<CreateBookmarkPayload>,
+): Promise<BookmarkResponse> => {
+  const response = await fetch(
+    `${API_URL}/books/${bookId}/bookmarks/${bookmarkId}`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+      credentials: "include",
+    },
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || "Error al actualizar marcador");
+  }
+
+  return response.json();
+};

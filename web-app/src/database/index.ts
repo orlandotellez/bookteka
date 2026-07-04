@@ -26,6 +26,7 @@ export {
   getBookmarksByBook,
   getBookmark,
   saveBookmark,
+  updateBookmark,
   deleteBookmark,
 } from "./features/bookmarks";
 

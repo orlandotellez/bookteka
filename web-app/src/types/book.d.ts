@@ -26,6 +26,7 @@ export interface Bookmark {
   name: string;
   pageNumber: number;
   textPreview: string;
+  color: HighlightColor;
   createdAt: number;
 }
 

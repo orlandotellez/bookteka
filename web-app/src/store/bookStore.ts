@@ -11,6 +11,7 @@ import {
   getBookmarksByBook,
   getBookmark,
   saveBookmark,
+  updateBookmark as updateBookmarkInDB,
   deleteBookmark as deleteBookmarkFromDB,
   getHighlightsByBook,
   saveHighlight,
@@ -25,6 +26,7 @@ import { deleteBookInCloud, updateBookProgress, uploadBook } from "@/api/book";
 import {
   createBookmark as createBookmarkApi,
   deleteBookmark as deleteBookmarkApi,
+  updateBookmark as updateBookmarkApi,
 } from "@/api/bookmark";
 import { useUserPreferences } from "./userPreferencesStore";
 
@@ -64,6 +66,7 @@ interface BookStore {
   // Acciones de bookmarks
   loadBookmarks: (bookId: string) => Promise<Bookmark[]>;
   addBookmark: (bookmark: Bookmark) => Promise<Bookmark>;
+  updateBookmark: (id: string, data: { name?: string; textPreview?: string }) => Promise<Bookmark | undefined>;
   removeBookmark: (id: string) => Promise<void>;
 
   // Acciones de highlights
@@ -433,6 +436,39 @@ export const useBookStore = create<BookStore>((set) => ({
     } catch (error) {
       console.error("Error adding bookmark:", error);
       set({ error: "Error al añadir marcador" });
+      throw error;
+    }
+  },
+
+  // Actualizar bookmark (local + sync a backend si el libro está en la nube)
+  updateBookmark: async (id, data) => {
+    try {
+      const updated = await updateBookmarkInDB(id, data);
+      if (!updated) {
+        console.warn("[Bookmark] No se encontró marcador para actualizar:", id);
+        return undefined;
+      }
+
+      // Sincronizar con backend si el libro está en la nube
+      const book = useBookStore.getState().books.find(
+        (b) => b.id === updated.bookId,
+      );
+      if (book?.isSynced) {
+        try {
+          await updateBookmarkApi(updated.bookId, id, {
+            name: updated.name,
+            textPreview: updated.textPreview,
+          });
+        } catch (apiError) {
+          // Si falla la sync (p. ej. backend sin PATCH), el cambio sigue localmente
+          console.error("Error syncing bookmark update to backend:", apiError);
+        }
+      }
+
+      return updated;
+    } catch (error) {
+      console.error("Error updating bookmark:", error);
+      set({ error: "Error al actualizar marcador" });
       throw error;
     }
   },
