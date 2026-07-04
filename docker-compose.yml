@@ -19,18 +19,18 @@ services:
     build: ./backend
     environment:
       PORT: 3000
-      DATABASE_URL: postgres://bookteka:bookteka123@db:5432/bookteka_db?schema=public
-      FRONTEND_URL: http://localhost:8081,http://192.168.0.10:8081
+      DATABASE_URL: ${DATABASE_URL}
+      FRONTEND_URL: ${FRONTEND_URL}
       TRUST_BACKEND_ORIGINS: "true"
-      BETTER_AUTH_SECRET: WsEGMicmTmVF0Tln8NEkfwZkrEmIePQB
-      BETTER_AUTH_URL: http://192.168.0.10:8081
-      R2_ACCESS_KEY_ID: dummy
-      R2_SECRET_ACCESS_KEY: dummy
-      R2_ENDPOINT: https://dummy.r2.com
-      R2_PUBLIC_DOMAIN: https://dummy.r2.com
-      R2_BUCKET: dummy
-      RESEND_API_KEY: re_dummy
-      RESEND_FROM_EMAIL: dummy@resend.dev
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL}
+      R2_ACCESS_KEY_ID: ${R2_ACCESS_KEY_ID}
+      R2_SECRET_ACCESS_KEY: ${R2_SECRET_ACCESS_KEY}
+      R2_ENDPOINT: ${R2_ENDPOINT}
+      R2_PUBLIC_DOMAIN: ${R2_PUBLIC_DOMAIN}
+      R2_BUCKET: ${R2_BUCKET}
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      RESEND_FROM_EMAIL: ${RESEND_FROM_EMAIL}
     ports:
       - "3001:3000"
     depends_on:

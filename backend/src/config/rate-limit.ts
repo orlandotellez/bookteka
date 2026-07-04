@@ -3,11 +3,19 @@ import { rateLimit } from "express-rate-limit";
 export const isProgressPath = (p: string): boolean =>
   /^\/books\/[^/]+\/progress\/?$/.test(p);
 
+export const sessionLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 export const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 10,
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req) => req.path.endsWith("/get-session"),
   message: { error: "Demasiados intentos. Inténtalo de nuevo más tarde." },
 });
 

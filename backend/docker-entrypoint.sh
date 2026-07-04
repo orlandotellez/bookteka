@@ -14,10 +14,12 @@ echo "✅ Prisma migrations listas"
 
 # Better-auth migrations (tablas: user, session, account, verification)
 echo "⏳ Corriendo Better-Auth migrations..."
+# psql NO entiende query params estilo ?schema=public (son de Prisma), los sacamos
+PSQL_URL="${DATABASE_URL%%[?]*}"
 for f in better-auth_migrations/*.sql; do
   if [ -f "$f" ]; then
     echo "   → $(basename $f)"
-    if psql "$DATABASE_URL" -f "$f" -q 2>&1; then
+    if psql "$PSQL_URL" -f "$f" -q 2>&1; then
       echo "   ✅ aplicada"
     else
       # Si falla, puede ser porque ya existían las tablas (migración repetida)
