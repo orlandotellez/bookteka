@@ -116,7 +116,8 @@
 
 /* Bookmark item */
 .bookmarkItem {
-  padding: 12px;
+  position: relative;
+  padding: 12px 12px 12px 18px;
   border-radius: 5px;
   background: var(--window-color);
   border: 1px solid var(--border-color);
@@ -128,6 +129,48 @@
 
 .bookmarkItem:hover {
   background: var(--primary-color);
+}
+
+/* Banda de color en el borde izquierdo del marcador */
+.colorSwatch {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+}
+
+.colorYellow {
+  background: #facc15;
+}
+
+.colorGreen {
+  background: #4ade80;
+}
+
+.colorBlue {
+  background: #60a5fa;
+}
+
+.colorPink {
+  background: #f472b6;
+}
+
+.colorOrange {
+  background: #fb923c;
+}
+
+.pageBadge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 999px;
+  background: var(--secondary-color);
+  color: var(--primary-color);
 }
 
 .bookmarkContent {
@@ -158,18 +201,130 @@
   color: #999;
 }
 
-.deleteButton {
-  background: none;
-  border: none;
-  cursor: pointer;
+.itemActions {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
   opacity: 0;
   transition: opacity 0.2s ease;
 }
 
-.bookmarkItem:hover .deleteButton {
+.bookmarkItem:hover .itemActions {
   opacity: 1;
 }
 
+.editButton,
+.deleteButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 5px;
+  transition: background 0.15s ease;
+}
+
+.editButton:hover {
+  background: rgba(37, 99, 235, 0.12);
+}
+
+.deleteButton {
+  color: #dc3545;
+}
+
 .deleteButton:hover {
-  color: #dc2626;
+  background: rgba(220, 53, 69, 0.12);
+}
+
+/* Modo edición inline */
+.bookmarkItemEditing {
+  cursor: default;
+}
+
+.bookmarkItemEditing .colorSwatch {
+  /* Mantener la banda de color visible durante edición */
+  z-index: 1;
+}
+
+.editForm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  padding-left: 8px;
+}
+
+.textarea {
+  width: 100%;
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid var(--border-color);
+  background: var(--primary-color);
+  color: var(--font-color-title);
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.4;
+  resize: vertical;
+  min-height: 60px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.textarea:focus,
+.input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.editActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.editButtons {
+  display: flex;
+  gap: 4px;
+}
+
+.editCancelButton,
+.editSaveButton {
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 5px;
+  transition: background 0.15s ease, opacity 0.15s ease;
+}
+
+.editCancelButton {
+  background: var(--primary-color);
+  color: var(--font-color-title);
+}
+
+.editCancelButton:hover:not(:disabled) {
+  background: var(--secondary-color);
+}
+
+.editSaveButton {
+  background: #10b981;
+  color: white;
+}
+
+.editSaveButton:hover:not(:disabled) {
+  background: #059669;
+}
+
+.editSaveButton:disabled,
+.editCancelButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

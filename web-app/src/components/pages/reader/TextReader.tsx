@@ -1,6 +1,6 @@
 import React, { useMemo, useRef, useEffect, useCallback, useState, useImperativeHandle, forwardRef } from "react";
 import type { ReadingSettings } from "./ReadingControls";
-import type { Highlight, HighlightColor } from "@/types/book";
+import type { Bookmark, Highlight, HighlightColor } from "@/types/book";
 import { HighlightToolbar } from "./HighlightToolbar";
 import { PageNavigator } from "./PageNavigator";
 import styles from "./TextReader.module.css";
@@ -13,6 +13,7 @@ interface TextReaderProps {
   text: string;
   settings: ReadingSettings;
   highlights: Highlight[];
+  bookmarks?: Bookmark[];
   initialScrollPosition?: number;
   totalPages?: number;
   onScrollPositionChange?: (position: number) => void;
@@ -37,6 +38,14 @@ const HIGHLIGHT_CLASS_MAP: Record<HighlightColor, string> = {
   blue: styles.highlightBlue,
   pink: styles.highlightPink,
   orange: styles.highlightOrange,
+};
+
+const BOOKMARK_CLASS_MAP: Record<HighlightColor, string> = {
+  yellow: styles.bookmarkYellow,
+  green: styles.bookmarkGreen,
+  blue: styles.bookmarkBlue,
+  pink: styles.bookmarkPink,
+  orange: styles.bookmarkOrange,
 };
 
 // Fuente map 
@@ -103,6 +112,7 @@ export const TextReader = forwardRef<TextReaderHandle, TextReaderProps>(({
   text,
   settings,
   highlights,
+  bookmarks = [],
   initialScrollPosition = 0,
   totalPages,
   onScrollPositionChange,
@@ -180,6 +190,41 @@ export const TextReader = forwardRef<TextReaderHandle, TextReaderProps>(({
     });
     return map;
   }, [highlights]);
+
+  // Agrupa marcadores por número de página para poder renderizarlos
+  // al inicio de la página correspondiente.
+  const bookmarksByPage = useMemo(() => {
+    const map: Record<number, Bookmark[]> = {};
+    bookmarks.forEach((b) => {
+      if (!map[b.pageNumber]) {
+        map[b.pageNumber] = [];
+      }
+      map[b.pageNumber].push(b);
+    });
+    return map;
+  }, [bookmarks]);
+
+  // Marcadores de página efectivos: si el PDF no trae tokens [PAGE_X],
+  // generamos uno sintético dividiendo los párrafos均匀 entre totalPages
+  // para que el separador visual funcione también en esos libros.
+  const effectivePageMarkers = useMemo(() => {
+    if (pageMarkers.length > 0 || !totalPages || totalPages <= 1 || paragraphs.length === 0) {
+      return pageMarkers;
+    }
+    // Si hay menos párrafos que páginas declaradas, no apilamos markers
+    // en el mismo paragraphIndex (evita N dividers sobre el primer párrafo).
+    const pagesCount = Math.min(totalPages, paragraphs.length);
+    if (pagesCount <= 1) return pageMarkers;
+    const perPage = Math.max(1, Math.ceil(paragraphs.length / pagesCount));
+    const synthetic: { paragraphIndex: number; pageNumber: number }[] = [];
+    for (let i = 0; i < pagesCount; i++) {
+      synthetic.push({
+        paragraphIndex: Math.min(i * perPage, paragraphs.length - 1),
+        pageNumber: i + 1,
+      });
+    }
+    return synthetic;
+  }, [pageMarkers, totalPages, paragraphs.length]);
 
   useEffect(() => {
     if (
@@ -272,7 +317,7 @@ export const TextReader = forwardRef<TextReaderHandle, TextReaderProps>(({
       }
 
       let currentPageFromScroll = 1;
-      for (const marker of pageMarkers) {
+      for (const marker of effectivePageMarkers) {
         if (currentParagraphIndex >= marker.paragraphIndex) {
           currentPageFromScroll = marker.pageNumber;
         } else {
@@ -280,7 +325,7 @@ export const TextReader = forwardRef<TextReaderHandle, TextReaderProps>(({
         }
       }
 
-      if (pageMarkers.length === 0 && totalPages) {
+      if (effectivePageMarkers.length === 0 && totalPages) {
         const scrollProgress = Math.min(
           scrollY / (document.body.scrollHeight - viewportHeight),
           1,
@@ -306,7 +351,7 @@ export const TextReader = forwardRef<TextReaderHandle, TextReaderProps>(({
     handleScroll();
 
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [pageMarkers, totalPages, onScrollPositionChange]);
+  }, [effectivePageMarkers, totalPages, onScrollPositionChange]);
 
   const handleAddHighlight = useCallback(
     (color: HighlightColor) => {
@@ -328,7 +373,7 @@ export const TextReader = forwardRef<TextReaderHandle, TextReaderProps>(({
 
   const handleNavigateToPage = useCallback(
     (pageNumber: number) => {
-      const targetMarker = pageMarkers.find(
+      const targetMarker = effectivePageMarkers.find(
         (marker) => marker.pageNumber === pageNumber,
       );
 
@@ -342,14 +387,14 @@ export const TextReader = forwardRef<TextReaderHandle, TextReaderProps>(({
             block: "start",
           });
         }
-      } else if (pageMarkers.length === 0 && totalPages) {
+      } else if (effectivePageMarkers.length === 0 && totalPages) {
         const scrollProgress = (pageNumber - 1) / totalPages;
         const targetScrollY =
           scrollProgress * (document.body.scrollHeight - window.innerHeight);
         window.scrollTo({ top: targetScrollY, behavior: "smooth" });
       }
     },
-    [pageMarkers, totalPages],
+    [effectivePageMarkers, totalPages],
   );
 
   // Exponer navigateToPage para que el Reader pueda navegar desde bookmarks
@@ -361,36 +406,85 @@ export const TextReader = forwardRef<TextReaderHandle, TextReaderProps>(({
     <div ref={containerRef} className={styles.readerContainer}>
       <article className={styles.article}>
         <div className={styles.readerContent}>
-          {paragraphs.map((paragraph, index) => (
-            <p
-              key={index}
-              data-index={index}
-              className={styles.paragraph}
-              onMouseUp={() => {
-                setTimeout(() => {
-                  const sel = window.getSelection();
-                  if (sel && !sel.isCollapsed) {
-                    // selectionchange handles the rest
-                  }
-                }, 10);
-              }}
-            >
-              <Paragraph
-                paragraph={paragraph}
-                highlights={highlightsByParagraph[index] || []}
-                HIGHLIGHT_CLASS_MAP={HIGHLIGHT_CLASS_MAP}
-                onRemoveHighlight={onRemoveHighlight}
-              />
-            </p>
-          ))}
+          {paragraphs.map((paragraph, index) => {
+            // Detectar marcadores de inicio de página para esta posición
+            const pageStartsAtThisParagraph = effectivePageMarkers.filter(
+              (m) => m.paragraphIndex === index,
+            );
+            // Nada que separar antes de la primera página: no pintar divider.
+            const isFirstPage = pageStartsAtThisParagraph.some(
+              (m) => m.pageNumber === 1,
+            );
+            const showDivider =
+              pageStartsAtThisParagraph.length > 0 && !isFirstPage;
+            const seenPageNumbers = new Set<number>();
+            const pageBookmarks = pageStartsAtThisParagraph.flatMap((m) => {
+              if (seenPageNumbers.has(m.pageNumber)) return [];
+              seenPageNumbers.add(m.pageNumber);
+              return bookmarksByPage[m.pageNumber] ?? [];
+            });
+
+            return (
+              <React.Fragment key={index}>
+                {showDivider && (
+                  <div
+                    className={styles.pageDivider}
+                    data-page={pageStartsAtThisParagraph[0].pageNumber}
+                    aria-label={`Inicio de la página ${pageStartsAtThisParagraph[0].pageNumber}`}
+                  >
+                    <span className={styles.pageDividerLabel} aria-hidden="true">
+                      Página {pageStartsAtThisParagraph[0].pageNumber}
+                    </span>
+
+                    {pageBookmarks.length > 0 && (
+                      <div className={styles.bookmarkMarkerRow}>
+                        {pageBookmarks.map((bm) => (
+                          <span
+                            key={bm.id}
+                            className={`${styles.bookmarkMarker} ${BOOKMARK_CLASS_MAP[bm.color] ?? BOOKMARK_CLASS_MAP.yellow}`}
+                            title={`Marcador: ${bm.name} · Página ${bm.pageNumber}`}
+                            aria-label={`Marcador ${bm.name} en la página ${bm.pageNumber}`}
+                          >
+                            <span className={styles.bookmarkDot} aria-hidden="true" />
+                            <span className={styles.bookmarkName}>{bm.name}</span>
+                            <span className={styles.bookmarkPage} aria-hidden="true">pág. {bm.pageNumber}</span>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <p
+                  data-index={index}
+                  className={styles.paragraph}
+                  onMouseUp={() => {
+                    setTimeout(() => {
+                      const sel = window.getSelection();
+                      if (sel && !sel.isCollapsed) {
+                        // selectionchange handles the rest
+                      }
+                    }, 10);
+                  }}
+                >
+                  <Paragraph
+                    paragraph={paragraph}
+                    highlights={highlightsByParagraph[index] || []}
+                    HIGHLIGHT_CLASS_MAP={HIGHLIGHT_CLASS_MAP}
+                    onRemoveHighlight={onRemoveHighlight}
+                  />
+                </p>
+              </React.Fragment>
+            );
+          })}
         </div>
       </article>
 
       {showPageNavigator && paragraphs.length > 0 && (
         <PageNavigator
           currentPage={currentPage}
-          totalPages={totalPages || pageMarkers.length || 1}
-          pageMarkers={pageMarkers}
+          totalPages={totalPages || effectivePageMarkers.length || 1}
+          pageMarkers={effectivePageMarkers}
           onNavigateToPage={handleNavigateToPage}
           isZenMode={isZenMode}
           onToggleZenMode={onToggleZenMode}

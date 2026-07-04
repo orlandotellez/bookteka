@@ -52,3 +52,109 @@
     opacity: 1;
   }
 }
+
+/* Separador entre páginas (línea discontinua al inicio de cada página) */
+.pageDivider {
+  position: relative;
+  z-index: 20;
+  margin: 28px 0 16px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border-color);
+  box-sizing: border-box;
+}
+
+.pageDividerLabel {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--primary-color);
+  padding: 0 12px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--font-color-text);
+  white-space: nowrap;
+  pointer-events: none;
+  border-radius: 999px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+/* Fila de marcadores de color al inicio de cada página */
+.bookmarkMarkerRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 4px;
+}
+
+.bookmarkMarker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 10px 2px 6px;
+  border-radius: 999px;
+  border-left: 3px solid currentColor;
+  background: var(--window-color);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  font-size: 12px;
+  line-height: 1.4;
+  max-width: 100%;
+  cursor: default;
+  user-select: none;
+  transition: transform 0.15s ease;
+}
+
+.bookmarkMarker:hover {
+  transform: translateY(-1px);
+}
+
+.bookmarkDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  background: currentColor;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.6);
+}
+
+.bookmarkName {
+  font-weight: 600;
+  color: var(--font-color-title);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 220px;
+}
+
+.bookmarkPage {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 10px;
+  font-weight: 700;
+  color: currentColor;
+  opacity: 0.75;
+}
+
+/* Colores específicos de cada marcador (gateway al accent color del seed) */
+.bookmarkYellow {
+  color: #ca8a04;
+}
+
+.bookmarkGreen {
+  color: #16a34a;
+}
+
+.bookmarkBlue {
+  color: #2563eb;
+}
+
+.bookmarkPink {
+  color: #db2777;
+}
+
+.bookmarkOrange {
+  color: #ea580c;
+}

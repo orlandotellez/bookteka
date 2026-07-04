@@ -11,6 +11,13 @@ import type { Highlight, HighlightColor, Bookmark } from "@/types/book";
 import styles from "./Reader.module.css";
 import { Loading } from "@/components/common/Loading";
 
+// Colores disponibles para asignar aleatoriamente a marcadores
+const BOOKMARK_COLORS: HighlightColor[] = ["yellow", "green", "blue", "pink", "orange"];
+
+function getRandomBookmarkColor(): HighlightColor {
+  return BOOKMARK_COLORS[Math.floor(Math.random() * BOOKMARK_COLORS.length)];
+}
+
 interface ReaderProps {
   book: {
     id: string;
@@ -28,6 +35,7 @@ export const Reader = ({ book }: ReaderProps) => {
     setCurrentView,
     loadBookmarks,
     addBookmark,
+    updateBookmark,
     removeBookmark,
     loadHighlights,
     addHighlight,
@@ -155,17 +163,18 @@ export const Reader = ({ book }: ReaderProps) => {
           preview = parts.slice(1).join("|||") || "";
         } else {
           name = bookmarkName;
-          preview = textPreview || "Texto seleccionado...";
+          preview = textPreview || "";
         }
 
-        const newBookmark: Bookmark = {
-          id: crypto.randomUUID(),
-          bookId: book.id,
-          name,
-          textPreview: preview,
-          pageNumber: currentPage,
-          createdAt: Date.now(),
-        };
+      const newBookmark: Bookmark = {
+        id: crypto.randomUUID(),
+        bookId: book.id,
+        name,
+        textPreview: preview,
+        pageNumber: currentPage,
+        color: getRandomBookmarkColor(),
+        createdAt: Date.now(),
+      };
 
         console.debug("[Bookmark] Guardando:", newBookmark);
         const savedBookmark = await addBookmark(newBookmark);
@@ -184,6 +193,19 @@ export const Reader = ({ book }: ReaderProps) => {
       setBookmarks((prev) => prev.filter((b) => b.id !== id));
     },
     [removeBookmark],
+  );
+
+  const handleUpdateBookmark = useCallback(
+    async (id: string, data: { name?: string; textPreview?: string }) => {
+      const updated = await updateBookmark(id, data);
+      if (updated) {
+        setBookmarks((prev) =>
+          prev.map((b) => (b.id === id ? updated : b)),
+        );
+      }
+      return updated;
+    },
+    [updateBookmark],
   );
 
   const handleNavigateToBookmark = useCallback((bookmark: Bookmark) => {
@@ -223,6 +245,7 @@ export const Reader = ({ book }: ReaderProps) => {
           text={book.text}
           settings={settings}
           highlights={highlights}
+          bookmarks={bookmarks}
           initialScrollPosition={book.scrollPosition}
           totalPages={book.totalPages}
           onScrollPositionChange={handleScrollPositionChange}
@@ -241,6 +264,7 @@ export const Reader = ({ book }: ReaderProps) => {
           isOpen={showBookmarks}
           onClose={() => setShowBookmarks(false)}
           onAddBookmark={handleAddBookmark}
+          onUpdateBookmark={handleUpdateBookmark}
           onDeleteBookmark={handleDeleteBookmark}
           onNavigateToBookmark={handleNavigateToBookmark}
         />
