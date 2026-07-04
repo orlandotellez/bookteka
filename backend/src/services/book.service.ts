@@ -1,17 +1,23 @@
 import { AppError } from "@/helper/errors.js";
 import { generateFileHash, normalizedFileName } from "@/helper/format.js";
+import { deleteR2Quietly } from "@/helper/r2.js";
 import { r2 } from "@/lib/r2.js";
+import { logger } from "@/lib/logger.js";
 import { BookRepository } from "@/repositories/book.repository.js";
 import { DeleteBookInput, DownloadBookInput, StreamBookInput, UpdateBookProgressInput, UploadBookInput } from "@/types/book.js";
-import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+import { Prisma } from "@prisma/client";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { env } from "@/config/env.js";
+import { dbPrisma } from "@/config/prisma.js";
 
-const bookRepository = new BookRepository()
+const bookRepository = new BookRepository();
 
 export class BookService {
-  static getUserBooks = async (userId: string) => {
-    const userBooks = await bookRepository.getUserBooks(userId);
+  constructor(private readonly repo: BookRepository = bookRepository) {}
+
+  async getUserBooks(userId: string) {
+    const userBooks = await this.repo.getUserBooks(userId);
 
     return userBooks.map((ub) => ({
       id: ub.book.id,
@@ -26,14 +32,9 @@ export class BookService {
       fileKey: ub.book.fileKey,
       isSynced: true,
     }));
-  };
+  }
 
-  static uploadBook = async ({
-    userId,
-    file,
-    body,
-  }: UploadBookInput) => {
-    // DTO parsing (puedes mover esto luego a Zod)
+  async uploadBook({ userId, file, body }: UploadBookInput) {
     const dto = {
       title: body.title || file.originalname,
       author: body.author || "??",
@@ -41,11 +42,9 @@ export class BookService {
       scrollPosition: parseInt(body.scrollPosition || "0"),
     };
 
-    // hash del archivo
     const fileHash = generateFileHash(file.buffer);
 
-    // verificar si existe
-    let book = await bookRepository.findByHash(fileHash);
+    let book = await this.repo.findByHash(fileHash);
 
     let fileKey: string | null = null;
 
@@ -53,7 +52,6 @@ export class BookService {
       const normalizedName = normalizedFileName(file.originalname);
       fileKey = `books/${userId}/${Date.now()}-${normalizedName}`;
 
-      // subir a R2
       await r2.send(
         new PutObjectCommand({
           Bucket: env.R2_BUCKET,
@@ -63,8 +61,7 @@ export class BookService {
         })
       );
 
-      // crear libro
-      book = await bookRepository.createBook({
+      book = await this.repo.createBook({
         title: dto.title,
         author: dto.author,
         fileKey,
@@ -74,8 +71,7 @@ export class BookService {
       });
     }
 
-    // relación usuario-libro
-    const userBook = await bookRepository.upsertUserBook({
+    const userBook = await this.repo.upsertUserBook({
       userId,
       bookId: book.id,
       readingTimeSeconds: dto.readingTimeSeconds,
@@ -88,9 +84,8 @@ export class BookService {
     };
   }
 
-  static deleteBook = async ({ userId, bookId }: DeleteBookInput) => {
-    // 1. buscar relación user-book
-    const userBook = await bookRepository.findUserBook(userId, bookId);
+  async deleteBook({ userId, bookId }: DeleteBookInput) {
+    const userBook = await this.repo.findUserBook(userId, bookId);
 
     if (!userBook) {
       throw new AppError(
@@ -100,25 +95,13 @@ export class BookService {
       );
     }
 
-    // 2. verificar si otros usuarios usan el libro
-    const otherUsers = await bookRepository.countOtherUsers(bookId, userId);
+    const otherUsers = await this.repo.countOtherUsers(bookId, userId);
 
-    // 3. eliminar archivo de R2 si no hay otros usuarios
     if (otherUsers === 0) {
-      try {
-        await r2.send(
-          new DeleteObjectCommand({
-            Bucket: env.R2_BUCKET,
-            Key: userBook.book.fileKey,
-          })
-        );
-      } catch (err) {
-        console.error("R2 delete error:", err);
-      }
+      await deleteR2Quietly(userBook.book.fileKey);
     }
 
-    // 4. auditoría
-    await bookRepository.createAuditLog({
+    const auditData: Prisma.audit_logUncheckedCreateInput = {
       action: "DELETE",
       entityType: "BOOK",
       entityId: bookId,
@@ -130,30 +113,25 @@ export class BookService {
         fileSize: userBook.book.size,
         deletedAt: new Date().toISOString(),
       },
+    };
+
+    await dbPrisma.$transaction(async (tx) => {
+      await tx.audit_log.create({ data: auditData });
+      await tx.user_book.delete({ where: { id: userBook.id } });
+      if (otherUsers === 0) {
+        await tx.book.delete({ where: { id: bookId } });
+      }
     });
-
-    // 5. eliminar user_book
-    await bookRepository.deleteUserBook(userBook.id);
-
-    // 6. eliminar book si no hay referencias
-    if (otherUsers === 0) {
-      await bookRepository.deleteBook(bookId);
-    }
 
     return {
       success: true,
       message: "Libro eliminado correctamente",
       auditId: bookId,
     };
-  };
+  }
 
-  static updateBookProgress = async ({
-    userId,
-    bookId,
-    body,
-  }: UpdateBookProgressInput) => {
-    // 1. verificar relación usuario-libro
-    const userBook = await bookRepository.findUserBook(userId, bookId);
+  async updateBookProgress({ userId, bookId, body }: UpdateBookProgressInput) {
+    const userBook = await this.repo.findUserBook(userId, bookId);
 
     if (!userBook) {
       throw new AppError(
@@ -163,31 +141,55 @@ export class BookService {
       );
     }
 
-    // 2. construir update dinámico
-    const updateData: any = {};
+    const SCROLL_TOLERANCE_PX = 50;
 
-    if (typeof body.readingTimeSeconds === "number") {
+    const isNewerTime =
+      typeof body.readingTimeSeconds === "number" &&
+      body.readingTimeSeconds > (userBook.readingTimeSeconds ?? 0);
+
+    const isNewerScroll =
+      typeof body.scrollPosition === "number" &&
+      body.scrollPosition > (userBook.scrollPosition ?? 0) + SCROLL_TOLERANCE_PX;
+
+    if (!isNewerTime && !isNewerScroll) {
+      logger.debug(
+        {
+          bookId,
+          userId,
+          incoming: {
+            scroll: body.scrollPosition,
+            time: body.readingTimeSeconds,
+          },
+          persisted: {
+            scroll: userBook.scrollPosition,
+            time: userBook.readingTimeSeconds,
+          },
+        },
+        "updateBookProgress noop: scroll/time sin avance"
+      );
+      return {
+        success: true,
+        readingTimeSeconds: userBook.readingTimeSeconds ?? 0,
+        scrollPosition: userBook.scrollPosition ?? 0,
+        lastReadAt: userBook.lastReadAt,
+      };
+    }
+
+    const updateData: Prisma.user_bookUncheckedUpdateInput = {};
+
+    if (isNewerTime) {
       updateData.readingTimeSeconds = body.readingTimeSeconds;
     }
-
-    if (typeof body.scrollPosition === "number") {
+    if (isNewerScroll) {
       updateData.scrollPosition = body.scrollPosition;
     }
-
     if (body.lastReadAt) {
-      updateData.lastReadAt = new Date(body.lastReadAt);
-    } else if (
-      body.readingTimeSeconds !== undefined ||
-      body.scrollPosition !== undefined
-    ) {
+      updateData.lastReadAt = body.lastReadAt;
+    } else {
       updateData.lastReadAt = new Date();
     }
 
-    // 3. update en repo
-    const updated = await bookRepository.updateUserBook(
-      userBook.id,
-      updateData
-    );
+    const updated = await this.repo.updateUserBook(userBook.id, updateData);
 
     return {
       success: true,
@@ -195,49 +197,34 @@ export class BookService {
       scrollPosition: updated.scrollPosition,
       lastReadAt: updated.lastReadAt,
     };
-  };
+  }
 
-  static downloadBookWithUrl = async ({
-    userId,
-    bookId,
-  }: DownloadBookInput) => {
-    // 1. verificar acceso del usuario al libro
-    const userBook = await bookRepository.findUserBook(userId, bookId);
-
-    if (!userBook) {
-      throw new AppError(
-        "FORBIDDEN",
-        403,
-        "No es tu libro"
-      );
-    }
-
-    // 2. generar comando S3/R2
-    const command = new GetObjectCommand({
-      Bucket: env.R2_BUCKET,
-      Key: userBook.book.fileKey,
-    });
-
-    // 3. generar url firmada (15 min)
-    const url = await getSignedUrl(r2, command, {
-      expiresIn: 60 * 15,
-    });
-
-    return { url };
-  };
-
-  static streamBookPdf = async ({
-    userId,
-    bookId,
-  }: StreamBookInput) => {
-    // 1. verificar acceso
-    const userBook = await bookRepository.findUserBook(userId, bookId);
+  async downloadBookWithUrl({ userId, bookId }: DownloadBookInput) {
+    const userBook = await this.repo.findUserBook(userId, bookId);
 
     if (!userBook) {
       throw new AppError("FORBIDDEN", 403, "No es tu libro");
     }
 
-    // 2. pedir archivo a R2
+    const command = new GetObjectCommand({
+      Bucket: env.R2_BUCKET,
+      Key: userBook.book.fileKey,
+    });
+
+    const url = await getSignedUrl(r2, command, {
+      expiresIn: 60 * 15,
+    });
+
+    return { url };
+  }
+
+  async streamBookPdf({ userId, bookId }: StreamBookInput) {
+    const userBook = await this.repo.findUserBook(userId, bookId);
+
+    if (!userBook) {
+      throw new AppError("FORBIDDEN", 403, "No es tu libro");
+    }
+
     const command = new GetObjectCommand({
       Bucket: env.R2_BUCKET,
       Key: userBook.book.fileKey,
@@ -261,6 +248,7 @@ export class BookService {
         contentLength: pdfData.ContentLength,
       },
     };
-  };
-
+  }
 }
+
+export const bookService = new BookService();

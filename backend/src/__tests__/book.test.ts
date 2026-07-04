@@ -7,9 +7,7 @@ describe("GET /api/books", () => {
     jest.resetModules()
   })
 
-  // TEST CON USUARIO NO AUTENTICADO
   it("debería devolver 401 si no hay sesión", async () => {
-    // Mock de @/lib/auth con la estructura correcta: auth.api.getSession
     jest.unstable_mockModule("@/lib/auth", () => ({
       auth: {
         api: {
@@ -18,7 +16,6 @@ describe("GET /api/books", () => {
       }
     }))
 
-    // Mock de @/config/prisma
     jest.unstable_mockModule("@/config/prisma", () => ({
       dbPrisma: {
         user_book: {
@@ -27,7 +24,6 @@ describe("GET /api/books", () => {
       }
     }))
 
-    // Mock de @/lib/r2
     jest.unstable_mockModule("@/lib/r2", () => ({
       r2: {}
     }))
@@ -40,10 +36,8 @@ describe("GET /api/books", () => {
     expect(res.status).toBe(401)
   })
 
-  // TEST CON USUARIO AUTENTICADO
   it("debería devolver 200 y la lista de libros si está autenticado", async () => {
 
-    // simulando db
     const simulateUserBooks: UserBook[] = [
       {
         id: "ub1",
@@ -128,7 +122,6 @@ describe("POST /api/books/upload", () => {
     jest.resetModules()
   })
 
-  // TEST CON USUARIO NO AUTENTICADO
   it("debería devolver 401 si no hay sesión", async () => {
     jest.unstable_mockModule("@/lib/auth", () => ({
       auth: {
@@ -156,7 +149,6 @@ describe("POST /api/books/upload", () => {
     expect(res.status).toBe(401)
   })
 
-  // TEST CON USUARIO AUTENTICADO Y SIN ARCHIVO
   it("debería devolver 400 si no se envía archivo", async () => {
     jest.unstable_mockModule("@/lib/auth", () => ({
       auth: {
@@ -186,7 +178,6 @@ describe("POST /api/books/upload", () => {
     expect(res.status).toBe(400)
   })
 
-  // TEST CON USUARIO AUTENTICADO Y ARCHIVO
   it("debería subir el libro correctamente", async () => {
     const fakeBuffer = Buffer.from("fake pdf content")
 
@@ -222,7 +213,6 @@ describe("POST /api/books/upload", () => {
       }
     }))
 
-    // mocks de helpers
     jest.unstable_mockModule("@/helper/format", () => ({
       generateFileHash: () => "hash123",
       normalizedFileName: () => "file.pdf"
@@ -245,7 +235,38 @@ describe("POST /api/books/upload", () => {
     })
   })
 
-  // TEST CON USUARIO AUTENTICADO Y LIBRO YA EXISTENTE
+  it("debería devolver 400 si se suben 2 archivos con el mismo fieldname", async () => {
+    jest.unstable_mockModule("@/lib/auth", () => ({
+      auth: {
+        api: {
+          getSession: async () => ({
+            user: { id: "123" },
+          }),
+        },
+      },
+    }));
+
+    jest.unstable_mockModule("@/config/prisma", () => ({
+      dbPrisma: {},
+    }));
+
+    jest.unstable_mockModule("@/lib/r2", () => ({
+      r2: {},
+    }));
+
+    //@ts-ignore
+    const mod = await import("@/server");
+    const app = mod.default;
+
+    const res = await request(app)
+      .post("/api/books/upload")
+      .attach("file", Buffer.from("pdf1"), "a.pdf")
+      .attach("file", Buffer.from("pdf2"), "b.pdf");
+
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe("LIMIT_UNEXPECTED_FILE");
+  });
+
   it("debería reutilizar libro existente", async () => {
     jest.unstable_mockModule("@/lib/auth", () => ({
       auth: {
@@ -301,7 +322,6 @@ describe("DELETE /api/books/:id", () => {
     jest.resetModules();
   });
 
-  // TEST CON USUARIO NO AUTENTICADO
   it("debería devolver 401 si no hay sesión", async () => {
     jest.unstable_mockModule("@/lib/auth", () => ({
       auth: {
@@ -324,7 +344,6 @@ describe("DELETE /api/books/:id", () => {
     expect(res.status).toBe(401);
   });
 
-  // TEST CON LIBRO NO EXISTENTE
   it("debería devolver 404 si el libro no existe para el usuario", async () => {
     jest.unstable_mockModule("@/lib/auth", () => ({
       auth: {
@@ -354,7 +373,6 @@ describe("DELETE /api/books/:id", () => {
     expect(res.body.error).toBe("Libro no encontrado para este usuario");
   });
 
-  // TEST EXITOSO CON LIBRO
   it("debería eliminar el libro correctamente", async () => {
     const simulateUserBook = {
       id: "ub1",
@@ -377,8 +395,8 @@ describe("DELETE /api/books/:id", () => {
       },
     }));
 
-    jest.unstable_mockModule("@/config/prisma", () => ({
-      dbPrisma: {
+    jest.unstable_mockModule("@/config/prisma", () => {
+      const dbPrismaClient = {
         user_book: {
           findFirst: async () => simulateUserBook,
           count: async () => 0,
@@ -390,8 +408,17 @@ describe("DELETE /api/books/:id", () => {
         book: {
           delete: async () => { },
         },
-      },
-    }));
+        $transaction: async (arg: unknown): Promise<unknown> => {
+          if (typeof arg === "function") {
+            return await (
+              arg as (tx: typeof dbPrismaClient) => Promise<unknown>
+            )(dbPrismaClient);
+          }
+          return await Promise.all(arg as Promise<unknown>[]);
+        },
+      };
+      return { dbPrisma: dbPrismaClient };
+    });
 
     jest.unstable_mockModule("@/lib/r2", () => ({
       r2: {
@@ -529,6 +556,151 @@ describe("PATCH /api/books/:id/progress", () => {
     expect(res.body.readingTimeSeconds).toBe(200);
     expect(res.body.scrollPosition).toBe(80);
     expect(res.body.lastReadAt).toBeDefined();
+  });
+
+  it("debería saltarse el write de Prisma si ni scroll ni tiempo avanzaron", async () => {
+    jest.unstable_mockModule("@/lib/auth", () => ({
+      auth: {
+        api: {
+          getSession: async () => ({ user: { id: "user1" } }),
+        },
+      },
+    }));
+
+    const mockUserBook = {
+      id: "ub1",
+      readingTimeSeconds: 100,
+      scrollPosition: 500,
+      lastReadAt: new Date(2000),
+    };
+    const mockUpdate = jest.fn(async () => ({}));
+
+    jest.unstable_mockModule("@/config/prisma", () => ({
+      dbPrisma: {
+        user_book: {
+          findFirst: async () => mockUserBook,
+          update: mockUpdate,
+        },
+      },
+    }));
+
+    jest.unstable_mockModule("@/lib/r2", () => ({ r2: {} }));
+
+    //@ts-ignore
+    const mod = await import("@/server");
+    const app = mod.default;
+
+    const res = await request(app)
+      .patch("/api/books/book1/progress")
+      .send({
+        readingTimeSeconds: 50,
+        scrollPosition: 540,
+      });
+
+    expect(res.status).toBe(200);
+    expect(mockUpdate).not.toHaveBeenCalled();
+    expect(res.body.readingTimeSeconds).toBe(100);
+    expect(res.body.scrollPosition).toBe(500);
+  });
+
+  it("debería actualizar solo scrollPosition si supera la tolerancia, sin tocar readingTimeSeconds", async () => {
+    jest.unstable_mockModule("@/lib/auth", () => ({
+      auth: {
+        api: {
+          getSession: async () => ({ user: { id: "user1" } }),
+        },
+      },
+    }));
+
+    const mockUserBook = {
+      id: "ub1",
+      readingTimeSeconds: 100,
+      scrollPosition: 500,
+      lastReadAt: new Date(2000),
+    };
+    const mockUpdate = jest.fn(async ({ data }: any) => ({
+      ...mockUserBook,
+      ...data,
+    }));
+
+    jest.unstable_mockModule("@/config/prisma", () => ({
+      dbPrisma: {
+        user_book: {
+          findFirst: async () => mockUserBook,
+          update: mockUpdate,
+        },
+      },
+    }));
+
+    jest.unstable_mockModule("@/lib/r2", () => ({ r2: {} }));
+
+    //@ts-ignore
+    const mod = await import("@/server");
+    const app = mod.default;
+
+    const res = await request(app)
+      .patch("/api/books/book1/progress")
+      .send({
+        readingTimeSeconds: 100,
+        scrollPosition: 700,
+      });
+
+    expect(res.status).toBe(200);
+    expect(mockUpdate).toHaveBeenCalledTimes(1);
+    const updateArgs = mockUpdate.mock.calls[0]?.[0];
+    expect(updateArgs?.data?.scrollPosition).toBe(700);
+    expect(updateArgs?.data?.readingTimeSeconds).toBeUndefined();
+    expect(res.body.scrollPosition).toBe(700);
+  });
+
+  it("debería actualizar solo readingTimeSeconds si el scroll está dentro de la tolerancia", async () => {
+    jest.unstable_mockModule("@/lib/auth", () => ({
+      auth: {
+        api: {
+          getSession: async () => ({ user: { id: "user1" } }),
+        },
+      },
+    }));
+
+    const mockUserBook = {
+      id: "ub1",
+      readingTimeSeconds: 100,
+      scrollPosition: 500,
+      lastReadAt: new Date(2000),
+    };
+    const mockUpdate = jest.fn(async ({ data }: any) => ({
+      ...mockUserBook,
+      ...data,
+    }));
+
+    jest.unstable_mockModule("@/config/prisma", () => ({
+      dbPrisma: {
+        user_book: {
+          findFirst: async () => mockUserBook,
+          update: mockUpdate,
+        },
+      },
+    }));
+
+    jest.unstable_mockModule("@/lib/r2", () => ({ r2: {} }));
+
+    //@ts-ignore
+    const mod = await import("@/server");
+    const app = mod.default;
+
+    const res = await request(app)
+      .patch("/api/books/book1/progress")
+      .send({
+        readingTimeSeconds: 200,
+        scrollPosition: 510,
+      });
+
+    expect(res.status).toBe(200);
+    expect(mockUpdate).toHaveBeenCalledTimes(1);
+    const updateArgs = mockUpdate.mock.calls[0]?.[0];
+    expect(updateArgs?.data?.readingTimeSeconds).toBe(200);
+    expect(updateArgs?.data?.scrollPosition).toBeUndefined();
+    expect(res.body.readingTimeSeconds).toBe(200);
   });
 });
 
