@@ -81,7 +81,7 @@ export interface UpdateBookProgressInput {
   body: {
     readingTimeSeconds?: number;
     scrollPosition?: number;
-    lastReadAt?: string;
+    lastReadAt?: Date;
   };
 }
 
@@ -89,7 +89,6 @@ export interface DownloadBookInput {
   userId: string;
   bookId: string;
 }
-
 
 export interface StreamBookInput {
   userId: string;

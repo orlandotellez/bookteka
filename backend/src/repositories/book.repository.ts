@@ -1,18 +1,21 @@
 import { dbPrisma } from "@/config/prisma.js";
 import { CreateBookInput, UpsertUserBookInput } from "@/types/book.js";
-import { audit_log, book, user_book } from "@prisma/client";
+import { audit_log, book, Prisma, user_book } from "@prisma/client";
 
 interface IBookRepository {
-  getUserBooks: (userId: string) => Promise<user_book[] | null>,
-  findByHash: (fileHash: string) => Promise<book | null>
+  getUserBooks: (userId: string) => Promise<user_book[] | null>;
+  findByHash: (fileHash: string) => Promise<book | null>;
   createBook: (data: CreateBookInput) => Promise<book>;
   upsertUserBook: (data: UpsertUserBookInput) => Promise<user_book>;
-  findUserBook: (userId: string, bookId: string) => Promise<user_book | null>
-  countOtherUsers: (bookId: string, userId: string) => Promise<number | null>
-  deleteUserBook: (id: string) => Promise<user_book>
-  deleteBook: (id: string) => Promise<book>
-  createAuditLog: (data: any) => Promise<audit_log>
-  updateUserBook: (id: string, data: any) => Promise<user_book>
+  findUserBook: (userId: string, bookId: string) => Promise<user_book | null>;
+  countOtherUsers: (bookId: string, userId: string) => Promise<number | null>;
+  deleteUserBook: (id: string) => Promise<user_book>;
+  deleteBook: (id: string) => Promise<book>;
+  createAuditLog: (data: Prisma.audit_logUncheckedCreateInput) => Promise<audit_log>;
+  updateUserBook: (
+    id: string,
+    data: Prisma.user_bookUncheckedUpdateInput,
+  ) => Promise<user_book>;
 }
 
 export class BookRepository implements IBookRepository {
@@ -100,16 +103,19 @@ export class BookRepository implements IBookRepository {
     });
   }
 
-  createAuditLog = (data: any) => {
+  createAuditLog = (data: Prisma.audit_logUncheckedCreateInput) => {
     return dbPrisma.audit_log.create({
       data,
     });
-  }
+  };
 
-  updateUserBook = (id: string, data: any) => {
+  updateUserBook = (
+    id: string,
+    data: Prisma.user_bookUncheckedUpdateInput,
+  ) => {
     return dbPrisma.user_book.update({
       where: { id },
       data,
     });
-  }
+  };
 }

@@ -203,29 +203,29 @@ describe("POST /api/books/:bookId/bookmarks", () => {
     const mod = await import("@/server")
     const app = mod.default
 
-    // Caso 1: Falta pageNumber
     const res1 = await request(app)
       .post("/api/books/book1/bookmarks")
       .send({ name: "Test" })
 
     expect(res1.status).toBe(400)
-    expect(res1.body.error).toBe("Faltan campos requeridos: name, pageNumber")
+    expect(res1.body.error).toBe("Validation failed")
+    expect(res1.body.details[0].path).toBe("pageNumber")
 
-    // Caso 2: Falta name
     const res2 = await request(app)
       .post("/api/books/book1/bookmarks")
       .send({ pageNumber: 1 })
 
     expect(res2.status).toBe(400)
-    expect(res2.body.error).toBe("Faltan campos requeridos: name, pageNumber")
+    expect(res2.body.error).toBe("Validation failed")
+    expect(res2.body.details[0].path).toBe("name")
 
-    // Caso 3: pageNumber no es número
     const res3 = await request(app)
       .post("/api/books/book1/bookmarks")
       .send({ name: "Test", pageNumber: "uno" })
 
     expect(res3.status).toBe(400)
-    expect(res3.body.error).toBe("Faltan campos requeridos: name, pageNumber")
+    expect(res3.body.error).toBe("Validation failed")
+    expect(res3.body.details[0].path).toBe("pageNumber")
   })
 
   it("debería crear el bookmark correctamente", async () => {
