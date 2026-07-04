@@ -228,14 +228,20 @@ describe("POST /api/streak/complete", () => {
       }
     }))
 
-    jest.unstable_mockModule("@/config/prisma", () => ({
-      dbPrisma: {
-        user_streak: {
-          findUnique: async () => mockExistingStreak,
-          update: async () => mockUpdatedStreak
+    jest.unstable_mockModule("@/config/prisma", () => {
+      const findUnique = jest
+        .fn<() => Promise<typeof mockExistingStreak>>()
+        .mockResolvedValueOnce(mockExistingStreak)
+        .mockResolvedValueOnce(mockUpdatedStreak)
+      return {
+        dbPrisma: {
+          user_streak: {
+            findUnique,
+            updateMany: async () => ({ count: 1 })
+          }
         }
       }
-    }))
+    })
 
     //@ts-ignore
     const mod = await import("@/server")
@@ -251,7 +257,6 @@ describe("POST /api/streak/complete", () => {
   })
 
   it("debería devolver la racha actual si ya completó el día", async () => {
-    // Usar la misma fecha que se enviará en clientDate
     const sameDate = new Date("2024-01-15T12:00:00.000Z")
 
     const mockExistingStreak = {
@@ -355,7 +360,8 @@ describe("POST /api/streak/initialize", () => {
       .send({})
 
     expect(res.status).toBe(400)
-    expect(res.body.error).toBe("Se requiere la fecha de inicio")
+    expect(res.body.error).toBe("Validation failed")
+    expect(res.body.details[0].path).toBe("startDate")
   })
 
   it("debería inicializar la racha correctamente", async () => {
