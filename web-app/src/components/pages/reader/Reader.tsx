@@ -13,6 +13,7 @@ import { ReadingControls, type ReadingSettings } from "./ReadingControls";
 import type { Highlight, HighlightColor, Bookmark } from "@/types/book";
 import styles from "./Reader.module.css";
 import { Loading } from "@/components/common/Loading";
+import { generateId } from "@/utils/generateId";
 
 // Colores disponibles para asignar aleatoriamente a marcadores
 const BOOKMARK_COLORS: HighlightColor[] = ["yellow", "green", "blue", "pink", "orange"];
@@ -153,7 +154,7 @@ export const Reader = ({ book }: ReaderProps) => {
       endOffset: number,
     ) => {
       const newHighlight: Highlight = {
-        id: crypto.randomUUID(),
+        id: generateId(),
         bookId: book.id,
         text,
         color,
@@ -193,7 +194,7 @@ export const Reader = ({ book }: ReaderProps) => {
         }
 
         const newBookmark: Bookmark = {
-          id: crypto.randomUUID(),
+          id: generateId(),
           bookId: book.id,
           name,
           textPreview: preview,

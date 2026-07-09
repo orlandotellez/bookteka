@@ -9,6 +9,7 @@ import {
   updateBookScrollPosition,
   setBookReadingTime,
 } from "@/database";
+import { generateId } from "@/utils/generateId";
 
 /**
  * Hook para gestionar la biblioteca de libros
@@ -38,7 +39,7 @@ export function useBooks() {
   const addBook = useCallback(
     async (name: string, text: string, totalPages?: number): Promise<Book> => {
       const newBook: Book = {
-        id: crypto.randomUUID(),
+        id: generateId(),
         name,
         text,
         createdAt: Date.now(),
