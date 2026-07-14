@@ -122,6 +122,10 @@ export const Library = () => {
     time: "Tiempo",
   };
 
+  const handleCloseUploader = useCallback(() => {
+    setShowUploader(false);
+  }, [setShowUploader]);
+
   const handleDelete = useCallback(
     async (id: string) => {
       try {
@@ -265,7 +269,7 @@ export const Library = () => {
 
       {showUploader && (
         <ShowUploaderModal
-          setShowUploader={() => setShowUploader(false)}
+          setShowUploader={handleCloseUploader}
           onAddBook={addBook}
         />
       )}

@@ -10,6 +10,12 @@ interface ShowUploaderModalProps {
   setShowUploader: () => void;
 }
 
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (typeof error === "string") return error;
+  return "Error desconocido";
+}
+
 export const ShowUploaderModal = ({
   setShowUploader,
   onAddBook,
@@ -18,7 +24,6 @@ export const ShowUploaderModal = ({
 
   const handleFileSelect = useCallback(
     async (file: File) => {
-
       if (!isValidPDF(file)) {
         toast.error("Por favor selecciona un archivo PDF válido");
         return;
@@ -29,7 +34,7 @@ export const ShowUploaderModal = ({
       try {
         const result = await extractTextFromPDF(file);
         if (!result.fullText.trim()) {
-          toast.error("No se pudo extraer texto del PDF.");
+          toast.error("No se pudo extraer texto del PDF. El archivo podría ser un documento escaneado sin texto seleccionable.");
           return;
         }
         const book = await onAddBook(
@@ -42,8 +47,14 @@ export const ShowUploaderModal = ({
         toast.success(`"${book.name}" añadido a la biblioteca`);
         setShowUploader();
       } catch (error) {
-        console.error("Error al procesar el PDF:", error);
-        toast.error("Error al procesar el PDF.");
+        const msg = getErrorMessage(error);
+        console.error("[Upload] Error al procesar el PDF:", {
+          fileName: file.name,
+          fileSize: file.size,
+          error: msg,
+          originalError: error,
+        });
+        toast.error(`Error al procesar el PDF: ${msg}`);
       } finally {
         setIsUploading(false);
       }

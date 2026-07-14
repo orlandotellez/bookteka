@@ -1,7 +1,6 @@
 import logoLight from "@/assets/logoLight.svg";
 import logoDark from "@/assets/logoDark.svg";
 import styles from "./Header.module.css";
-import { ShowUploaderModal } from "../modals/ShowUploaderModal";
 import { useBookStore } from "@/store/bookStore";
 import { useTheme } from "@/context/ThemeContext";
 import { User } from "lucide-react";
@@ -9,7 +8,7 @@ import { Link } from "react-router-dom";
 import { IconTheme } from "../common/IconTheme";
 
 export const Header = () => {
-  const { showUploader, setShowUploader, addBook } = useBookStore();
+  const { setShowUploader } = useBookStore();
   const { theme } = useTheme();
 
   return (
@@ -48,13 +47,6 @@ export const Header = () => {
           </div>
         </div>
       </article>
-
-      {showUploader && (
-        <ShowUploaderModal
-          setShowUploader={() => setShowUploader(false)}
-          onAddBook={addBook}
-        />
-      )}
     </header>
   );
 };
