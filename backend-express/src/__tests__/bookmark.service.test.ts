@@ -16,6 +16,7 @@ const makeMockRepo = (overrides: any = {}): any => ({
   getBookmarksByUserBookId: jest.fn(async () => undefined),
   createBookmark: jest.fn(async () => undefined),
   findBookmark: jest.fn(async () => undefined),
+  updateBookmark: jest.fn(async () => undefined),
   deleteBookmark: jest.fn(async () => undefined),
   ...overrides,
 });
@@ -137,3 +138,102 @@ describe("BookmarkService.deleteBookmark", () => {
     expect(repo.deleteBookmark).not.toHaveBeenCalled();
   });
 });
+
+describe("BookmarkService.updateBookmark", () => {
+  it("actualiza el bookmark cuando el usuario tiene acceso y el marcador es suyo", async () => {
+    const repo = makeMockRepo({
+      findUserBookAccess: jest.fn(async () => ({ id: "ub1" })),
+      findBookmark: jest.fn(async () => ({ id: "bm1" })),
+      updateBookmark: jest.fn(async () => ({ id: "bm1", name: "Nuevo" })),
+    });
+    const svc = new BookmarkService(repo as never);
+
+    const result = await svc.updateBookmark("user1", "book1", "bm1", {
+      name: "Nuevo",
+    });
+
+    expect(result.name).toBe("Nuevo");
+    expect(repo.findUserBookAccess).toHaveBeenCalledWith("user1", "book1");
+    expect(repo.findBookmark).toHaveBeenCalledWith("bm1", "ub1");
+    expect(repo.updateBookmark).toHaveBeenCalledWith("bm1", { name: "Nuevo" });
+  });
+
+  it("propaga textPreview cuando viene en el body", async () => {
+    const repo = makeMockRepo({
+      findUserBookAccess: jest.fn(async () => ({ id: "ub1" })),
+      findBookmark: jest.fn(async () => ({ id: "bm1" })),
+      updateBookmark: jest.fn(async () => ({ id: "bm1" })),
+    });
+    const svc = new BookmarkService(repo as never);
+
+    await svc.updateBookmark("user1", "book1", "bm1", {
+      name: "Nuevo",
+      textPreview: "Adelanto",
+    });
+
+    expect(repo.updateBookmark).toHaveBeenCalledWith("bm1", {
+      name: "Nuevo",
+      textPreview: "Adelanto",
+    });
+  });
+
+  it("permite limpiar el textPreview enviándolo como null", async () => {
+    const repo = makeMockRepo({
+      findUserBookAccess: jest.fn(async () => ({ id: "ub1" })),
+      findBookmark: jest.fn(async () => ({ id: "bm1" })),
+      updateBookmark: jest.fn(async () => ({ id: "bm1" })),
+    });
+    const svc = new BookmarkService(repo as never);
+
+    await svc.updateBookmark("user1", "book1", "bm1", { textPreview: null });
+
+    expect(repo.updateBookmark).toHaveBeenCalledWith("bm1", {
+      textPreview: null,
+    });
+  });
+
+  it("throws AppError 403 cuando el userBook no existe", async () => {
+    const repo = makeMockRepo({
+      findUserBookAccess: jest.fn(async () => null),
+    });
+    const svc = new BookmarkService(repo as never);
+
+    await expect(
+      svc.updateBookmark("user1", "book1", "bm1", { name: "Nuevo" }),
+    ).rejects.toThrow(
+      new AppError("FORBIDDEN", 403, "No autorizado o libro no encontrado"),
+    );
+    expect(repo.updateBookmark).not.toHaveBeenCalled();
+  });
+
+  it("throws AppError 404 cuando el bookmark no pertenece al user_book", async () => {
+    const repo = makeMockRepo({
+      findUserBookAccess: jest.fn(async () => ({ id: "ub1" })),
+      findBookmark: jest.fn(async () => null),
+    });
+    const svc = new BookmarkService(repo as never);
+
+    await expect(
+      svc.updateBookmark("user1", "book1", "bm-ajeno", { name: "Nuevo" }),
+    ).rejects.toThrow(new AppError("NOT_FOUND", 404, "Bookmark no encontrado"));
+    expect(repo.updateBookmark).not.toHaveBeenCalled();
+  });
+
+  it("no escribe si el bookmark es de otro libro del mismo usuario", async () => {
+    // El usuario tiene dos libros; el marcador pertenece al segundo.
+    // findBookmark filtra por userBookId, así que no debe encontrarlo.
+    const repo = makeMockRepo({
+      findUserBookAccess: jest.fn(async () => ({ id: "ub1" })),
+      findBookmark: jest.fn(async () => null),
+      updateBookmark: jest.fn(async () => ({ id: "bm1" })),
+    });
+    const svc = new BookmarkService(repo as never);
+
+    await expect(
+      svc.updateBookmark("user1", "book1", "bm-de-otro-libro", {
+        name: "Nuevo",
+      }),
+    ).rejects.toThrow(new AppError("NOT_FOUND", 404, "Bookmark no encontrado"));
+    expect(repo.updateBookmark).not.toHaveBeenCalled();
+  });
+})

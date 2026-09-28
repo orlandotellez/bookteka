@@ -1,5 +1,5 @@
 import { dbPrisma } from "@/config/prisma.js";
-import { CreateBookmarkInput } from "@/types/bookmark.js";
+import { CreateBookmarkInput, UpdateBookmarkInput } from "@/types/bookmark.js";
 import { bookmark, user_book } from "@prisma/client";
 
 interface IBookmarkRepository {
@@ -7,6 +7,10 @@ interface IBookmarkRepository {
   getBookmarksByUserBookId: (userBookId: string) => Promise<bookmark[]>;
   createBookmark: (data: CreateBookmarkInput) => Promise<bookmark>;
   findBookmark: (bookmarkId: string, userBookId: string) => Promise<bookmark | null>;
+  updateBookmark: (
+    bookmarkId: string,
+    data: UpdateBookmarkInput,
+  ) => Promise<bookmark>;
   deleteBookmark: (bookmarkId: string) => Promise<bookmark>;
 }
 
@@ -46,6 +50,16 @@ export class BookmarkRepository implements IBookmarkRepository {
         id: bookmarkId,
         userBookId,
       },
+    });
+  };
+
+  // Actualiza solo los campos editables de un marcador.
+  // El service ya validó con `findBookmark` que el marcador pertenece al
+  // `user_book` del usuario, así que acá alcanza con el id.
+  updateBookmark = (bookmarkId: string, data: UpdateBookmarkInput) => {
+    return dbPrisma.bookmark.update({
+      where: { id: bookmarkId },
+      data,
     });
   };
 

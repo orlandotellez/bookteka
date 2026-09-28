@@ -25,7 +25,7 @@ describe("GET /api/v1/books/:bookId/bookmarks", () => {
     }))
 
     //@ts-ignore
-    const mod = await import("@/server")
+    const mod = await import("@/app")
     const app = mod.default
 
     const res = await request(app).get("/api/v1/books/book1/bookmarks")
@@ -57,7 +57,7 @@ describe("GET /api/v1/books/:bookId/bookmarks", () => {
     }))
 
     //@ts-ignore
-    const mod = await import("@/server")
+    const mod = await import("@/app")
     const app = mod.default
 
     const res = await request(app).get("/api/v1/books/book1/bookmarks")
@@ -97,7 +97,7 @@ describe("GET /api/v1/books/:bookId/bookmarks", () => {
     }))
 
     //@ts-ignore
-    const mod = await import("@/server")
+    const mod = await import("@/app")
     const app = mod.default
 
     const res = await request(app).get("/api/v1/books/book1/bookmarks")
@@ -130,7 +130,7 @@ describe("POST /api/v1/books/:bookId/bookmarks", () => {
     }))
 
     //@ts-ignore
-    const mod = await import("@/server")
+    const mod = await import("@/app")
     const app = mod.default
 
     const res = await request(app)
@@ -165,7 +165,7 @@ describe("POST /api/v1/books/:bookId/bookmarks", () => {
     }))
 
     //@ts-ignore
-    const mod = await import("@/server")
+    const mod = await import("@/app")
     const app = mod.default
 
     const res = await request(app)
@@ -200,7 +200,7 @@ describe("POST /api/v1/books/:bookId/bookmarks", () => {
     }))
 
     //@ts-ignore
-    const mod = await import("@/server")
+    const mod = await import("@/app")
     const app = mod.default
 
     const res1 = await request(app)
@@ -264,7 +264,7 @@ describe("POST /api/v1/books/:bookId/bookmarks", () => {
     }))
 
     //@ts-ignore
-    const mod = await import("@/server")
+    const mod = await import("@/app")
     const app = mod.default
 
     const res = await request(app)
@@ -304,7 +304,7 @@ describe("DELETE /api/v1/books/:bookId/bookmarks/:bookmarkId", () => {
     }))
 
     //@ts-ignore
-    const mod = await import("@/server")
+    const mod = await import("@/app")
     const app = mod.default
 
     const res = await request(app).delete("/api/v1/books/book1/bookmarks/bm1")
@@ -336,7 +336,7 @@ describe("DELETE /api/v1/books/:bookId/bookmarks/:bookmarkId", () => {
     }))
 
     //@ts-ignore
-    const mod = await import("@/server")
+    const mod = await import("@/app")
     const app = mod.default
 
     const res = await request(app).delete("/api/v1/books/book1/bookmarks/bm1")
@@ -371,7 +371,7 @@ describe("DELETE /api/v1/books/:bookId/bookmarks/:bookmarkId", () => {
     }))
 
     //@ts-ignore
-    const mod = await import("@/server")
+    const mod = await import("@/app")
     const app = mod.default
 
     const res = await request(app).delete("/api/v1/books/book1/bookmarks/bm1")
@@ -407,11 +407,209 @@ describe("DELETE /api/v1/books/:bookId/bookmarks/:bookmarkId", () => {
     }))
 
     //@ts-ignore
-    const mod = await import("@/server")
+    const mod = await import("@/app")
     const app = mod.default
 
     const res = await request(app).delete("/api/v1/books/book1/bookmarks/bm1")
     expect(res.status).toBe(200)
     expect(res.body).toEqual({ success: true })
+  })
+})
+
+describe("PATCH /api/v1/books/:bookId/bookmarks/:bookmarkId", () => {
+  beforeEach(() => {
+    jest.resetModules()
+    jest.clearAllMocks()
+  })
+
+  it("debería devolver 401 si no hay sesión", async () => {
+    jest.unstable_mockModule("@/lib/auth", () => ({
+      auth: {
+        api: {
+          getSession: async () => null
+        }
+      }
+    }))
+
+    jest.unstable_mockModule("@/config/prisma", () => ({
+      dbPrisma: {}
+    }))
+
+    jest.unstable_mockModule("@/lib/r2", () => ({
+      r2: {}
+    }))
+
+    //@ts-ignore
+    const mod = await import("@/app")
+    const app = mod.default
+
+    const res = await request(app)
+      .patch("/api/v1/books/book1/bookmarks/bm1")
+      .send({ name: "Nuevo nombre" })
+
+    expect(res.status).toBe(401)
+    expect(res.body.error).toBe("No autorizado")
+  })
+
+  it("debería devolver 403 si el usuario no tiene acceso al libro", async () => {
+    jest.unstable_mockModule("@/lib/auth", () => ({
+      auth: {
+        api: {
+          getSession: async () => ({
+            user: { id: "user1" }
+          })
+        }
+      }
+    }))
+
+    jest.unstable_mockModule("@/config/prisma", () => ({
+      dbPrisma: {
+        user_book: {
+          findFirst: async () => null
+        }
+      }
+    }))
+
+    jest.unstable_mockModule("@/lib/r2", () => ({
+      r2: {}
+    }))
+
+    //@ts-ignore
+    const mod = await import("@/app")
+    const app = mod.default
+
+    const res = await request(app)
+      .patch("/api/v1/books/book1/bookmarks/bm1")
+      .send({ name: "Nuevo nombre" })
+
+    expect(res.status).toBe(403)
+    expect(res.body.error).toBe("No autorizado o libro no encontrado")
+  })
+
+  it("debería devolver 404 si el bookmark no pertenece al libro", async () => {
+    jest.unstable_mockModule("@/lib/auth", () => ({
+      auth: {
+        api: {
+          getSession: async () => ({
+            user: { id: "user1" }
+          })
+        }
+      }
+    }))
+
+    jest.unstable_mockModule("@/config/prisma", () => ({
+      dbPrisma: {
+        user_book: {
+          findFirst: async () => ({ id: "ub1" })
+        },
+        bookmark: {
+          findFirst: async () => null
+        }
+      }
+    }))
+
+    jest.unstable_mockModule("@/lib/r2", () => ({
+      r2: {}
+    }))
+
+    //@ts-ignore
+    const mod = await import("@/app")
+    const app = mod.default
+
+    const res = await request(app)
+      .patch("/api/v1/books/book1/bookmarks/bm1")
+      .send({ name: "Nuevo nombre" })
+
+    expect(res.status).toBe(404)
+    expect(res.body.error).toBe("Bookmark no encontrado")
+  })
+
+  it("debería devolver 400 si el nombre excede 200 caracteres", async () => {
+    jest.unstable_mockModule("@/lib/auth", () => ({
+      auth: {
+        api: {
+          getSession: async () => ({
+            user: { id: "user1" }
+          })
+        }
+      }
+    }))
+
+    jest.unstable_mockModule("@/config/prisma", () => ({
+      dbPrisma: {
+        user_book: {
+          findFirst: async () => ({ id: "ub1" })
+        },
+        bookmark: {
+          findFirst: async () => ({ id: "bm1" })
+        }
+      }
+    }))
+
+    jest.unstable_mockModule("@/lib/r2", () => ({
+      r2: {}
+    }))
+
+    //@ts-ignore
+    const mod = await import("@/app")
+    const app = mod.default
+
+    const res = await request(app)
+      .patch("/api/v1/books/book1/bookmarks/bm1")
+      .send({ name: "x".repeat(201) })
+
+    expect(res.status).toBe(400)
+    expect(res.body.error).toBe("Validation failed")
+  })
+
+  it("debería actualizar solo name y textPreview, sin tocar pageNumber", async () => {
+    const updateArgs: any = { data: undefined, where: undefined }
+
+    jest.unstable_mockModule("@/lib/auth", () => ({
+      auth: {
+        api: {
+          getSession: async () => ({
+            user: { id: "user1" }
+          })
+        }
+      }
+    }))
+
+    jest.unstable_mockModule("@/config/prisma", () => ({
+      dbPrisma: {
+        user_book: {
+          findFirst: async () => ({ id: "ub1" })
+        },
+        bookmark: {
+          findFirst: async () => ({ id: "bm1", pageNumber: 42 }),
+          update: async (args: any) => {
+            updateArgs.data = args.data
+            updateArgs.where = args.where
+            return { id: "bm1", name: "Nuevo nombre", textPreview: "Prev", pageNumber: 42 }
+          }
+        }
+      }
+    }))
+
+    jest.unstable_mockModule("@/lib/r2", () => ({
+      r2: {}
+    }))
+
+    //@ts-ignore
+    const mod = await import("@/app")
+    const app = mod.default
+
+    const res = await request(app)
+      .patch("/api/v1/books/book1/bookmarks/bm1")
+      // pageNumber y userBookId se envían a propósito: el schema debe descartarlos
+      .send({ name: "Nuevo nombre", textPreview: "Prev", pageNumber: 999, userBookId: "otro" })
+
+    expect(res.status).toBe(200)
+    expect(updateArgs.where).toEqual({ id: "bm1" })
+    expect(updateArgs.data).toEqual({ name: "Nuevo nombre", textPreview: "Prev" })
+    expect(updateArgs.data).not.toHaveProperty("pageNumber")
+    expect(updateArgs.data).not.toHaveProperty("userBookId")
+    expect(res.body.id).toBe("bm1")
+    expect(res.body.pageNumber).toBe(42)
   })
 })

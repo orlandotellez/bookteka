@@ -6,3 +6,9 @@ export interface CreateBookmarkInput {
   textPreview?: string;
 }
 
+/** Campos editables de un marcador existente. */
+export interface UpdateBookmarkInput {
+  name?: string;
+  textPreview?: string | null;
+}
+

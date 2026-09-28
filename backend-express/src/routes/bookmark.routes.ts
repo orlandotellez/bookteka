@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   getBookmarks,
   createBookmark,
+  updateBookmark,
   deleteBookmark,
 } from "@/controllers/bookmark.controller.js";
 import { validate } from "@/middleware/validate.js";
@@ -10,6 +11,7 @@ import {
   BookIdParamSchema,
   BookmarkIdParamSchema,
   CreateBookmarkBodySchema,
+  UpdateBookmarkBodySchema,
 } from "@/schema/bookmark.schema.js";
 
 export const bookmark: Router = Router({ mergeParams: true });
@@ -29,6 +31,15 @@ bookmark.post(
     body: CreateBookmarkBodySchema,
   }),
   createBookmark,
+);
+
+bookmark.patch(
+  "/:bookId/bookmarks/:bookmarkId",
+  validate({
+    params: BookmarkIdParamSchema,
+    body: UpdateBookmarkBodySchema,
+  }),
+  updateBookmark,
 );
 
 bookmark.delete(
