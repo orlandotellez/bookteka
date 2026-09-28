@@ -6,6 +6,7 @@ import Login from "@/pages/auth/Login";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { NotFound } from "@/pages/NotFound";
 import Register from "@/pages/auth/Register";
+import { AuthMode } from "@/pages/auth/AuthMode";
 import { PublicRoute } from "./PublicRoute";
 
 export const AppRoutes = () => {
@@ -13,6 +14,11 @@ export const AppRoutes = () => {
     <>
       <Routes>
         <Route element={<App />}>
+          <Route path="/auth" element={
+            <PublicRoute>
+              <AuthMode />
+            </PublicRoute>
+          } />
           <Route path="/auth/login" element={
             <PublicRoute>
               <Login />

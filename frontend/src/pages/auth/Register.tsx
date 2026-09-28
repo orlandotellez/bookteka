@@ -1,16 +1,8 @@
-import { SideLogo } from "@/components/pages/auth/SideLogo";
-import styles from "./Login.module.css";
+import { AuthScreen } from "@/components/pages/auth/AuthScreen";
 import { RegisterForm } from "@/components/pages/auth/RegisterForm";
 
 const Register = () => {
-  return (
-    <>
-      <section className={styles.container}>
-        <SideLogo />
-        <RegisterForm />
-      </section>
-    </>
-  );
+  return <AuthScreen><RegisterForm /></AuthScreen>;
 };
 
 export default Register;

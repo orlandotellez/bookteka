@@ -14,7 +14,6 @@ import logoDark from "../../../assets/logoDark.svg";
 import logoLight from "../../../assets/logoLight.svg";
 import { useTheme } from "@/context/ThemeContext";
 import { isDarkTheme } from "@/context/theme";
-import { IconTheme } from "../../common/IconTheme.tsx";
 
 export const LoginForm = () => {
   const navigate = useNavigate();
@@ -52,9 +51,6 @@ export const LoginForm = () => {
 
   return (
     <article className={styles.container}>
-      <div className={styles.iconContainer}>
-        <IconTheme />
-      </div>
 
       <div className={styles.logo}>
         {isDarkTheme(theme) ? (
