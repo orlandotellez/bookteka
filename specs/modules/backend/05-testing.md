@@ -151,7 +151,7 @@ Un umbral alto sin cubrir `lib/auth.ts` no aporta nada: mide líneas, no riesgo.
 | Gap | Consecuencia |
 |---|---|
 | **No hay CI** | `.github/` no existe. Nada corre estos tests automáticamente. |
-| **Tests no herméticos** | Las suites HTTP dependen de un `.env` local: `config/env.ts` llama `dotenv.config()` al cargarse y lanza `Missing environment variable: DATABASE_URL` si no está. Verificado: sin `.env`, `pnpm test` falla antes de ejecutar un solo test. Esto **bloquea la CI**, que no tiene `.env`. Arreglo: un `setupFiles` de Jest que fije las variables, o variables de entorno en el workflow. |
+| ~~Tests no herméticos~~ **✅ resuelto** | `src/tests/setup.ts` inyecta las variables vía `setupFiles` de Jest. Verificado: 123/123 tests con el `.env` fuera. La CI no necesita `.env`. |
 | **No hay reporter de cobertura** | La cobertura es invisible. |
 | **No hay umbral** | Nada impide que caiga. |
 | **No hay lint en el backend** | A diferencia del frontend, el backend no tiene ESLint ni siquiera instalado. |

@@ -141,9 +141,9 @@ Un `ZodError` se propaga por `next(err)` y el `errorHandler` lo mapea a `400` co
 | `FRONTEND_URL` | `FRONTEND_URL` | Allowlist de CORS, separada por comas. |
 | `JWT_SECRET` | `JWT_SECRET` | Firma del access token. |
 | `JWT_REFRESH_SECRET` | `JWT_REFRESH_SECRET` | Firma del refresh token. |
-| `R2_ACCESS_KEY` | `R2_ACCESS_KEY_ID` | Credencial de Cloudflare R2. |
-| `R2_SECRET_KEY` | `R2_SECRET_ACCESS_KEY` | Credencial de R2. |
-| `R2_S3_API` | `R2_ENDPOINT` | Endpoint S3 de R2. |
+| `R2_ACCESS_KEY_ID` | `R2_ACCESS_KEY_ID` | Credencial de Cloudflare R2. |
+| `R2_SECRET_ACCESS_KEY` | `R2_SECRET_ACCESS_KEY` | Credencial de R2. |
+| `R2_ENDPOINT` | `R2_ENDPOINT` | Endpoint S3 de R2. |
 | `R2_BUCKET` | `R2_BUCKET` | Bucket donde viven los PDFs. |
 | `R2_PUBLIC_DOMAIN` | `R2_PUBLIC_DOMAIN` | Dominio público para armar `fileUrl`. |
 | `RESEND_API_KEY` | `RESEND_API_KEY` | API key de Resend (**hoy no se usa**, ver arriba). |

@@ -1,2 +1,8 @@
 .env
 .atl
+
+node_modules
+dist
+*.keystore
+*.apk
+*.apk.idsig

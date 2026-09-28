@@ -11,15 +11,16 @@ Variables de entorno, archivos de configuración y cómo se manejan los secretos
 `src/config/env.ts` lee el entorno con `dotenv` y valida **al arrancar**. Si falta una variable obligatoria, lanza `Missing environment variable: <key>` y el proceso muere. Es deliberado: es preferible que el backend no levante a que falle en runtime con un error confuso.
 
 | Variable | Clave en `env.ts` | Obligatoria | Default | Para qué |
+
 |---|---|---|---|---|
 | `PORT` | `PORT` | No | `3000` | Puerto del servidor. |
 | `DATABASE_URL` | `DATABASE_URL` | **Sí** | — | DSN de PostgreSQL. |
 | `FRONTEND_URL` | `FRONTEND_URL` | **Sí** | — | Allowlist de CORS, separada por comas. |
 | `JWT_SECRET` | `JWT_SECRET` | **Sí** | — | Firma del access token. Mínimo 32 caracteres. |
 | `JWT_REFRESH_SECRET` | `JWT_REFRESH_SECRET` | **Sí** | — | Firma del refresh token. Mínimo 32 caracteres, distinto del anterior. |
-| `R2_ACCESS_KEY_ID` | `R2_ACCESS_KEY` | **Sí** | — | Credencial de Cloudflare R2. |
-| `R2_SECRET_ACCESS_KEY` | `R2_SECRET_KEY` | **Sí** | — | Credencial de R2. |
-| `R2_ENDPOINT` | `R2_S3_API` | **Sí** | — | Endpoint S3 de R2. |
+| `R2_ACCESS_KEY_ID` | `R2_ACCESS_KEY_ID` | **Sí** | — | Credencial de Cloudflare R2. |
+| `R2_SECRET_ACCESS_KEY` | `R2_SECRET_ACCESS_KEY` | **Sí** | — | Credencial de R2. |
+| `R2_ENDPOINT` | `R2_ENDPOINT` | **Sí** | — | Endpoint S3 de R2. |
 | `R2_BUCKET` | `R2_BUCKET` | **Sí** | — | Bucket donde viven los PDFs. |
 | `R2_PUBLIC_DOMAIN` | `R2_PUBLIC_DOMAIN` | **Sí** | — | Dominio público, para armar `fileUrl`. |
 | `RESEND_API_KEY` | `RESEND_API_KEY` | **Sí** | — | API key de Resend. **Hoy no se usa.** |
@@ -36,7 +37,14 @@ Se leen directamente de `process.env`, sin validación:
 | `TRUST_BACKEND_ORIGINS` | `lib/origins.ts` | `false` | Si es `true`, confía en origins cuyo host coincida con `X-Forwarded-Host`. |
 | `DATABASE_URL` (Prisma) | `prisma/schema.prisma` | — | La lee Prisma por su cuenta, directo del entorno. |
 
-> **El mapeo interno no coincide con el nombre de la variable.** `env.R2_ACCESS_KEY` viene de `R2_ACCESS_KEY_ID`, `env.R2_S3_API` viene de `R2_ENDPOINT`. El objeto literal de `env.ts` hace la traducción. Ver `specs/tasks/backend/03-configuracion.md` tarea 2.
+> Las claves internas de `env` coinciden con los nombres de las variables:
+> `env.R2_ACCESS_KEY_ID` viene de `R2_ACCESS_KEY_ID`, etc. Antes había un mapeo
+> intermedio (`R2_ACCESS_KEY`, `R2_SECRET_KEY`, `R2_S3_API`) que se eliminó en
+> `specs/tasks/backend/03-configuracion.md` tarea 2.
+>
+> **Los tests son herméticos**: `src/tests/setup.ts` inyecta las variables
+> (Jest `setupFiles`), así que la suite corre sin `.env` local. Verificado:
+> 123/123 tests con el `.env` fuera.
 
 ---
 

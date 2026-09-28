@@ -45,31 +45,31 @@ Que la configuración sea predecible: examples sincronizados, nombres de variabl
 
 ## Tareas
 
-- [ ] 1. Alinear los tres `.env.example`
+- [x] 1. Alinear los tres `.env.example`
   - `backend-express/.env.example` es el canónico: es el que se copia para desarrollo del backend.
   - La raíz (`.env.example`) solo sirve a `docker-compose.yml`. Revisarlo contra el bloque `environment:` de `docker-compose.yml`: ahí aparecen `DATABASE_URL`, `FRONTEND_URL`, `PORT`, `JWT_*`, `R2_*`, `RESEND_*` y `TRUST_BACKEND_ORIGINS`, que **falta** en el `.env.example` de la raíz.
   - Agregar `TRUST_BACKEND_ORIGINS` a los examples con una nota de que solo se activa detrás de un proxy de confianza (`src/config/origins.ts`).
-- [ ] 2. Documentar el mapeo de nombres en `src/config/env.ts`
+- [x] 2. Renombrar las claves internas en `src/config/env.ts`
   - Agregar un comentario junto al objeto `env` que liste cada par: `R2_ACCESS_KEY ← R2_ACCESS_KEY_ID`, `R2_SECRET_KEY ← R2_SECRET_ACCESS_KEY`, `R2_S3_API ← R2_ENDPOINT`.
   - Alternativa mejor: renombrar las claves internas para que coincidan con las de entorno y eliminar el mapeo. Es un rename interno, no afecta ningún `.env` externo. Si se hace, actualizar los 6 puntos de uso: `src/core/storage/s3.client.ts`, `src/modules/books/application/books.service.ts`, `src/modules/books/application/common/books.storage.ts`, `src/http/health.ts` y los specs.
-- [ ] 3. Endurecer el escape de `NODE_ENV=test`
+- [x] 3. Endurecer el escape de `NODE_ENV=test`
   - `getJwtSecret` hoy devuelve un secreto conocido si `NODE_ENV === "test"`. Agregar una guarda de entorno: solo aceptarlo si además el proceso no está escuchando en un puerto de producción, o directamente exigir que los tests inyecten el valor desde el setup de Jest.
   - Más simple y suficiente: que el escape viva en el setup de tests, no en `env.ts`. `src/config/env.ts` debería exigir el secreto siempre.
-- [ ] 4. Corregir `FRONTEND_URL` en los examples
+- [x] 4. Corregir `FRONTEND_URL` en los examples
   - Poner `http://localhost:1420` en `backend-express/.env.example` para que coincida con el puerto real de Vite, y dejar nota de que `5173` también funciona por estar en `DEV_EXTRA_ORIGINS`.
   - En la raíz, `docker-compose.yml` ya usa `http://localhost:8081`, que es el puerto published del frontend. Verificar que coincida.
-- [ ] 5. Consolidar la protección de secretos en la raíz
+- [x] 5. Consolidar la protección de secretos en la raíz
   - **Verificado: hoy no hay filtración.** `git ls-files` no devuelve ningún `.env` real, ni `frontend/bookteka.keystore`, ni los APKs de 53MB. Los tres `.gitignore` por proyecto funcionan.
   - El punto débil es estructural: la raíz tiene un `.gitignore` de **una sola línea** (`.env`) mientras el resto de la cobertura depende de los `.gitignore` de cada proyecto. Si alguien agrega un proyecto nuevo, no hereda ninguna protección.
   - Mover el patrón común (`.env`, `node_modules`, `dist`, `*.keystore`, `*.apk`) al `.gitignore` de la raíz y dejar en los hijos solo lo específico.
   - Agregar `*.idsig` a `backend-express/.gitignore`: `frontend/.gitignore` ya lo tiene, el del backend no (no afecta hoy, pero es una asimetría innecesaria).
-- [ ] 6. Crear `specs/docs/` con la tabla de variables
+- [x] 6. Actualizar la tabla de variables en `specs/modules/backend/06-configuracion.md`
   - Tabla `Variable` | `Descripción` | `Obligatoria` | `Default` | `Dónde se usa`, derivada de `src/config/env.ts`.
 
 ## Criterios de Done
 
-- [ ] Los tres `.env.example` están sincronizados con `src/config/env.ts` y con `docker-compose.yml`.
-- [ ] `src/config/env.ts` no tiene ningún camino por el cual el backend arranque con un secreto conocido.
-- [ ] `frontend/bookteka.keystore` y los APKs siguen fuera de git después de mover los patrones a la raíz.
-- [ ] `git check-ignore` confirma que ningún `.env` real está trackeado.
-- [ ] La tabla de variables de entorno existe en `specs/docs/`.
+- [x] Los tres `.env.example` están sincronizados con `src/config/env.ts` y con `docker-compose.yml`.
+- [x] `src/config/env.ts` no tiene ningún camino por el cual el backend arranque con un secreto conocido.
+- [x] `frontend/bookteka.keystore` y los APKs siguen fuera de git después de mover los patrones a la raíz (`git check-ignore` los confirma).
+- [x] `git check-ignore` confirma que ningún `.env` real está trackeado.
+- [~] La tabla de variables de entorno existe y está actualizada en `specs/modules/backend/06-configuracion.md` (el contrato no define un 08 en `docs/`; el 06 del módulo es el lugar canónico).

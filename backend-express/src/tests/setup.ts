@@ -1,0 +1,12 @@
+process.env.NODE_ENV = "test";
+process.env.DATABASE_URL = "postgres://test:test@localhost:5432/bookteka_test";
+process.env.FRONTEND_URL = "http://localhost:1420";
+process.env.JWT_SECRET = "jest-test-secret-for-bookteka-with-more-than-32";
+process.env.JWT_REFRESH_SECRET = "jest-test-refresh-secret-for-bookteka-plus";
+process.env.R2_ACCESS_KEY_ID = "test-r2-access-key";
+process.env.R2_SECRET_ACCESS_KEY = "test-r2-secret-key";
+process.env.R2_ENDPOINT = "https://test.r2.cloudflarestorage.com";
+process.env.R2_BUCKET = "bookteka-test";
+process.env.R2_PUBLIC_DOMAIN = "https://test.r2.dev";
+process.env.RESEND_API_KEY = "re_test_key";
+process.env.RESEND_FROM_EMAIL = "test@bookteka.com";

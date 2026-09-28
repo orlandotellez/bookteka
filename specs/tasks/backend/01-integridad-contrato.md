@@ -95,5 +95,5 @@ Que el contrato entre cliente y servidor sea el mismo en los dos sentidos: cada 
 
 ## Deuda que quedó abierta (anotada en otras tareas)
 
-- **Tests no herméticos**: las suites HTTP dependen de un `.env` local. Sin él, `pnpm test` muere con `Missing environment variable: DATABASE_URL`. Verificado empíricamente. Esto bloquea la CI → `specs/tasks/backend/05-ci-y-calidad.md`.
+- **Tests herméticos** ✅: `src/tests/setup.ts` inyecta las variables vía `setupFiles` de Jest (resuelto en `specs/tasks/backend/03-configuracion.md`). La CI no necesita `.env`.
 - **El `PATCH` de marcadores no tiene test de integración contra PostgreSQL**: se prueba el contrato con Prisma mockeado.
