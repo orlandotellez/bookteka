@@ -100,7 +100,6 @@ describe("coalescer de progreso", () => {
     await useBookStore.getState().updateCurrentPage("book-1", 12);
     await useBookStore.getState().updateReadingTime("book-1", 60);
 
-    await useBookStore.getState().flush;
     vi.advanceTimersByTime(3000);
     await vi.runAllTimersAsync();
 
