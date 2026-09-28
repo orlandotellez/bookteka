@@ -48,7 +48,7 @@ Una fila por refresh token en la tabla `session`, con `ip_address` (del header `
 
 `createVerification` genera un código de 6 caracteres del alfabeto `A-Z0-9` con 15 minutos de validez y lo guarda en `verification`. `verifyEmail` valida, marca `email_verified = true` y borra el registro.
 
-> **El código no se envía por email.** Se imprime con `console.info` en `modules/auth/application/auth.service.ts`. `src/modules/auth/application/common/email.utils.ts` implementa `sendEmail()` con Resend y **ningún archivo lo importa**. Ver `specs/tasks/backend/02-email-verificacion.md`.
+> El código se envía por email vía `sendEmail` (`application/common/email.utils.ts`). Si el envío falla, se loguea y el registro continúa: el usuario puede pedir un reenvío. La respuesta sigue siendo genérica ("Si el correo existe, se envió un código") para no filtrar qué correos están registrados.
 
 ---
 
@@ -243,7 +243,7 @@ El resto de los defaults de helmet se aplican: `X-Content-Type-Options`, `X-Fram
 
 | Gap | Archivo | Impacto |
 |---|---|---|
-| El código de verificación no se envía | `src/modules/auth/application/auth.service.ts` | La verificación de email no es completable por el usuario. |
+| El envío de la verificación depende de Resend | `createVerification` en `modules/auth/application/auth.service.ts` | Un fallo de Resend loguea y no rompe el registro; el usuario repite con `resend-verification`. |
 | `role: admin` sin ninguna comprobación | enum `ROLE` | Si se agrega una ruta sin guard, queda abierta. |
 | El access token no se revoca al hacer logout | `src/modules/auth/application/auth.service.ts` | Ventana de hasta 15 min. Decisión consciente (D-05). |
 | Status inconsistente 403 vs 404 | `book.service.ts` | Dificulta tests de contrato; no filtra información. |
