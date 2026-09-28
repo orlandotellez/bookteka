@@ -1,19 +1,24 @@
-import moon from "@/assets/moon.svg";
-import sun from "@/assets/sun.svg";
 import styles from "./IconTheme.module.css";
+import { THEMES, THEME_LABELS, type ThemeName } from "@/context/theme";
 import { useTheme } from "@/context/ThemeContext";
 
 export const IconTheme = () => {
-  const { theme, toggleTheme } = useTheme();
-  const isDark = theme === "dark"
+  const { theme, setTheme } = useTheme();
+
+  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setTheme(e.target.value as ThemeName);
+  };
 
   return (
-    <button onClick={toggleTheme} className={styles.buttonTheme}>
-      {isDark ? (
-        <img src={sun} alt="sun icon" />
-      ) : (
-        <img src={moon} alt="moon icon" />
-      )}
-    </button>
+    <label className={styles.buttonTheme}>
+      <span className="sr-only">Tema</span>
+      <select value={theme} onChange={handleChange} aria-label="Tema visual">
+        {THEMES.map((name) => (
+          <option key={name} value={name}>
+            {THEME_LABELS[name]}
+          </option>
+        ))}
+      </select>
+    </label>
   );
 };

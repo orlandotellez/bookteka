@@ -13,6 +13,7 @@ import { useState } from "react";
 import logoDark from "../../../assets/logoDark.svg";
 import logoLight from "../../../assets/logoLight.svg";
 import { useTheme } from "@/context/ThemeContext";
+import { isDarkTheme } from "@/context/theme";
 import { IconTheme } from "../../common/IconTheme.tsx";
 
 export const RegisterForm = () => {
@@ -56,7 +57,7 @@ export const RegisterForm = () => {
       </div>
 
       <div className={styles.logo}>
-        {theme == "dark" ? (
+        {isDarkTheme(theme) ? (
           <>
             <img src={logoDark} alt="logo bookteka" />
           </>

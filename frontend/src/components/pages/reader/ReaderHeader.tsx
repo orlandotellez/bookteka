@@ -5,6 +5,7 @@ import StreakButton from "./StreakButton";
 import logoDark from "@/assets/logoDark.svg";
 import logoLight from "@/assets/logoLight.svg";
 import { useTheme } from "@/context/ThemeContext";
+import { isDarkTheme } from "@/context/theme";
 
 interface StreakData {
   currentStreak: number;
@@ -46,7 +47,7 @@ export const ReaderHeader = ({
       <div className={styles.container}>
         {/* Lado izquierdo */}
         <div className={styles.logoContainer}>
-          {theme == "dark" ? (
+          {isDarkTheme(theme) ? (
             <>
               <img src={logoDark} alt="logo bookteka" />
             </>

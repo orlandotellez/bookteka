@@ -3,6 +3,7 @@ import logoDark from "@/assets/logoDark.svg";
 import styles from "./Header.module.css";
 import { useBookStore } from "@/store/bookStore";
 import { useTheme } from "@/context/ThemeContext";
+import { isDarkTheme } from "@/context/theme";
 import { User } from "lucide-react";
 import { Link } from "react-router-dom";
 import { IconTheme } from "../common/IconTheme";
@@ -15,7 +16,7 @@ export const Header = () => {
     <header className={styles.header}>
       <article>
         <div className={styles.logoContainer}>
-          {theme == "dark" ? (
+          {isDarkTheme(theme) ? (
             <>
               <img src={logoDark} alt="logo bookteka" />
             </>

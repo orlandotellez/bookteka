@@ -2,13 +2,14 @@ import styles from "./SideLogo.module.css";
 import logoDark from "../../../assets/logoDark.svg";
 import logoLight from "../../../assets/logoLight.svg";
 import { useTheme } from "@/context/ThemeContext";
+import { isDarkTheme } from "@/context/theme";
 
 export const SideLogo = () => {
   const { theme } = useTheme();
   return (
     <>
       <article className={styles.container}>
-        {theme == "dark" ? (
+        {isDarkTheme(theme) ? (
           <>
             <img src={logoDark} alt="logo bookteka" />
           </>

@@ -1,40 +1,29 @@
 import React, { createContext, useContext, useState } from "react";
-
-export type ThemeName = "light" | "dark"
+import {
+  isThemeName,
+  type ThemeName,
+} from "@/context/theme";
 
 type ThemeContextType = {
-  theme: string;
-  toggleTheme: () => void;
+  theme: ThemeName;
+  setTheme: (name: ThemeName) => void;
 };
-
-export interface ThemeInfo {
-  id: ThemeName;
-  name: string;
-  icon: React.ReactNode;
-  colors: {
-    primary: string;
-    secondary: string;
-  };
-}
 
 const ThemeContext = createContext<ThemeContextType>({} as ThemeContextType);
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-  // Inicialización síncrona desde localStorage para evitar el flash de tema
-  // (el tema correcto ya se aplica en el primer render).
   const [theme, setTheme] = useState<ThemeName>(() => {
     const savedTheme = localStorage.getItem("theme");
-    return savedTheme === "dark" ? "dark" : "light";
+    return isThemeName(savedTheme) ? savedTheme : "light";
   });
 
-  const toggleTheme = () => {
-    const newTheme = theme === "light" ? "dark" : "light";
-    setTheme(newTheme);
-    localStorage.setItem("theme", newTheme);
-  }
+  const changeTheme = (name: ThemeName) => {
+    setTheme(name);
+    localStorage.setItem("theme", name);
+  };
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme, setTheme: changeTheme }}>
       {children}
     </ThemeContext.Provider>
   );
