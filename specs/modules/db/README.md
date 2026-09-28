@@ -15,6 +15,7 @@ db/
 │
 ├── schemas/
 │   ├── README.md                      # Índice de tablas
+│   ├── index.md                       # Modelo completo + relaciones + convenciones
 │   ├── 01-users.md
 │   ├── 02-sessions.md
 │   ├── 03-accounts.md
@@ -51,9 +52,9 @@ db/
 | `session` | `session` | Refresh tokens activos (rotación). |
 | `account` | `account` | Cuentas de credenciales (password bcrypt). |
 | `verification` | `verification` | Códigos de verificación de email. |
-| `book` | `books` | Libro físico (PDF en R2), dedup por hash. |
-| `user_book` | `user_books` | Relación usuario-libro + progreso de lectura. |
-| `bookmark` | `bookmarks` | Marcadores por página. |
-| `user_streak` | `user_streaks` | Racha de lectura (1 por usuario). |
-| `audit_log` | `audit_logs` | Auditoría de acciones (borrados). |
+| `book` | `book` | Libro físico (PDF en R2), dedup por hash. |
+| `user_book` | `user_book` | Relación usuario-libro + progreso de lectura. |
+| `bookmark` | `bookmark` | Marcadores por página. |
+| `user_streak` | `user_streak` | Racha de lectura (1 por usuario). |
+| `audit_log` | `audit_log` | Auditoría de acciones (borrados). |
 | enum `ROLE` | — | `user`, `admin` (default `user`). |

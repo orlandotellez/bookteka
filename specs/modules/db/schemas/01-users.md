@@ -29,9 +29,9 @@ Usuarios de Bookteka. Modelo Prisma `user`, mapeado a tabla `users` (`@@map("use
 |---|---|---|
 | `session` | 1:N | `session.user_id → users.id` (ON DELETE Cascade) |
 | `account` | 1:N | `account.user_id → users.id` (ON DELETE Cascade) |
-| `user_books` | 1:N | `user_books.userId → users.id` (ON DELETE Cascade) |
-| `user_streaks` | 1:1 | `user_streaks.userId → users.id` |
-| `audit_logs` | 1:N | `audit_logs.userId → users.id` |
+| `user_book` | 1:N | `user_book.userId → users.id` (ON DELETE Cascade) |
+| `user_streak` | 1:1 | `user_streak.userId → users.id` |
+| `audit_log` | 1:N | `audit_log.userId → users.id` |
 
 ## Reglas de negocio
 

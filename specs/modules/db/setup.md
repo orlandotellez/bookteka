@@ -47,7 +47,7 @@ Editar `backend-express/.env`:
 ```env
 PORT=3000
 DATABASE_URL=postgres://bookteka:bookteka123@localhost:5433/bookteka_db?schema=public
-FRONTEND_URL=http://localhost:1420
+FRONTEND_URL=http://localhost:5173
 JWT_SECRET=<openssl rand -hex 32>
 JWT_REFRESH_SECRET=<openssl rand -hex 32>
 
@@ -62,6 +62,8 @@ RESEND_FROM_EMAIL=onboarding@resend.dev
 ```
 
 > ⚠️ `JWT_SECRET` y `JWT_REFRESH_SECRET` deben tener **al menos 32 caracteres** (lo valida `config/env.ts`).
+>
+> `FRONTEND_URL` es la allowlist de CORS separada por comas. `backend-express/.env.example` trae `http://localhost:5173`, pero el dev server de Vite corre en `1420`; ambos están hardcodeados en `DEV_EXTRA_ORIGINS` (`src/lib/origins.ts`), así que en desarrollo funciona cualquiera de los dos.
 
 ---
 
@@ -81,14 +83,16 @@ npx prisma migrate dev        # aplica las migraciones + genera cliente
 npx prisma studio             # (opcional) UI para explorar los datos
 ```
 
-Migraciones existentes en `prisma/migrations/`:
+Migraciones existentes en `prisma/migrations/` (6 en total):
 
 | Migración | Propósito |
 |---|---|
-| `20260603152941_init` | Schema inicial. |
-| `20260801000000_add_jwt_auth` | Modelos `session`/`account`/`verification` para JWT propio. |
-| `20260802010336_init` | Ajustes de JWT. |
-| `20260802020000_normalize_legacy_auth` | Normalización de auth legacy. |
+| `20260603152941_init` | Schema inicial: `book`, `user_book`, `bookmark` + índices. |
+| `20260801000000_add_jwt_auth` | Renombra `user` → `users` y agrega `session`/`account`/`verification` para el JWT propio. Crea el enum `ROLE` con `user`/`admin`/`cajero`. |
+| `20260802010336_init` | `ALTER TYPE "ROLE" ADD VALUE IF NOT EXISTS 'user'`. |
+| `20260802020000_normalize_legacy_auth` | Normaliza `account.provider_id` de `credential` a `credentials` y borra sesiones legacy cuyo token no es JWT. |
+| `20260802040000_remove_cajero_role` | Elimina el valor `cajero` del enum `ROLE` (recrea el tipo) y deja `user` como default. |
+| `20260802234345_init` | Quita el `DEFAULT` de `account.updated_at` y `verification.updated_at`. |
 
 ---
 
@@ -102,18 +106,20 @@ Deberías ver:
 
 ```
             List of relations
- Schema |    Name     | Type  |  Owner
---------+-------------+-------+--------
- public | account     | table | bookteka
- public | audit_logs  | table | bookteka
- public | bookmarks   | table | bookteka
- public | books       | table | bookteka
- public | session     | table | bookteka
- public | user_books  | table | bookteka
- public | user_streaks| table | bookteka
- public | users       | table | bookteka
- public | verification| table | bookteka
+ Schema |    Name      | Type  |  Owner
+--------+---------------+-------+----------
+ public | account      | table | bookteka
+ public | audit_log    | table | bookteka
+ public | book         | table | bookteka
+ public | bookmark     | table | bookteka
+ public | session      | table | bookteka
+ public | user_book    | table | bookteka
+ public | user_streak  | table | bookteka
+ public | users        | table | bookteka
+ public | verification | table | bookteka
 ```
+
+> 9 tablas. Solo `users` está en plural: es el único modelo de autenticación con `@@map` que cambia el nombre. Las otras 8 usan el nombre del modelo.
 
 Enums (`\dT+`):
 

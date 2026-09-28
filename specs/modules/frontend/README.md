@@ -4,11 +4,12 @@ App de **Bookteka** con React + Vite + TypeScript, dual-target (web + Tauri desk
 
 ## Contents
 
-1. [1-stack](./1-stack.md) — Stack tecnológico, dual-target, build, deps principales
-2. [2-design](./2-design.md) — Sistema de diseño, tokens, temas, componentes
-3. [3-architecture](./3-architecture.md) — Estructura de carpetas, stores, API client, IndexedDB
-4. [4-screens](./4-screens.md) — Inventario de pantallas con sus features
-5. [5-quality](./5-quality.md) — Build, typecheck, testing, convenciones
+1. [01-stack](./01-stack.md) — Stack tecnológico, dual-target, build, deps principales
+2. [02-design](./02-design.md) — Sistema de diseño, tokens, temas, componentes
+3. [03-architecture](./03-architecture.md) — Estructura de carpetas, stores, API client, IndexedDB
+4. [04-screens](./04-screens.md) — Inventario de pantallas con sus features
+5. [05-quality](./05-quality.md) — Build, typecheck, testing, convenciones
+6. [06-estado](./06-estado.md) — Estrategia de estado global (Zustand + IndexedDB)
 
 ## Quick start
 

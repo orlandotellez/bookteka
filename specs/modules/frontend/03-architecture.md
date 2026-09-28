@@ -115,6 +115,21 @@ Stores de IndexedDB: `books` (idx `by-lastRead`, `by-userId`), `bookmarks` (idx 
 
 ---
 
+### Capa PDF — dos caminos distintos
+
+Hay **dos** módulos de extracción y cada uno cubre un caso:
+
+| Módulo | Entrada | Worker | Quién lo usa |
+|---|---|---|---|
+| `lib/pdfExtractor.ts` | `File` local (el que el usuario acaba de elegir) | `import PDFWorker from "pdfjs-dist/build/pdf.worker.min.mjs?url"` — lo resuelve Vite | `ShowUploaderModal` (`isValidPDF`, `extractTextFromPDF`) |
+| `lib/pdfService.ts` | `bookId` (libro que ya está en la nube) | `pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js"` — ruta hardcodeada | `bookStore.getBookById` / `downloadBookFromCloud` (`processBookForReading`) |
+
+`pdfService.ts` marca el texto de cada página con `[PAGE_n]`; `pdfExtractor.ts` usa `[PAGE_n]\n`. **Los dos formatos no coinciden**, y el segundo apunta a un worker que no está en `public/`. Antes de tocar cualquiera de los dos, leé `specs/tasks/frontend/02-pdf-worker.md`.
+
+`processBookForReading` es un no-op si el libro ya tiene texto (`book.text.length > 10`): no vuelve a descargar el PDF.
+
+---
+
 ## Capa de API
 
 ### `src/api/client.ts` (unificado)
@@ -163,7 +178,7 @@ export const api = {
 
 - `ApiError` con `status` + `message` (extraído de `{ error | message }`).
 - Pages/stores capturan con try/catch → `toast.error(error.message)` o `set({ error })`.
-- `patchFetchWithSessionToken()` inyecta tokens en fetch nativos para llamadas fuera del client (e.g. `downloadPdfToBlob`).
+- `patchFetchWithSessionToken()` monkey-patchea `window.fetch` para inyectar los tokens, pero **solo en URLs que empiezan por `API_BASE` o `/api`**. Las URLs firmadas de R2 (`downloadPdfToBlob` en `lib/pdfService.ts`) quedan fuera del patch: viajan con `credentials: "include"` y sin `x-session-token`.
 
 ---
 
@@ -178,3 +193,5 @@ export const api = {
 | CSS module | `PascalCase.module.css`. |
 | Tipo | `interface` (preferido) o `type` para unions. |
 | Import de API | siempre `@/api/...`, nunca fetch directo en pages. |
+
+> **`hooks/useBooks.tsx` está muerto.** Ningún archivo lo importa: el estado de la biblioteca vive exclusivamente en `useBookStore`. Es una segunda implementación del mismo dominio que va a divergir. Ver `specs/tasks/frontend/03-codigo-muerto.md`.

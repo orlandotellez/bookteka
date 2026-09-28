@@ -103,18 +103,31 @@ Shape de validación (Zod):
 - El middleware `validate({ body?, params?, query? })` corre en la ruta.
 - Falla → `ZodError` → 400 con `details`.
 
-Ejemplo (book.schema.ts, patrón):
+Ejemplo real (`src/schema/book.schema.ts`):
 
 ```ts
-const BookIdParamSchema = z.object({ id: z.string().uuid("id debe ser UUID válido") });
-const UpdateBookProgressBodySchema = z.object({
+// El id NO se valida como UUID: es un string no vacío.
+const ID = z.string().min(1, "id requerido");
+export const BookIdParamSchema = z.object({ id: ID });
+
+export const UpdateBookProgressBodySchema = z.object({
   readingTimeSeconds: z.number().int().nonnegative().optional(),
-  scrollPosition: z.number().int().nonnegative().optional(),
   currentPage: z.number().int().nonnegative().optional(),
-  lastReadAt: z.preprocess(...).optional(),
+  scrollPosition: z
+    .number().nonnegative().finite()
+    .transform((v) => Math.round(v))   // el cliente manda floats
+    .optional(),
+  lastReadAt: z.preprocess(
+    (v) => (v === undefined ? v : new Date(v as string | number)),
+    z.date({ error: "lastReadAt debe ser string o número" })
+      .refine((d) => !isNaN(d.getTime()), { message: "lastReadAt inválido" }),
+  ).optional(),
 });
 ```
 
+- **Ninguna validación exige UUID.** Los ids viajan como `TEXT` y el schema solo exige que no estén vacíos.
+- `lastReadAt` y `clientTimestamp` usan `preprocess` para aceptar string ISO-8601 o epoch ms, y `refine(!isNaN)` para rechazar el `Invalid Date` que antes se persistía silenciosamente como `null`.
+- Los schemas de body **no usan `.strict()`**: claves desconocidas se descartan en silencio (comportamiento por defecto de Zod, `.strip()`). Documentado en el propio `book.schema.ts`.
 - `CompleteDayBodySchema` usa `.default({})` para permitir bodies vacíos.
 
 ---

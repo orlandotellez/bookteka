@@ -2,7 +2,7 @@
 
 Esquemas de tablas de la base de datos PostgreSQL de Bookteka.
 
-Cada archivo documenta una tabla con su esquema, columnas, constraints, índices y relaciones.
+Cada archivo documenta una tabla con su esquema, columnas, constraints, índices y relaciones. Para el modelo completo en un solo archivo, ver **[index.md](./index.md)**.
 
 Las tablas están numeradas por orden de dependencia:
 
@@ -19,18 +19,19 @@ Las tablas están numeradas por orden de dependencia:
 
 | # | Tabla | Archivo | Descripción |
 |---|---|---|---|
-| 05 | `books` | [05-books.md](./05-books.md) | Libro físico (PDF en R2), dedup por `fileHash`. |
-| 06 | `user_books` | [06-user-books.md](./06-user-books.md) | Relación usuario-libro + progreso de lectura. |
-| 07 | `bookmarks` | [07-bookmarks.md](./07-bookmarks.md) | Marcadores por página. |
+| 05 | `book` | [05-books.md](./05-books.md) | Libro físico (PDF en R2), dedup por `fileHash`. |
+| 06 | `user_book` | [06-user-books.md](./06-user-books.md) | Relación usuario-libro + progreso de lectura. |
+| 07 | `bookmark` | [07-bookmarks.md](./07-bookmarks.md) | Marcadores por página. |
 
 ## 3. Engagement y auditoría (08–09)
 
 | # | Tabla | Archivo | Descripción |
 |---|---|---|---|
-| 08 | `user_streaks` | [08-user-streaks.md](./08-user-streaks.md) | Racha de lectura (1 por usuario). |
-| 09 | `audit_logs` | [09-audit-logs.md](./09-audit-logs.md) | Auditoría de acciones (borrados de libros). |
+| 08 | `user_streak` | [08-user-streaks.md](./08-user-streaks.md) | Racha de lectura (1 por usuario). |
+| 09 | `audit_log` | [09-audit-logs.md](./09-audit-logs.md) | Auditoría de acciones (borrados de libros). |
 
 ---
 
-> **Fuente de verdad**: `backend-express/prisma/schema.prisma` (Prisma 6).
-> **Nota de naming**: los modelos Prisma son singulares (`user`, `book`) y las tablas SQL mapeadas son `users`, `books`... salvo `session`, `account`, `verification` que usan el **mismo nombre en singular** para la tabla (`@@map("session")`, `@@map("account")`, `@@map("verification")`).
+> **Fuente de verdad**: `backend-express/prisma/schema.prisma` (Prisma 6) y los `CREATE TABLE` de `backend-express/prisma/migrations/`.
+>
+> **Nota de naming — importante para SQL crudo**: solo 4 de los 9 modelos declaran `@@map`. `user` mapea a `users`; `session`, `account` y `verification` se mapean a sí mismos. Los 5 restantes (`book`, `user_book`, `bookmark`, `user_streak`, `audit_log`) **no tienen `@@map`**, así que la tabla real es **singular**. Escribir `SELECT * FROM books` falla: la tabla es `book`.

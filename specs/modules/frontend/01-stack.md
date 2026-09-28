@@ -57,7 +57,7 @@ Stack tecnológico de la app React del Bookteka.
 
 | Dep | Propósito |
 |---|---|
-| `pdfjs-dist` 5.x | Renderizado/extracción de texto de PDFs (worker en `public/pdf.worker.min.js`). |
+| `pdfjs-dist` 5.4.624 | Extracción de texto de PDFs. Worker cargado como módulo en `lib/pdfExtractor.ts`; en `lib/pdfService.ts` se apunta a `/pdf.worker.min.js` (⚠️ ese archivo **no existe** en `public/` — ver `specs/tasks/frontend/02-pdf-worker.md`). |
 
 ## Desktop (Tauri)
 
@@ -103,11 +103,13 @@ Mismo `index.html` + mismo JS bundle. Tauri solo agrega la window chrome / WebVi
 ```
 frontend/
 ├── public/
-├── src-tauri/                 # Tauri shell
-│   ├── tauri.conf.json        # productName "bookteka", devUrl :1420
+│   ├── tauri.svg
+│   └── vite.svg            # ⚠️ no hay pdf.worker.min.js (lo apunta lib/pdfService.ts)
+├── src-tauri/                 # Shell nativo Tauri (escrito en Rust, parte del frontend)
+│   ├── tauri.conf.json        # productName "bookteka", version 1.1.0, devUrl :1420
 │   ├── capabilities/default.json
 │   ├── gen/android/           # proyecto Android generado
-│   └── src/{main.rs, lib.rs, http_client.rs}
+│   └── src/{main.rs, lib.rs, http_client.rs}   # comando `http_request` (reqwest)
 ├── index.html                 # splash estático + script inline de tema (6 temas)
 ├── vite.config.ts             # proxy /api → BACKEND_HOST, port 1420
 ├── config-api.json            # URL de producción para el bootstrap
@@ -119,16 +121,21 @@ frontend/
     ├── routes/                # AppRoutes, ProtectedRoute, PublicRoute
     ├── context/               # ThemeContext, AppBootstrap
     ├── pages/                 # Index, Profile, auth/{Login,Register}, NotFound
-    ├── components/            # pages/{reader,index,profile}, auth, modals, layout, common
+    ├── components/
+    │   ├── common/            # Input, Spinner, Loading, IconTheme, CloudSyncToggle
+    │   ├── layout/            # Layout, Header
+    │   ├── modals/            # ShowUploaderModal, DeleteModal, EditTimeModal, OpenBookModal
+    │   └── pages/             # auth/, index/, profile/, reader/
     ├── api/                   # client.ts, auth.ts, book.ts, bookmark.ts, streak.ts, index.ts
     ├── database/              # schema.ts, connection.ts, sync.ts, features/{books,bookmarks,highlights,streaks,user}
     ├── store/                 # bookStore.ts, streakStore.ts, userPreferencesStore.ts
-    ├── hooks/                 # useBooks.tsx, useReadingTimer.tsx
-    ├── lib/                   # api-config, fetch, sessionToken, sessionCache, auth-api, useAuthSession, pdfService, pdfExtractor
+    ├── hooks/                 # useBooks.tsx (⚠️ sin uso), useReadingTimer.tsx
+    ├── lib/                   # api-config, fetch, sessionToken, sessionCache, auth-api, useAuthSession, pdfService, pdfExtractor, apiEnv
     ├── types/                 # auth.ts, book.d.ts, reading.d.ts, user.d.ts
     ├── utils/                 # debounce, generateId, time, text
     ├── validations/           # loginValidations.ts
-    └── __tests__/             # Vitest + Testing Library (57 tests)
+    ├── test/setup.ts          # setup de Vitest
+    └── __tests__/             # Vitest + Testing Library (59 tests en 8 archivos)
 ```
 
 ---

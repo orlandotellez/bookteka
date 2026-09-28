@@ -4,9 +4,9 @@
 
 **Actores**: Usuario, Frontend (React/Tauri), Backend (Express), R2, IndexedDB
 
-**Tablas involucradas**: `user_books`, `books`, `bookmarks`, `session` (auth)
+**Tablas involucradas**: `user_book`, `book`, `bookmark`, `session` (auth)
 
-**Endpoints**: `GET /books`, `GET /books/:id/stream`, `PATCH /books/:id/progress`
+**Endpoints**: `GET /book`, `GET /book/:id/stream`, `PATCH /book/:id/progress`
 
 ## Diagrama (apertura)
 
@@ -23,7 +23,7 @@ sequenceDiagram
     F->>S: getBookById(book.id)
     S->>DB: getBook(id)
     alt libro sin texto local (viene del cloud)
-        S->>B: GET /books/:id/stream
+        S->>B: GET /book/:id/stream
         B->>R2: GetObject (fileKey)
         R2-->>B: PDF stream
         B-->>S: application/pdf
@@ -53,7 +53,7 @@ sequenceDiagram
     end
 
     Note over C: 3s sin nuevos cambios
-    C->>B: PATCH /books/:id/progress (un solo request con todos los campos)
+    C->>B: PATCH /book/:id/progress (un solo request con todos los campos)
     B->>B: update user_book
     B-->>C: 200 { success, ... }
 
@@ -66,7 +66,7 @@ sequenceDiagram
 1. El **progreso local es instantáneo** (IndexedDB); el cloud se actualiza con coalescing (máx 1 PATCH cada 3s).
 2. El **merge** (`syncBooksFromCloud`) conserva el mayor entre local y cloud (`readingTimeSeconds`, `scrollPosition`, `currentPage`, `lastReadAt`).
 3. El **stream** es la única forma de obtener el PDF (protege R2 y evita CORS).
-4. Los **bookmarks** se guardan con la página actual del reader; el color es solo local.
+4. Los **bookmark** se guardan con la página actual del reader; el color es solo local.
 
 ## Errores a manejar
 

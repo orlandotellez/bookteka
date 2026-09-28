@@ -1,6 +1,6 @@
-# `bookmarks`
+# `bookmark`
 
-Marcadores por página. Modelo Prisma `bookmark`, mapeado a tabla `bookmarks` (`@@map("bookmarks")`).
+Marcadores por página. Modelo Prisma `bookmark`. **La tabla se llama `bookmark` (singular)**: el modelo no declara `@@map`.
 
 Pertenece a un `user_book` (no directo a `book`), lo que garantiza el ownership por usuario.
 
@@ -10,7 +10,7 @@ Pertenece a un `user_book` (no directo a `book`), lo que garantiza el ownership 
 |---|---|---|---|
 | `id` | `TEXT (UUID)` | `PK @default(uuid())` | — |
 | `userId` | `TEXT` | `NOT NULL` | FK → `users.id` (denormalizado para queries rápidas). |
-| `userBookId` | `TEXT` | `NOT NULL` | FK → `user_books.id`. |
+| `userBookId` | `TEXT` | `NOT NULL` | FK → `user_book.id`. |
 | `name` | `TEXT` | NULL | Nombre del marcador. |
 | `pageNumber` | `INT` | `NOT NULL` | Página del libro. |
 | `textPreview` | `TEXT` | NULL | Preview del texto marcado. |
@@ -25,7 +25,7 @@ Pertenece a un `user_book` (no directo a `book`), lo que garantiza el ownership 
 
 | Tabla | Tipo | FK / Referencia |
 |---|---|---|
-| `user_books` | N:1 | `bookmarks.userBookId → user_books.id` (ON DELETE Cascade) |
+| `user_book` | N:1 | `bookmark.userBookId → user_book.id` (ON DELETE Cascade) |
 
 ## Reglas de negocio
 

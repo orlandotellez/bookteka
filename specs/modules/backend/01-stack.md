@@ -41,7 +41,7 @@ Stack tecnológico del backend Express del Bookteka.
 | `@aws-sdk/client-s3` | 3.x | Cliente S3 para Cloudflare R2 (PutObject, GetObject, DeleteObject). |
 | `@aws-sdk/s3-request-presigner` | 3.x | URLs firmadas de descarga (15 min). |
 | `multer` | 2.x | Upload multipart (memoryStorage, máx 25MB). |
-| `resend` | 6.x | Emails transaccionales (verificación de correo). |
+| `resend` | 6.x | Cliente de email. **Integrado pero no usado**: `src/lib/email.ts` define `sendEmail()` y ningún archivo lo importa. La verificación de correo imprime el código con `console.info` en `lib/auth.ts` (`createVerification`). Ver `specs/tasks/backend/02-email-verificacion.md`. |
 
 ## Validación / Tipado
 
@@ -68,7 +68,7 @@ Stack tecnológico del backend Express del Bookteka.
 |---|---|
 | **MVC + capas** | `Controller → Service → Repository`. Sin lógica de negocio en controllers ni queries en services. |
 | **Repository Pattern** | Interfaz (`IBookRepository`) + clase (`BookRepository`) en `repositories/`. |
-| **Service Layer** | Clases con métodos `static` en `services/` que orquestan repositorios + lógica. |
+| **Service Layer** | Clases con **métodos de instancia** e inyección por constructor (`constructor(private readonly repo = repoPorDefecto)`), exportadas como singletons (`bookService`, `streakService`, `bookmarkService`). Los tests inyectan un repo fake con `new BookService(fakeRepo)`. **No son métodos estáticos.** |
 | **DTO + Validation** | DTOs en `dto/` + Zod schemas en `schema/` validados por el middleware `validate`. |
 | **Auth centralizada** | `lib/auth.ts` expone `auth.api.*` (getSession, login, register, refresh, logout, verifyEmail, createVerification) y `auth.cookies`. |
 | **Error → Response** | `AppError` + `errorHandler` central. Shape: `{ error, code }`. |

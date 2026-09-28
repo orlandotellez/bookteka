@@ -11,7 +11,7 @@ Reglas transversales que toda IA (o humano) debe respetar al generar, modificar 
 1. **Simple > clever**. Si una feature se puede resolver con 30 líneas claras, no uses CQRS, microservicios ni MessageBus.
 2. **Capitalizo lo existente**. Antes de crear un módulo nuevo, buscá uno similar. Reutiliza helpers, tipos, contratos.
 3. **Backend = MVC con capa de servicios y repositorios**. `Controller → Service → Repository`. NO lógica de negocio en controllers ni queries en services.
-4. **Migrar 1:1 primero**. Durante la migración Express → Rust, prioriza paridad exacta de comportamiento. Las mejoras llegan después de validar paridad.
+4. **Cambio chico y verificable**. Un comportamiento nuevo entra con su test; una refactorización grande entra en pasos verificables. Sin reescrituras totales.
 
 ---
 
@@ -31,7 +31,7 @@ Reglas transversales que toda IA (o humano) debe respetar al generar, modificar 
 - **Auth**: JWT propio. Access 15 min + refresh 7 días con **rotación real** (compare-and-delete de la sesión). Passwords con bcrypt (cost 10). Todo centralizado en `lib/auth.ts` (`auth.api.*`).
 - **Transporte de tokens**: cookies `httpOnly` (`accessToken`/`refreshToken`) + headers `Authorization: Bearer`, `x-session-token`, `x-refresh-token` (Tauri).
 - **Storage**: Cloudflare R2 (S3-compatible) con `@aws-sdk/client-s3` + `@aws-sdk/s3-request-presigner`. Uploads con Multer (memoryStorage, máx 25MB).
-- **Email**: Resend (`lib/email.ts`).
+- **Email**: Resend (`lib/email.ts`). ⚠️ `sendEmail()` está implementado pero **nadie lo llama**: el código de verificación se imprime por consola (`lib/auth.ts` → `createVerification`). No des por hecho que los emails salen.
 - **Rate limit**: `express-rate-limit` (`config/rate-limit.ts`): auth 10/min, get-session 200/15min, progress 600/15min, global 100/15min.
 - **Seguridad**: helmet + CORS con guard de orígenes (`config/cors.ts`, `lib/origins.ts`).
 - **Logging**: pino + pino-http.
@@ -51,15 +51,6 @@ Reglas transversales que toda IA (o humano) debe respetar al generar, modificar 
   ```
 - **Naming**: `camelCase` archivos y funciones, `PascalCase` clases, `UPPER_SNAKE` constantes. Sufijos `*Routes`, `*Controller` (funciones exportadas), `*Service` (clase static), `*Repository` (clase).
 - **No devolver** `password`, `refresh_token` ni `account` al cliente.
-
----
-
-## Convenciones backend Rust (`backend-rust/`) — en migración
-
-- **Framework**: Axum + tokio (fase inicial: solo `main.rs` con ruta "hola mundo").
-- **Estado**: 0 features portadas. Express es la fuente de verdad hasta que se documente paridad.
-- **Discrepancia conocida**: `src/shared/config/constants.rs` lee `BETTER_AUTH_SECRET`/`BETTER_AUTH_URL` (restos de un prototipo Better Auth). El backend real usa JWT propio con `JWT_SECRET`/`JWT_REFRESH_SECRET`. **Resolver durante la migración**.
-- La estructura objetivo por feature será la misma que en Express: `routes → controllers → services → repositories` (en Rust: `presentation → application → domain → infrastructure`).
 
 ---
 
@@ -109,7 +100,7 @@ Reglas transversales que toda IA (o humano) debe respetar al generar, modificar 
 1. Antes de pedir un cambio, decile a la IA: *"Leé `specs/descripcion-proyecto.md` y `specs/modules/api/<feature>.md` para entender el contexto."*
 2. Para cambios de backend, compartir `specs/modules/backend/02-architecture.md` y `03-api.md`.
 3. Para cambios de DB, el archivo en `specs/modules/db/schemas/<tabla>.md` es la fuente de verdad; actualizar ambos lados si cambia.
-4. Para migrar un feature a Rust, leer `specs/00-migration-status.md` y abrir el spec de la feature.
+4. Para tocar una feature, abrir su spec de `specs/modules/api/` y su `specs/tasks/<módulo>/` correspondiente.
 
 ---
 
@@ -122,4 +113,4 @@ Reglas transversales que toda IA (o humano) debe respetar al generar, modificar 
 - ❌ No romper el flujo de sesión: los 4 transportes (cookie, Bearer, x-session-token, x-refresh-token) deben seguir funcionando.
 - ❌ No usar MediatR, ni buses, ni CQRS, ni DDD táctico (Aggregates, Value Objects), salvo que el spec lo indique.
 - ❌ No commitear con secretos. `.env` siempre fuera del repo.
-- ❌ No usar `unwrap()`/`expect()` en código Rust de producción (cuando se migre).
+- ❌ No romper la sesión asumiendo un solo transporte: cookie, `Authorization: Bearer`, `x-session-token` y `x-refresh-token` tienen que seguir funcionando.

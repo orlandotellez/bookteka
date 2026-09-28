@@ -96,10 +96,21 @@ backend-express/
 
 ### `services/`
 
-- Clases con métodos `static`. Ejemplo: `BookService.getUserBooks(userId)`, `BookService.uploadBook({ userId, file, body })`.
+- **Clases con métodos de instancia e inyección por constructor**, NO métodos estáticos. Cada service recibe su repositorio por defecto en el constructor y se exporta como singleton.
+  ```ts
+  // services/book.service.ts
+  const bookRepository = new BookRepository();
+  export class BookService {
+    constructor(private readonly repo: BookRepository = bookRepository) {}
+    async getUserBooks(userId: string) { ... }   // método de instancia
+  }
+  export const bookService = new BookService();  // singleton que usan los controllers
+  ```
+  Los controllers llaman **`bookService.getUserBooks(userId)`**, nunca `BookService.getUserBooks(...)`. El default del constructor existe para que los tests puedan inyectar un repo fake: `new BookService(fakeRepo)`.
 - Lanzan `AppError(code, status, message)`.
 - `BookService.uploadBook`: hash SHA-256 → buscar por hash → si no existe, subir a R2 + crear book → upsert user_book.
 - `BookService.deleteBook`: verificar ownership → contar otros usuarios → borrar de R2 solo si es el único → auditoría → borrar user_book (y book si quedó solo).
+- `BookService.updateBookProgress`: solo persiste los campos que representan avance real (tolerancia de 50px en `scrollPosition`); si nada avanzó devuelve el estado persistido sin tocar la fila.
 - `StreakService.completeDay`: lógica de días consecutivos con `clientDate` opcional.
 
 ### `repositories/`
@@ -107,7 +118,7 @@ backend-express/
 - Interfaz + clase con queries Prisma.
 - `BookRepository`: getUserBooks, findByHash, createBook, upsertUserBook, findUserBook, countOtherUsers, deleteUserBook, deleteBook, createAuditLog, updateUserBook.
 - `BookmarkRepository`: findUserBookAccess, getBookmarksByUserBookId, createBookmark, findBookmark, deleteBookmark.
-- `StreakRepository`: findByUserId, createStreak, updateStreak, upsertStreak.
+- `StreakRepository`: findByUserId, createStreak, updateStreak, **updateStreakConditionally** (`updateMany` con `lastActiveDate` como predicado de concurrencia; devuelve `null` si otro request ganó la carrera), upsertStreak.
 
 ### `lib/auth.ts` (corazón del auth)
 

@@ -1,6 +1,6 @@
-# `user_streaks`
+# `user_streak`
 
-Racha de lectura diaria. Modelo Prisma `user_streak`, mapeado a tabla `user_streaks` (`@@map("user_streaks")`).
+Racha de lectura diaria. Modelo Prisma `user_streak`. **La tabla se llama `user_streak` (singular)**: el modelo no declara `@@map`.
 
 Relación 1:1 con el usuario (`userId @unique`): cada usuario tiene una sola racha.
 
@@ -25,7 +25,7 @@ Relación 1:1 con el usuario (`userId @unique`): cada usuario tiene una sola rac
 
 | Tabla | Tipo | FK / Referencia |
 |---|---|---|
-| `users` | 1:1 | `user_streaks.userId → users.id` |
+| `users` | 1:1 | `user_streak.userId → users.id` |
 
 ## Reglas de negocio (StreakService.completeDay)
 

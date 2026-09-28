@@ -1,6 +1,6 @@
-# `books`
+# `book`
 
-Libro físico (archivo PDF). Modelo Prisma `book`, mapeado a tabla `books` (`@@map("books")`).
+Libro físico (archivo PDF). Modelo Prisma `book`. **La tabla se llama `book` (singular)**: el modelo no declara `@@map`, así que Prisma usa el nombre del modelo tal cual.
 
 El archivo vive en **Cloudflare R2**; en la DB solo se guardan `fileUrl` y `fileKey`. Los libros se **deduplican por hash SHA-256**: si dos usuarios suben el mismo PDF, comparten la misma fila.
 
@@ -12,7 +12,7 @@ El archivo vive en **Cloudflare R2**; en la DB solo se guardan `fileUrl` y `file
 | `title` | `TEXT` | `NOT NULL` | Título (default: nombre del archivo). |
 | `author` | `TEXT` | NULL | Autor (opcional). |
 | `fileUrl` | `TEXT` | `NOT NULL` | URL pública de R2 (`{R2_PUBLIC_DOMAIN}/{fileKey}`). |
-| `fileKey` | `TEXT` | `NOT NULL` | Key del objeto en R2 (`books/{userId}/{timestamp}-{name}`). |
+| `fileKey` | `TEXT` | `NOT NULL` | Key del objeto en R2 (`book/{userId}/{timestamp}-{name}`). |
 | `fileHash` | `TEXT` | `NOT NULL @unique` | SHA-256 del contenido (deduplicación). |
 | `size` | `INT` | NULL | Tamaño del PDF en bytes. |
 | `createdAt` | `TIMESTAMPTZ` | `NOT NULL DEFAULT now()` | — |
@@ -26,7 +26,7 @@ El archivo vive en **Cloudflare R2**; en la DB solo se guardan `fileUrl` y `file
 
 | Tabla | Tipo | FK / Referencia |
 |---|---|---|
-| `user_books` | 1:N | `user_books.bookId → books.id` (ON DELETE Cascade) |
+| `user_book` | 1:N | `user_book.bookId → book.id` (ON DELETE Cascade) |
 
 ## Reglas de negocio
 

@@ -4,7 +4,7 @@
 
 **Actores**: Usuario, Frontend (StreakButton/StreakCard), Backend (Express)
 
-**Tablas involucradas**: `user_streaks`
+**Tablas involucradas**: `user_streak`
 
 **Endpoints**: `GET /streak`, `POST /streak/complete`, `POST /streak/initialize`
 
@@ -21,7 +21,7 @@ sequenceDiagram
     U->>F: Click "completar día"
     F->>S: completeDay()
     S->>B: POST /streak/complete
-    B->>DB: SELECT user_streaks WHERE userId
+    B->>DB: SELECT user_streak WHERE userId
     alt no existe
         B->>DB: INSERT (currentStreak=1, lastActiveDate=hoy)
         B-->>S: { currentStreak: 1, hasCompletedToday: true, isNew: true }

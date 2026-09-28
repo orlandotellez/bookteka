@@ -11,8 +11,7 @@ pnpm build    # tsc && vite build
 ```
 
 - `tsc` corre primero (typecheck estricto) y luego `vite build`.
-- Build actual: ~1931 módulos, bundle JS ~320KB gzip, CSS ~11KB gzip, pdf.worker ~1.2MB (se sirve separado).
-- Chunk warning > 500KB: esperado por pdf.js; evaluar code-split fino si molesta.
+- `pdfjs-dist` entra al bundle y dispara el warning de chunk grande de Vite (>500KB). Es esperado: el worker de PDF pesa ~1MB. No hay métricas de bundle commiteadas en el repo; si necesitás números, medilos con `pnpm build` y anotá el resultado acá.
 
 ---
 
@@ -37,7 +36,7 @@ pnpm exec vitest run
 
 Configuración en `vite.config.ts` → `test: { environment: "jsdom", setupFiles: "./src/test/setup.ts" }`.
 
-### Cobertura actual (57 tests / 8 archivos)
+### Cobertura actual (59 tests / 8 archivos)
 
 | Archivo | Cubre |
 |---|---|
@@ -48,7 +47,9 @@ Configuración en `vite.config.ts` → `test: { environment: "jsdom", setupFiles
 | `__tests__/utils/time.test.ts` | Helpers de tiempo. |
 | `__tests__/utils/generateId.test.ts` | Generación de IDs. |
 | `__tests__/utils/text.test.ts` | normalizeText. |
-| `__tests__/store/bookStore.test.ts` | Store principal (Zustand). |
+| `__tests__/store/bookStore.test.ts` | Store principal (Zustand), 20 tests. |
+
+> Sin cobertura de tests: `streakStore`, `userPreferencesStore`, `api/*`, `database/sync.ts`, `routes/*` y toda la vista `reader/`. Ver `specs/tasks/frontend/`.
 
 ### Convenciones
 

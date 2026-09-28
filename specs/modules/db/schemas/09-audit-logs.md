@@ -1,14 +1,14 @@
-# `audit_logs`
+# `audit_log`
 
-Registro de auditoría de acciones importantes (hoy: borrado de libros). Modelo Prisma `audit_log`, mapeado a tabla `audit_logs` (`@@map("audit_logs")`).
+Registro de auditoría de acciones importantes (hoy: borrado de libros). Modelo Prisma `audit_log`. **La tabla se llama `audit_log` (singular)**: el modelo no declara `@@map`.
 
 ## Esquema
 
 | Columna | Tipo | Constraints | Descripción |
 |---|---|---|---|
 | `id` | `TEXT (UUID)` | `PK @default(uuid())` | — |
-| `action` | `TEXT` | `NOT NULL` | Acción (e.g. `"delete_book"`). |
-| `entityType` | `TEXT` | `NOT NULL` | Tipo de entidad (e.g. `"book"`). |
+| `action` | `TEXT` | `NOT NULL` | Acción. Único valor escrito hoy: `"DELETE"`. |
+| `entityType` | `TEXT` | `NOT NULL` | Tipo de entidad. Único valor escrito hoy: `"BOOK"`. |
 | `entityId` | `TEXT` | `NOT NULL` | ID de la entidad. |
 | `userId` | `TEXT` | `NOT NULL` | Usuario que ejecutó la acción. |
 | `metadata` | `JSONB` | NULL | Metadata extra (e.g. nombre del libro, fileKey). |
@@ -24,7 +24,7 @@ Registro de auditoría de acciones importantes (hoy: borrado de libros). Modelo 
 
 | Tabla | Tipo | FK / Referencia |
 |---|---|---|
-| `users` | N:1 | `audit_logs.userId → users.id` (lógica; sin constraint explícito en Prisma) |
+| `users` | N:1 | `audit_log.userId → users.id` (lógica; sin constraint explícito en Prisma) |
 
 ## Reglas de negocio
 

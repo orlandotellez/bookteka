@@ -18,7 +18,7 @@ Inventario completo de pantallas de Bookteka, con su propósito, estado actual y
 
 ## `/auth/login` — Login ✅
 
-**Archivos**: `src/pages/auth/Login.tsx` + `src/components/auth/LoginForm.tsx`
+**Archivos**: `src/pages/auth/Login.tsx` + `src/components/pages/auth/LoginForm.tsx` + `src/components/pages/auth/SideLogo.tsx`
 
 **Propósito**: Inicio de sesión con email/password.
 
@@ -35,7 +35,7 @@ Inventario completo de pantallas de Bookteka, con su propósito, estado actual y
 
 ## `/auth/register` — Register ✅
 
-**Archivos**: `src/pages/auth/Register.tsx` + `src/components/auth/RegisterForm.tsx`
+**Archivos**: `src/pages/auth/Register.tsx` + `src/components/pages/auth/RegisterForm.tsx` + `src/components/pages/auth/SideLogo.tsx`
 
 **Propósito**: Crear cuenta nueva.
 
@@ -48,13 +48,13 @@ Inventario completo de pantallas de Bookteka, con su propósito, estado actual y
 
 ## `/` — Biblioteca (Index) ✅
 
-**Archivos**: `src/pages/Index.tsx` + `src/components/pages/index/Library.tsx`
+**Archivos**: `src/pages/Index.tsx` + `src/components/pages/index/{FilterBook,CardBook,CardBookList,BookShelfView,Pagination,NoBooks}.tsx` + `src/components/modals/ShowUploaderModal.tsx`
 
 **Propósito**: Pantalla principal con la biblioteca de libros del usuario.
 
 **Features**:
 
-1. **Toolbar**: búsqueda por nombre (`normalizeText`), filtro (`todos | leyendo | sin empezar`), orden (`recientes | nombre | tiempo`), toggles de vista.
+1. **Toolbar** (`FilterBook`): búsqueda por nombre (`normalizeText`) + desplegable de filtro con 3 opciones: `todos | leyendo | sin empezar`. **No hay control de orden** — la lista se ordena por `lastReadAt` en la query del backend y localmente por `position` (orden manual del estante).
 2. **Vistas**: `grid` (CardBook), `list` (CardBookList), `shelf` (BookShelfView). La vista shelf muestra todos; grid/list pagan (6 por página).
 3. **CardBook**: icono de libro, título (sin `.pdf`), tiempo de lectura + estado ("En progreso"/"Sin empezar"), fecha de última lectura, botón principal ("Continuar leyendo"/"Empezar a leer" → `onOpen`), indicador de sync (`Cloud`/`CloudOff` según `isSynced`), botón eliminar (trash → `DeleteModal`). Cuando el PDF se está preparando, el botón muestra "Descargando n%" con spinner (`isDownloading` + `downloadProgress`).
 4. **Paginación**: `Pagination` (6 items/página), resetea a página 1 al cambiar filtros.
@@ -68,26 +68,38 @@ Inventario completo de pantallas de Bookteka, con su propósito, estado actual y
 
 ## `/profile` — Perfil ✅
 
-**Archivos**: `src/pages/Profile.tsx` + `src/components/pages/profile/UserProfile.tsx`
+**Archivos**: `src/pages/Profile.tsx` + `src/components/pages/profile/{ProfileHeader,ProfileTabs,ProfileStats,ProfileBooksTable,ProfileConfig,StreakCard,CardProfile,ReadingSettingsCard,DefaultViewCard,StatCard}.tsx` + `src/components/common/CloudSyncToggle.tsx`
 
-**Propósito**: Estadísticas de lectura, racha, preferencias, gestión de cloud y logout.
+**Propósito**: Estadísticas de lectura, racha, gestión de libros en la nube, preferencias y cierre de sesión.
 
-**Sections**:
+**Estructura**: `Profile` tiene **dos tabs** (`ProfileTabs` con `ProfileTab = "data" | "config"`). En `data` se ve el perfil y las estadísticas; en `config`, las preferencias.
 
-1. **Header**: botón volver, avatar, "Mi Perfil" / "Estadísticas de lectura".
-2. **CloudSyncToggle**: toggle de sincronización con la nube (`userPreferencesStore.cloudSyncEnabled`).
-3. **StreakCard**: racha actual + botón "completar día" (`streakStore.completeDay`) + inicialización (`initializeStreak`).
-4. **CardProfile**: perfil del usuario.
-5. **ReadingSettingsCard**: preferencias de lectura por defecto (fontSize, fontFamily, lineHeight, textWidth) con reset.
-6. **Stats**: 4 tarjetas — Tiempo total, Libros, En progreso, Promedio/libro.
-7. **Todos los libros**: lista ordenada por tiempo de lectura, con:
+| Tab | Contenido |
+|---|---|
+| `data` (default) | `ProfileHeader`, `StreakCard`, `CardProfile`, `ProfileStats`, `ProfileBooksTable` |
+| `config` | `ProfileConfig` → `CloudSyncToggle`, `DefaultViewCard`, `ReadingSettingsCard` |
+
+**Secciones de la tab `data`**:
+
+1. **ProfileHeader**: identidad de la pantalla. No es el `Header` global — `Layout` lo oculta en `/profile` (`isNotHeaderPage`), así que esta pantalla trae el suyo.
+2. **StreakCard**: racha actual + botón "completar día" (`streakStore.completeDay`) + inicialización (`initializeStreak`). Al montar, `Profile` llama `loadStreakData()`.
+3. **CardProfile**: datos del usuario.
+4. **ProfileStats** + `StatCard`: 4 tarjetas — Tiempo total, Libros, En progreso, Promedio/libro.
+5. **ProfileBooksTable**: tabla de todos los libros, con por fila:
    - badge de sync (`Cloud` si `isSynced`, `CloudOff` si no).
-   - acción `CloudDownload` (descarga del PDF vía URL firmada) si está en nube.
-   - acción `CloudUpload` (subir a la nube) si no.
-   - botón editar tiempo (`EditTimeModal`).
-8. **LogoutButton**: cierra sesión + limpia datos locales.
+   - `CloudUpload` (subir a la nube) si no está sincronizado; `CloudDownload` (descargar vía URL firmada) si lo está.
+   - botón editar tiempo → `EditTimeModal`.
+6. **LogoutButton** (`src/components/pages/auth/LogoutButton.tsx`): `clearDatabase()` → `resetDatabase()` → `authApi.logout()` → `invalidateAuthSession()` → `navigate("/auth/login")`. Borra la IndexedDB local antes de cerrar sesión para que el próximo usuario no herede los libros.
 
-**Modals**: `EditTimeModal` (editar `readingTimeSeconds` → `setReadingTime`).
+**Secciones de la tab `config`**:
+
+7. **CloudSyncToggle**: activa/desactiva la subida a la nube (`userPreferencesStore.cloudSyncEnabled`). Si está apagado, `bookStore.addBook` guarda el libro solo en local.
+8. **DefaultViewCard**: vista por defecto de la biblioteca (`shelf` | `grid` | `list`).
+9. **ReadingSettingsCard**: preferencias de lectura (fontSize, fontFamily, lineHeight, textWidth) con botón de reset.
+
+**Modals**: `EditTimeModal` (editar `readingTimeSeconds` → `setReadingTime`), disponible desde la tab `data`.
+
+> Nota: `Profile.tsx` no declara el tipo del tab; usa `useState<ProfileTab>("data")` importando `ProfileTab` desde `ProfileTabs.tsx`.
 
 ---
 
@@ -117,7 +129,8 @@ Inventario completo de pantallas de Bookteka, con su propósito, estado actual y
 ## `/auth/*` — Auth Layout ✅
 
 - Las páginas de auth no muestran el header (lo detecta `Layout` con `location.pathname.startsWith("/auth")`).
-- Logo (según tema) + formulario + toggle de tema. Existe un componente `SideLogo` en `components/auth/` pero no lo usan `Login`/`Register` (renderizan el logo directamente).
+- Sin header global. Logo según tema + formulario + toggle de tema.
+- `SideLogo` (`src/components/pages/auth/SideLogo.tsx`) **sí se usa**: lo renderizan tanto `Login.tsx` como `Register.tsx`.
 
 ---
 

@@ -9,7 +9,6 @@
 | Capa | Tecnología | Versión |
 |---|---|---|
 | Backend principal | Node.js + Express + TypeScript | 5.x / 5.9 |
-| Backend nuevo (en migración) | Rust + Axum | 0.8 (fase inicial) |
 | ORM | Prisma | 6.x |
 | Base de datos | PostgreSQL | 16 |
 | Storage de PDFs | Cloudflare R2 (S3-compatible) | — |
@@ -21,10 +20,9 @@
 | Persistencia offline | IndexedDB (idb) | 8.x |
 | Landing page | Astro | 5.x |
 
-El monorepo se compone de cuatro proyectos:
+El monorepo se compone de tres proyectos:
 
 - `backend-express/` — API REST principal (Express + Prisma + JWT). **Fuente de verdad.**
-- `backend-rust/` — API REST nueva en Rust (Axum). Reemplazo progresivo (0% hoy).
 - `frontend/` — SPA React + Vite con dual-target: navegador web y Tauri desktop/Android.
 - `landing-page/` — Página de marketing estática (Astro).
 
@@ -121,11 +119,6 @@ BOOKTEKA-REPO/
 │   ├── http/                    # Endpoints REST Client
 │   └── doc/                     # Manual técnico (DOC.md, PRISMA.md)
 │
-├── backend-rust/                # Migración en progreso (fase inicial)
-│   └── src/
-│       ├── main.rs              # Axum "hola mundo" (:4000)
-│       └── shared/config/       # constants.rs (env vars)
-│
 ├── frontend/                    # SPA (React + Vite + Tauri 2)
 │   ├── src/
 │   │   ├── api/                 # client.ts unificado + auth/books/bookmarks/streak
@@ -152,7 +145,6 @@ BOOKTEKA-REPO/
 
 ```
 specs/
-├── 00-migration-status.md      # Gap analysis Express → Rust
 ├── descripcion-proyecto.md     # Este archivo
 ├── global-instruction.md       # Reglas para uso de IA en el repo
 └── modules/
