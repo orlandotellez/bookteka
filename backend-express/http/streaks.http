@@ -1,14 +1,23 @@
 ### STREAKS ENDPOINTS ###
-# Base: http://localhost:3000/api/streak
+
+@host = http://localhost:3000/api/v1
+@token = <access-token-jwt>
 
 ### Obtener racha del usuario
-GET http://localhost:3000/api/streak HTTP/1.1
-Content-Type: application/json
+
+GET {{host}}/streak
+Authorization: Bearer {{token}}
+Accept: application/json
 
 ###
 
 ### Completar el día actual
-POST http://localhost:3000/api/streak/complete HTTP/1.1
+
+# `clientDate` (YYYY-MM-DD) es opcional: si viene, manda sobre la fecha del
+# servidor, para que la zona horaria del cliente no rompa la racha. El body
+# puede ir vacío.
+POST {{host}}/streak/complete
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -19,7 +28,10 @@ Content-Type: application/json
 ###
 
 ### Inicializar racha manualmente
-POST http://localhost:3000/api/streak/initialize HTTP/1.1
+
+# El backend calcula los días a partir de `startDate`.
+POST {{host}}/streak/initialize
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {

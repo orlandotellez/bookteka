@@ -1,22 +1,32 @@
 ### BOOKS ENDPOINTS ###
 
-# Base: http://localhost:3000/api/books
+@host = http://localhost:3000/api/v1
+@bookId = <book-id>
+@token = <access-token-jwt>
 
+### Health
+
+GET {{host}}/health
+Accept: application/json
+
+###
 
 ### Obtener todos los libros del usuario
 
-GET http://localhost:3000/api/books HTTP/1.1
-Content-Type: application/json
+# Devuelve un array plano, sin paginación. `createdAt` y `lastReadAt` vienen
+# como timestamps numéricos (ms), no como ISO-8601.
+GET {{host}}/books
+Authorization: Bearer {{token}}
+Accept: application/json
 
-
-### 
-
+###
 
 ### Subir un libro (multipart/form-data)
 
-# NOTA: Requiere archivo PDF y campos del formulario
-
-POST http://localhost:3000/api/books/upload HTTP/1.1
+# Requiere sesión. El campo del archivo puede llamarse `file` o `pdf` (alias).
+# Campos opcionales: title, author, readingTimeSeconds, scrollPosition, currentPage.
+POST {{host}}/books/upload
+Authorization: Bearer {{token}}
 Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
 
 ------WebKitFormBoundary
@@ -34,44 +44,46 @@ Content-Disposition: form-data; name="author"
 Autor Ejemplo
 ------WebKitFormBoundary--
 
+###
 
-### 
+### Descargar libro (devuelve URL firmada de R2, válida 15 min)
 
+GET {{host}}/books/{{bookId}}/download
+Authorization: Bearer {{token}}
+Accept: application/json
 
-### Descargar libro (devuelve URL de descarga)
+###
 
-GET http://localhost:3000/api/books/<book-id>/download HTTP/1.1
-Content-Type: application/json
+### Hacer streaming del PDF (devuelve application/pdf, no JSON)
 
+GET {{host}}/books/{{bookId}}/stream
+Authorization: Bearer {{token}}
+Accept: application/pdf
 
-### 
-
-
-### Hacer streaming del PDF (evita CORS)
-
-GET http://localhost:3000/api/books/<book-id>/stream HTTP/1.1
-Content-Type: application/json
-
-
-### 
-
+###
 
 ### Actualizar progreso de lectura
 
-PATCH http://localhost:3000/api/books/<book-id>/progress HTTP/1.1
+# Solo se persisten los campos que representan avance real (tolerancia de 50px
+# en scrollPosition). `lastReadAt` acepta ISO-8601 o epoch ms. Campos
+# desconocidos se descartan en silencio.
+PATCH {{host}}/books/{{bookId}}/progress
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
   "currentPage": 150,
-  "percentageRead": 50,
-  "totalPages": 300
+  "scrollPosition": 4820,
+  "readingTimeSeconds": 3600,
+  "lastReadAt": "2026-05-01T14:30:00.000Z"
 }
 
-
-### 
-
+###
 
 ### Eliminar un libro
 
-DELETE http://localhost:3000/api/books/<book-id> HTTP/1.1
-Content-Type: application/json
+# El archivo de R2 y la fila `book` solo se borran si ningún otro usuario lo
+# tiene. Siempre escribe un registro en `audit_log`.
+DELETE {{host}}/books/{{bookId}}
+Authorization: Bearer {{token}}
+Accept: application/json

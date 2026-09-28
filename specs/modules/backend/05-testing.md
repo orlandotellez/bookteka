@@ -44,10 +44,12 @@ El backend prueba en **dos niveles**, y esa es la decisión de diseño más impo
 
 Se monta la app de Express completa (con `requireAuth`, `validate`, rate limits y `errorHandler`) y se le hacen requests. Prueban el contrato: rutas, status codes, validaciones, mapeo de errores.
 
+> **Importan `@/app`, no `@/server`.** `src/server.ts` es el bootstrap: abre un puerto e instala signal handlers. No debe estar en el camino del test. Además no tiene default export, así que `mod.default` daba `undefined` y TypeScript rechazaba la suite entera.
+
 | Suite | Endpoints | Líneas |
 |---|---|---|
 | `src/__tests__/book.test.ts` | `GET /books`, `POST /books/upload`, `DELETE /books/:id`, `PATCH /books/:id/progress`, `GET /books/:id/download`, `GET /books/:id/stream` | 1005 |
-| `src/__tests__/bookmark.test.ts` | `GET/POST /books/:bookId/bookmarks`, `DELETE /:bookmarkId` | 417 |
+| `src/__tests__/bookmark.test.ts` | `GET/POST /books/:bookId/bookmarks`, `PATCH/DELETE /:bookmarkId` | 616 |
 | `src/__tests__/streak.test.ts` | `GET /streak`, `POST /streak/complete`, `POST /streak/initialize` | 412 |
 | `src/__tests__/example.test.ts` | Plantilla | 5 |
 
@@ -59,9 +61,9 @@ Se instancia el service con un repositorio falso inyectado por el constructor y 
 |---|---|---|
 | `src/__tests__/book.service.test.ts` | `getUserBooks`, `uploadBook`, `deleteBook`, `updateBookProgress`, `downloadBookWithUrl`, `streamBookPdf` | 573 |
 | `src/__tests__/streak.service.test.ts` | `getUserStreak`, `completeDay`, `initializeStreak` | 346 |
-| `src/__tests__/bookmark.service.test.ts` | `getBookmarks`, `createBookmark`, `deleteBookmark` | 139 |
+| `src/__tests__/bookmark.service.test.ts` | `getBookmarks`, `createBookmark`, `updateBookmark`, `deleteBookmark` | 214 |
 
-**Total: 2.897 líneas de test en 7 suites.**
+**Total: 94 tests en 7 suites.**
 
 ### Por qué funciona la inyección
 
@@ -99,6 +101,7 @@ Las reglas de negocio más difíciles están cubiertas:
 | Área | Por qué importa | Tamaño |
 |---|---|---|
 | **`src/lib/auth.ts`** | 373 líneas con toda la criptografía, el login, el registro, la rotación de tokens y la verificación de correo. **Cero tests.** | La pieza con más superficie de seguridad |
+| **PUT de marcadores** | Cubierto desde `specs/tasks/backend/01-integridad-contrato.md`. | — |
 | **`src/config/env.ts`** | Validación de secretos y longitud mínima. Sin test. | — |
 | **`src/config/rate-limit.ts`** | Los cuatro limiters. Sin test. | — |
 | **`src/config/cors.ts` + `src/lib/origins.ts`** | Allowlist, el rechazo de `*`, `TRUST_BACKEND_ORIGINS`. Sin test. | — |
@@ -134,6 +137,7 @@ Un umbral alto sin cubrir `lib/auth.ts` no aporta nada: mide líneas, no riesgo.
 | Nombres de `it` | En español, con `entonces` o la forma `hace X → Y`. |
 | Aislamiento | `clearMocks: true` global. |
 | Datos de prueba | Objetos literales en el test. No hay factories ni fixtures compartidos. |
+| Módulo bajo prueba | `@/app`, nunca `@/server`. |
 | Base de datos | Las suites de service usan repositorios fake. Las de HTTP usan Supertest contra la app: verificar si alguna necesita una base real antes de agregar una. |
 
 ### Plantilla
@@ -147,6 +151,7 @@ Un umbral alto sin cubrir `lib/auth.ts` no aporta nada: mide líneas, no riesgo.
 | Gap | Consecuencia |
 |---|---|
 | **No hay CI** | `.github/` no existe. Nada corre estos tests automáticamente. |
+| **Tests no herméticos** | Las suites HTTP dependen de un `.env` local: `config/env.ts` llama `dotenv.config()` al cargarse y lanza `Missing environment variable: DATABASE_URL` si no está. Verificado: sin `.env`, `pnpm test` falla antes de ejecutar un solo test. Esto **bloquea la CI**, que no tiene `.env`. Arreglo: un `setupFiles` de Jest que fije las variables, o variables de entorno en el workflow. |
 | **No hay reporter de cobertura** | La cobertura es invisible. |
 | **No hay umbral** | Nada impide que caiga. |
 | **No hay lint en el backend** | A diferencia del frontend, el backend no tiene ESLint ni siquiera instalado. |

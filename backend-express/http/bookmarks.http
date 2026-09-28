@@ -1,14 +1,25 @@
 ### BOOKMARKS ENDPOINTS ###
-# Base: http://localhost:3000/api/books/<book-id>/bookmarks
+# Base: http://localhost:3000/api/v1/books/<book-id>/bookmarks
+# Auth: todos requieren sesión. En web usá la cookie; en Tauri, el header
+# `x-session-token` con el access token JWT.
+
+@host = http://localhost:3000/api/v1
+@bookId = <book-id>
+@bookmarkId = <bookmark-id>
+@token = <access-token-jwt>
 
 ### Obtener todos los bookmarks de un libro
-GET http://localhost:3000/api/books/<book-id>/bookmarks HTTP/1.1
-Content-Type: application/json
+
+GET {{host}}/books/{{bookId}}/bookmarks
+Authorization: Bearer {{token}}
+Accept: application/json
 
 ###
 
 ### Crear un nuevo bookmark
-POST http://localhost:3000/api/books/<book-id>/bookmarks HTTP/1.1
+
+POST {{host}}/books/{{bookId}}/bookmarks
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -19,6 +30,34 @@ Content-Type: application/json
 
 ###
 
-### Eliminar un bookmark
-DELETE http://localhost:3000/api/books/<book-id>/bookmarks/<bookmark-id> HTTP/1.1
+### Actualizar un bookmark (solo name y textPreview)
+
+# `pageNumber`, `userId` y `userBookId` NO son editables: el schema los
+# descarta aunque los envíes. Se requiere al menos un campo.
+PATCH {{host}}/books/{{bookId}}/bookmarks/{{bookmarkId}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
+
+{
+  "name": "Capítulo 5 (revisado)",
+  "textPreview": "Texto corregido del preview"
+}
+
+###
+
+### Limpiar el textPreview (null lo borra)
+
+PATCH {{host}}/books/{{bookId}}/bookmarks/{{bookmarkId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "textPreview": null
+}
+
+###
+
+### Eliminar un bookmark
+
+DELETE {{host}}/books/{{bookId}}/bookmarks/{{bookmarkId}}
+Authorization: Bearer {{token}}
