@@ -164,6 +164,20 @@ export const api = {
 
 ---
 
+## Modo local sin backend
+
+`userPreferencesStore.authMode` (`"local" | "server"`, persistido) cambia el
+comportamiento en tres puntos sin tocar la capa de datos:
+
+1. `lib/sessionCache.ts`: en modo local, `getCachedSession` devuelve una sesión
+   sintética (`local-user`) sin llamar a la red. Toda la app que consulta
+   sesión (guards, stores) la ve como usuario válido.
+2. `store/bookStore.ts`: `loadBooks`/`syncBooks` no sincronizan y `addBook` no
+   sube archivos en modo local. Los datos viven solo en IndexedDB bajo el
+   userId sintético `local-user`.
+3. `LogoutButton` y `PublicRoute`: en modo local no hay llamadas al backend y
+   `/auth` sigue accesible para poder cambiar de modo.
+
 ## Flujo de sesión
 
 1. `authApi.login/register` → `api.post` → `setSessionTokens(access, refresh)` (localStorage).

@@ -8,13 +8,43 @@ Inventario completo de pantallas de Bookteka, con su propósito, estado actual y
 
 | Convención | Uso |
 |---|---|
-| Ruta pública | `/auth/login`, `/auth/register` |
+| Ruta pública | `/auth` (elección de modo), `/auth/login`, `/auth/register` |
 | Ruta protegida | `/` (Biblioteca), `/profile` |
 | Vista de lector | No es ruta — la renderiza `Layout` cuando `currentView === "reader"` |
 | Estado: ✅ implementado | UI viva + flujo end-to-end |
 | Estado: ⚠️ parcial | UI existe pero falta algún detalle |
 
 ---
+
+## Navegación Local/Servidor en todas las pantallas de auth ✅
+
+**Componente**: `src/components/pages/auth/AuthModeTabs.tsx` (+ module.css)
+
+Las tabs **Local** y **Servidor** aparecen en `/auth`, `/auth/login` y
+`/auth/register`: el switcher es el mismo componente y el modo persistido
+(`userPreferencesStore.authMode`) es la fuente de verdad.
+
+- Las tabs **solo seleccionan**: nunca navegan por sí mismas.
+- Tab **Local** → setea `authMode: "local"` y la pantalla actual muestra el
+  `LocalModePanel` (descripción + botón "Entrar sin cuenta"). El botón es el
+  que navega a `/`.
+- Tab **Servidor** → setea `authMode: "server"` y la pantalla actual muestra
+  el formulario correspondiente (login o registro).
+- El contenido bajo las tabs es el mismo componente en las tres pantallas:
+  `LocalModePanel` cuando el modo es local, `LoginForm`/`RegisterForm` cuando
+  es servidor.
+
+## `/auth` — Elección de modo ✅
+
+**Archivo**: `src/pages/auth/AuthMode.tsx` + `AuthMode.module.css`
+
+Mismo layout de Login/Register (SideLogo + lado `--four-color` con borde
+izquierdo y `min-height: 420px`), con las tabs arriba y el formulario/pánel a
+ancho completo: alternar entre modos ya no desplaza el layout ni achica el
+fondo del formulario.
+
+En modo local, `PublicRoute` no redirige para poder volver a la elección; el
+`LogoutButton` limpia la base local y vuelve a `/auth` sin llamar al backend.
 
 ## `/auth/login` — Login ✅
 
