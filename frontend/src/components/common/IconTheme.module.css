@@ -1,10 +1,13 @@
 .picker {
   position: relative;
+  display: flex;
+  align-items: center;
 }
 
 .themeButton {
-  display: flex;
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   padding: 6px 10px;
   border: 1px solid var(--border-color);

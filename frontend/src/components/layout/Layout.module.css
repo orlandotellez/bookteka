@@ -4,6 +4,7 @@
   max-width: var(--max-width);
   padding: var(--padding);
   padding-top: 105px;
+  height: 100vh;
 }
 
 .isProfile {
