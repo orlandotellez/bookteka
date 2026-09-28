@@ -55,3 +55,8 @@ export {
 } from "./features/streaks";
 
 export { syncBooksFromCloud } from "./sync";
+export {
+  syncBookmarksFromCloud,
+  mergeBookmarks,
+  pickRandomBookmarkColor,
+} from "./syncBookmarks";

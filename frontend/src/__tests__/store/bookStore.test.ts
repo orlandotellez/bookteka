@@ -53,6 +53,7 @@ vi.mock("@/database", () => ({
   deleteHighlight: vi.fn(() => Promise.resolve()),
   setCurrentUserId: vi.fn(),
   syncBooksFromCloud: vi.fn(() => Promise.resolve()),
+  syncBookmarksFromCloud: vi.fn(() => Promise.resolve([])),
 }));
 
 vi.mock("@/lib/sessionCache", () => ({
@@ -320,5 +321,96 @@ describe("bookStore", () => {
       expect(setBookOrder).toHaveBeenCalled();
       expect(updateBookPosition).toHaveBeenCalledWith("book-1", expect.any(Number));
     });
+  });
+});
+
+// ─── loadBookmarks: sincronización con el cloud ────────────────────────────
+describe("loadBookmarks", () => {
+  beforeEach(async () => {
+    useBookStore.setState({ books: [] });
+    const { getBookmarksByBook, syncBookmarksFromCloud } = await import(
+      "@/database"
+    );
+    vi.mocked(getBookmarksByBook).mockResolvedValue([]);
+    vi.mocked(syncBookmarksFromCloud).mockResolvedValue([]);
+  });
+
+  it("no llama al cloud si el libro no está sincronizado", async () => {
+    useBookStore.setState({
+      books: [{ ...mockBooks[0], isSynced: false }],
+    });
+
+    const { syncBookmarksFromCloud } = await import("@/database");
+    await useBookStore.getState().loadBookmarks("book-1");
+
+    expect(syncBookmarksFromCloud).not.toHaveBeenCalled();
+  });
+
+  it("sincroniza con el cloud si el libro está sincronizado", async () => {
+    useBookStore.setState({
+      books: [{ ...mockBooks[1], isSynced: true }],
+    });
+
+    const { getBookmarksByBook, syncBookmarksFromCloud } = await import(
+      "@/database"
+    );
+    vi.mocked(getBookmarksByBook).mockResolvedValue([
+      {
+        id: "bm-local",
+        bookId: "book-2",
+        name: "Local",
+        pageNumber: 1,
+        textPreview: "",
+        color: "yellow",
+        createdAt: 1000,
+      },
+    ]);
+    vi.mocked(syncBookmarksFromCloud).mockResolvedValue([
+      {
+        id: "bm-cloud",
+        bookId: "book-2",
+        name: "Del cloud",
+        pageNumber: 2,
+        textPreview: "",
+        color: "green",
+        createdAt: 2000,
+      },
+    ]);
+
+    const result = await useBookStore.getState().loadBookmarks("book-2");
+
+    expect(syncBookmarksFromCloud).toHaveBeenCalledWith("book-2", [
+      expect.objectContaining({ id: "bm-local" }),
+    ]);
+    expect(result[0].id).toBe("bm-cloud");
+  });
+
+  it("devuelve los marcadores locales si el cloud falla", async () => {
+    useBookStore.setState({
+      books: [{ ...mockBooks[1], isSynced: true }],
+    });
+
+    const { getBookmarksByBook, syncBookmarksFromCloud } = await import(
+      "@/database"
+    );
+    const local = [
+      {
+        id: "bm-local",
+        bookId: "book-2",
+        name: "Local",
+        pageNumber: 1,
+        textPreview: "",
+        color: "yellow" as const,
+        createdAt: 1000,
+      },
+    ];
+    vi.mocked(getBookmarksByBook).mockResolvedValue(local);
+    vi.mocked(syncBookmarksFromCloud).mockRejectedValue(new Error("offline"));
+
+    const result = await useBookStore.getState().loadBookmarks("book-2");
+
+    // La documentación del store dice que el modo offline manda: un fallo de
+    // red no puede descartar lo que ya está en el dispositivo.
+    expect(result).toEqual(local);
   });
 });

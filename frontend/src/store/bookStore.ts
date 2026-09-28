@@ -21,6 +21,7 @@ import {
   deleteHighlight as deleteHighlightFromDB,
   setCurrentUserId,
   syncBooksFromCloud,
+  syncBookmarksFromCloud,
 } from "@/database";
 import { generateId } from "@/utils/generateId";
 import { getCachedSession } from "@/lib/sessionCache";
@@ -601,11 +602,29 @@ export const useBookStore = create<BookStore>((set) => ({
 
   // Cargar bookmarks de un libro
   loadBookmarks: async (bookId: string) => {
+    let local: Bookmark[] = [];
     try {
-      return await getBookmarksByBook(bookId);
+      local = await getBookmarksByBook(bookId);
     } catch (error) {
       console.error("Error loading bookmarks:", error);
       return [];
+    }
+
+    // Solo sincroniza si el libro está en la nube: sin sesión o sin subida
+    // previa, `GET /bookmarks` devolvería 403 y no hay nada que traer.
+    const book = useBookStore.getState().books.find((b) => b.id === bookId);
+    if (!book?.isSynced) {
+      return local;
+    }
+
+    // El cloud es la fuente de verdad. Si falla se devuelve lo local: el modo
+    // offline manda, igual que en `loadBooks`. Este catch es separado del de
+    // arriba a propósito, para que un fallo de red no descarte lo local.
+    try {
+      return await syncBookmarksFromCloud(bookId, local);
+    } catch (error) {
+      console.error("Error syncing bookmarks from cloud:", error);
+      return local;
     }
   },
 
