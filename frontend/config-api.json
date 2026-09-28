@@ -1,3 +1,5 @@
 {
-  "current_api_url": "https://bookteka-production.up.railway.app/api/v1"
+  "current_api_url": "https://bookteka-production.up.railway.app/api/v1",
+  "app_version": "1.2.0",
+  "apk_url": "https://pub-3371f3b8e88841168d038ff444561b3d.r2.dev/versions/apk/bookteka-v1.2.0-universal.apk"
 }
