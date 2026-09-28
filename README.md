@@ -8,32 +8,34 @@
 ![Vite](https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white)
 ![Astro](https://img.shields.io/badge/astro-%23000000.svg?style=for-the-badge&logo=astro&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)
-![Rust](https://img.shields.io/badge/rust-%23000000.svg?style=for-the-badge&logo=rust&logoColor=white)
 ![Prisma](https://img.shields.io/badge/prisma-%232D3748.svg?style=for-the-badge&logo=prisma&logoColor=white)
 ![Docker](https://img.shields.io/badge/docker-%232496ED.svg?style=for-the-badge&logo=docker&logoColor=white)
+![GitHub Actions](https://img.shields.io/badge/CI-GitHub%20Actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white)
 
-**Bookteka** es una plataforma para gestionar y leer libros digitales con seguimiento de progreso de lectura, rachas diarias y marcadores. Disponible como app de escritorio (Tauri), app Android (Tauri WebView) y web.
+**Bookteka** es una plataforma para gestionar y leer libros digitales con seguimiento de progreso de lectura, rachas diarias, marcadores y resaltados. Disponible como app de escritorio (Tauri), app Android (Tauri WebView) y web.
+
+> La documentación viva del proyecto vive en [`specs/`](#especificaciones): descripción, arquitectura por módulo, contrato de API, inventario de deuda técnica (`specs/tasks/`) y el documento para el cliente. Este README es la puerta de entrada.
 
 ## Estructura del Proyecto
 
-Este monorepo contiene **cuatro proyectos** independientes:
-
 ```
 bookteka-repo/
-├── backend-express/    # API REST (Express + TypeScript + Prisma + JWT)
-├── backend-rust/       # API REST (Rust — migración en progreso)
-├── frontend/           # App de escritorio + Android (Tauri 2 + React + Vite)
+├── backend-express/    # API REST (Express + TypeScript + Prisma + JWT) — fuente de verdad
+├── frontend/           # App de escritorio + Android (Tauri 2 + React + Vite) + web
 ├── landing-page/       # Página de marketing (Astro)
+├── alternative/        # Exploraciones fuera del camino feliz (backend-rust/ experimental)
 ├── docker-compose.yml  # Orquestación completa del stack
+├── .github/workflows/  # CI (tests, lint, build en cada push/PR)
+├── specs/              # Documentación y deuda técnica del proyecto
 └── .env.example        # Variables de entorno globales
 ```
 
 | Proyecto | Tecnología | Propósito |
 |----------|------------|-----------|
 | `backend-express/` | Node.js + Express + TypeScript | API REST principal |
-| `backend-rust/` | Rust | Migración del backend a Rust (en progreso) |
-| `frontend/` | React 19 + Vite + Tauri 2 | App de escritorio (Windows/Linux/macOS) y Android |
+| `frontend/` | React 19 + Vite + Tauri 2 | App de escritorio (Windows/Linux/macOS), Android y web |
 | `landing-page/` | Astro + TypeScript | Página de marketing estática |
+| `alternative/backend-rust/` | Rust | Exploración de un backend alternativo. **No es parte del camino feliz** |
 
 > **Nota:** la app móvil Android se genera desde el mismo `frontend/` mediante Tauri (`src-tauri/gen/android`). No hay un proyecto Expo/React Native separado.
 
@@ -47,13 +49,11 @@ bookteka-repo/
   npm install -g pnpm
   ```
 - **Docker** y **Docker Compose** (para el stack completo)
-- **Rust** (solo para desarrollo del backend-rust o el build de Tauri)
+- **Rust** (solo para `alternative/backend-rust/` o el build de Tauri)
 
 ---
 
 ## Inicio Rápido (Docker — stack completo)
-
-La forma más fácil de levantar todo el proyecto:
 
 ```bash
 # 1. Clonar
@@ -71,7 +71,7 @@ docker compose up --build
 Esto levanta:
 
 - **PostgreSQL 16** en `localhost:5433`
-- **Backend Express** en `localhost:3001`
+- **Backend Express** en `localhost:3001` (el entrypoint corre `prisma migrate deploy` antes de arrancar)
 - **Frontend Web** en `localhost:8081`
 
 > El frontend en Docker se sirve con Nginx, que proxya `/api/` al backend. El build inyecta `VITE_API_URL=/api/v1`, por lo que las peticiones del navegador llegan al backend con el prefijo correcto.
@@ -84,13 +84,13 @@ Esto levanta:
 
 ```bash
 cd backend-express
-cp .env.example .env     # Configurar variables
+cp .env.example .env     # Configurar variables (JWT ≥ 32 caracteres, R2, Resend)
 pnpm install
 pnpm prisma:generate     # Generar cliente Prisma
 pnpm dev                 # Iniciar en modo desarrollo (puerto 3000)
 ```
 
-### Frontend (escritorio + Android)
+### Frontend (escritorio + Android + web)
 
 ```bash
 cd frontend
@@ -123,10 +123,12 @@ pnpm dev                 # Iniciar en modo desarrollo (puerto 4321)
 
 ```env
 # Backend
+DATABASE_URL=postgres://bookteka:bookteka123@localhost:5433/bookteka_db?schema=public
 PORT=3000
 FRONTEND_URL=http://localhost:8081
+# TRUST_BACKEND_ORIGINS=true   # solo detrás de un proxy de confianza (lo inyecta docker-compose)
 
-# JWT (access + refresh)
+# JWT (access + refresh, mínimo 32 caracteres cada uno)
 JWT_SECRET=replace-with-at-least-32-random-characters
 JWT_REFRESH_SECRET=replace-with-a-different-at-least-32-random-characters
 
@@ -137,7 +139,7 @@ R2_ENDPOINT=...
 R2_PUBLIC_DOMAIN=...
 R2_BUCKET=...
 
-# Resend (emails)
+# Resend (envío del código de verificación)
 RESEND_API_KEY=re_...
 RESEND_FROM_EMAIL=onboarding@resend.dev
 ```
@@ -146,7 +148,7 @@ RESEND_FROM_EMAIL=onboarding@resend.dev
 
 ```env
 PORT=3000
-DATABASE_URL=postgres://usuario:password@localhost:5432/bookteka_db?schema=public
+DATABASE_URL=postgres://bookteka:bookteka123@localhost:5433/bookteka_db?schema=public
 FRONTEND_URL=http://localhost:1420
 
 JWT_SECRET=replace-with-at-least-32-random-characters
@@ -161,6 +163,8 @@ R2_BUCKET=...
 RESEND_API_KEY=re_...
 RESEND_FROM_EMAIL=onboarding@resend.dev
 ```
+
+> `env.ts` **falla al arrancar** si falta cualquier variable obligatoria, y exige secretos JWT de 32+ caracteres. No hay valores por defecto para los secretos.
 
 ### Frontend (`frontend/.env`)
 
@@ -188,11 +192,13 @@ VITE_BACKEND_HOST=http://192.168.0.10:3000
 | Comando | Descripción |
 |---------|-------------|
 | `pnpm dev` | Iniciar servidor en modo desarrollo (tsx watch) |
-| `pnpm build` | Compilar TypeScript + generar Prisma |
+| `pnpm build` | `prisma generate` + `tsc` + `tsc-alias` |
 | `pnpm start` | Iniciar servidor en producción |
 | `pnpm prisma:generate` | Generar el cliente Prisma |
-| `pnpm test` | Ejecutar tests (Jest + Supertest) |
+| `pnpm test` | Ejecutar tests (Jest + Supertest) — no requieren `.env` |
 | `pnpm test:watch` | Tests en modo watch |
+| `pnpm seed` | Crear usuario demo + sesión activa (`src/scripts/seed.ts`) |
+| `NODE_OPTIONS=--experimental-vm-modules pnpm exec jest --coverage` | Medir cobertura |
 
 ### Frontend (`frontend/`)
 
@@ -201,6 +207,7 @@ VITE_BACKEND_HOST=http://192.168.0.10:3000
 | `pnpm dev` | Servidor de desarrollo de Vite (puerto 1420) |
 | `pnpm build` | Compilar TypeScript + Vite build |
 | `pnpm preview` | Vista previa de producción |
+| `pnpm lint` | ESLint (flat config) |
 | `pnpm tauri dev` | App de escritorio en desarrollo |
 | `pnpm tauri build` | Build de la app de escritorio |
 | `pnpm tauri android dev` / `build` | App Android en desarrollo / release |
@@ -216,34 +223,48 @@ VITE_BACKEND_HOST=http://192.168.0.10:3000
 
 ---
 
+## Integración Continua
+
+`.github/workflows/ci.yml` corre en cada push y pull request con tres jobs:
+
+| Job | Qué valida |
+|---|---|
+| `backend` | install frozen → `prisma generate` → `prisma validate` → `migrate deploy` contra `postgres:16` (detecta drift) → `pnpm test` → `pnpm build` |
+| `frontend` | install frozen → `pnpm lint` → `vitest run` → `pnpm build` (el build corre `tsc`, así que el typecheck es obligatorio) |
+| `landing-page` | install frozen → `pnpm build` |
+
+Los tests del backend son **herméticos**: `jest.config.ts` inyecta las variables de entorno desde `src/tests/setup.ts`, así que el job de CI no necesita `.env` ni secretos (los JWT de test son valores explícitos y distintos de los de producción).
+
+---
+
 ## API Endpoints
 
-> Todas las rutas están montadas bajo **`/api/v1`**. Ejemplo: `GET /api/v1/books`.
+> Todas las rutas están montadas bajo **`/api/v1`**. Ejemplo: `GET /api/v1/books`. El contrato detallado por endpoint (request, response, errores) está en `specs/modules/api/`.
 
-### Autenticación (JWT)
+### Autenticación (JWT propio)
 
-Autenticación propia con **JWT access (15 min) + refresh (7 días)** y rotación de refresh tokens. Las contraseñas se guardan con **bcrypt**. Los tokens se envían como cookies `httpOnly` (navegador) o por headers (`Authorization: Bearer`, `x-session-token`, `x-refresh-token` — Tauri).
+Access token de **15 min** + refresh de **7 días** con **rotación de un solo uso** (cada refresh invalida el anterior). Contraseñas con **bcrypt**. Los tokens viajan por cookies `httpOnly` (navegador), `Authorization: Bearer`, `x-session-token` o `x-refresh-token` (Tauri). El código de verificación de correo se envía por Resend; si el envío falla, se loguea y el registro continúa.
 
 | Método | Ruta | Descripción |
 |--------|------|-------------|
-| `POST` | `/api/v1/auth/register` | Registrar usuario (emite tokens) |
+| `POST` | `/api/v1/auth/register` | Registrar usuario (emite tokens + envía código de verificación) |
 | `POST` | `/api/v1/auth/login` | Iniciar sesión |
 | `POST` | `/api/v1/auth/refresh` | Renovar tokens (rota el refresh token) |
 | `POST` | `/api/v1/auth/logout` | Cerrar sesión y revocar refresh token |
 | `GET` | `/api/v1/auth/get-session` | Obtener sesión actual |
-| `POST` | `/api/v1/auth/verify-email` | Verificar correo con código |
+| `POST` | `/api/v1/auth/verify-email` | Verificar correo con el código recibido |
 | `POST` | `/api/v1/auth/resend-verification` | Reenviar código de verificación |
 
 ### Libros (`/api/v1/books`)
 
 | Método | Ruta | Descripción |
 |--------|------|-------------|
-| `GET` | `/api/v1/books` | Obtener libros del usuario |
-| `POST` | `/api/v1/books/upload` | Subir libro PDF (multipart, máx. 25 MB) |
-| `GET` | `/api/v1/books/:id/download` | Descargar libro (URL firmada de R2) |
+| `GET` | `/api/v1/books` | Obtener libros del usuario (con progreso) |
+| `POST` | `/api/v1/books/upload` | Subir libro PDF (multipart, máx. 25 MB, dedup por hash SHA-256) |
+| `GET` | `/api/v1/books/:id/download` | Descargar libro (URL firmada de R2, 15 min) |
 | `GET` | `/api/v1/books/:id/stream` | Stream del PDF |
-| `PATCH` | `/api/v1/books/:id/progress` | Actualizar progreso de lectura |
-| `DELETE` | `/api/v1/books/:id` | Eliminar libro |
+| `PATCH` | `/api/v1/books/:id/progress` | Actualizar progreso de lectura (solo avanza, nunca retrocede) |
+| `DELETE` | `/api/v1/books/:id` | Eliminar libro (con auditoría; R2 solo si nadie más lo usa) |
 
 ### Marcadores (`/api/v1/books/:bookId/bookmarks`)
 
@@ -251,6 +272,7 @@ Autenticación propia con **JWT access (15 min) + refresh (7 días)** y rotació
 |--------|------|-------------|
 | `GET` | `/api/v1/books/:bookId/bookmarks` | Obtener marcadores de un libro |
 | `POST` | `/api/v1/books/:bookId/bookmarks` | Crear marcador |
+| `PATCH` | `/api/v1/books/:bookId/bookmarks/:bookmarkId` | Actualizar nombre y preview (sin tocar página ni usuario) |
 | `DELETE` | `/api/v1/books/:bookId/bookmarks/:bookmarkId` | Eliminar marcador |
 
 ### Rachas de Lectura (`/api/v1/streak`)
@@ -258,16 +280,41 @@ Autenticación propia con **JWT access (15 min) + refresh (7 días)** y rotació
 | Método | Ruta | Descripción |
 |--------|------|-------------|
 | `GET` | `/api/v1/streak` | Obtener racha del usuario |
-| `POST` | `/api/v1/streak/initialize` | Inicializar racha |
-| `POST` | `/api/v1/streak/complete` | Marcar día completado |
+| `POST` | `/api/v1/streak/initialize` | Inicializar racha desde una fecha |
+| `POST` | `/api/v1/streak/complete` | Marcar día completado (usa la fecha del cliente) |
 
 ### Health Check
 
 | Método | Ruta | Descripción |
 |--------|------|-------------|
-| `GET` | `/api/v1/health` | Estado de la API (DB + R2) |
+| `GET` | `/api/v1/health` | Estado de la API (DB + R2, timeout de 2s por dependencia) |
 
-> Ejemplos listos para probar en `backend-express/http/` (`books.http`, `bookmarks.http`, `streaks.http`).
+> Ejemplos listos para probar en `backend-express/http/` (`books.http`, `bookmarks.http`, `streaks.http`) y el contrato completo en `specs/modules/api/`.
+
+---
+
+## Arquitectura del Backend
+
+`backend-express/src/` usa **módulos verticales** con capas internas. Cada feature (`auth`, `books`, `bookmarks`, `streak`) es autocontenida:
+
+```
+src/
+├── config/            # Transversal: env, prisma, logger, error-handler, cors, origins, rate-limit
+├── core/              # Compartido: errors/AppError, http/validate, storage/s3.client, upload
+├── http/              # Composición de rutas + health check
+├── modules/
+│   └── <feature>/
+│       ├── application/      # service + common/ (utils de la feature)
+│       ├── domain/           # entities, types, interfaz del repositorio
+│       ├── infrastructure/   # <feature>.prisma.repository.ts
+│       ├── presentation/     # controller, dto (Zod), routes
+│       └── _tests_/          # application/ (service) y presentation/ (HTTP)
+├── scripts/           # seed.ts
+├── tests/             # fakes.ts (repositorios fake) y setup.ts (env de test)
+└── types/             # express.d.ts
+```
+
+La dirección de dependencia es única: `presentation → application → domain`, y `infrastructure` implementa los contratos que `application` declara. Los services nunca escriben en la base de datos: toda query pasa por el repositorio, incluso las transacciones (patrón `<repo>.transaction`). El detalle está en `specs/modules/backend/02-architecture.md`.
 
 ---
 
@@ -275,17 +322,17 @@ Autenticación propia con **JWT access (15 min) + refresh (7 días)** y rotació
 
 ### Backend Express
 - **Express** v5 — Framework HTTP
-- **TypeScript** — Tipado estático
+- **TypeScript** (strict, ESM) — Tipado estático
 - **Prisma** v6 — ORM para PostgreSQL
-- **Zod** v4 — Validación de esquemas
+- **Zod** v4 — Validación de esquemas en la frontera (`presentation/*.dto.ts`)
 - **jsonwebtoken + bcrypt** — Autenticación JWT con rotación de refresh tokens
 - **Cloudflare R2** — Almacenamiento de PDFs (S3-compatible)
-- **Resend** — Envío de emails
-- **Pino + pino-http** — Logging estructurado
+- **Resend** — Envío del código de verificación de email
+- **Pino + pino-http** — Logging estructurado (secretos redactados)
 - **Helmet** — Seguridad HTTP
-- **express-rate-limit** — Rate limiting
-- **Jest** + **Supertest** — Tests
-- **Multer** — Upload de archivos
+- **express-rate-limit** — Rate limiting (4 tiers)
+- **Multer** — Upload de archivos (25 MB)
+- **Jest** + **Supertest** — 150 tests en 12 suites
 
 ### Frontend
 - **React** v19 — Biblioteca de UI
@@ -295,13 +342,13 @@ Autenticación propia con **JWT access (15 min) + refresh (7 días)** y rotació
 - **React Router** v7 — Enrutamiento
 - **Zustand** v5 — Estado global
 - **React Hook Form** + **Zod** — Formularios
-- **PDF.js** v5 — Renderizado de PDFs
+- **PDF.js** v5 — Extracción de texto de PDFs (`lib/pdf.ts`, worker resuelto por el bundler)
 - **IndexedDB (idb)** — Almacenamiento offline / modo local
-- **Axios** — Cliente HTTP
+- **fetch + crossFetch** — Cliente HTTP (`api/client.ts`; el bridge de Tauri para desktop/Android)
 - **Lucide React** — Iconos
 - **Sonner** — Notificaciones toast
-- **Vitest** + **Testing Library** — Tests
-- **ESLint** — Linting
+- **Vitest** + **Testing Library** — 78 tests en 10 archivos
+- **ESLint** (flat config) — Linting
 
 ### Landing Page
 - **Astro** v5 — Framework SSG
@@ -316,8 +363,10 @@ Autenticación propia con **JWT access (15 min) + refresh (7 días)** y rotació
 |------|--------|-------------|
 | `/auth/login` | Público | Inicio de sesión |
 | `/auth/register` | Público | Registro de usuario |
-| `/` | Protegido | Dashboard / Biblioteca |
-| `/profile` | Protegido | Perfil de usuario |
+| `/` | Protegido | Biblioteca (búsqueda, filtros, vista estante/grilla/lista) |
+| `/profile` | Protegido | Perfil, estadísticas, racha y configuración |
+
+El **lector** no es una ruta: se muestra en lugar del contenido cuando `currentView === "reader"` en el store.
 
 ### Landing Page
 - `/` — Página principal de marketing
@@ -354,6 +403,8 @@ docker build -t bookteka-api .
 docker run -p 3000:3000 bookteka-api
 ```
 
+> En producción, el backend espera a PostgreSQL, corre `prisma migrate deploy` y arranca (`docker-entrypoint.sh`). Railway despliega con `RAILPACK` (`railway.toml`).
+
 ### Landing Page
 
 Sitio estático, desplegable en cualquier hosting:
@@ -366,98 +417,45 @@ pnpm build
 
 ---
 
-## Backend Rust (migración en progreso)
+## Especificaciones
 
-Se está migrando el backend de Express a Rust. El proyecto está en fase inicial.
+La carpeta `specs/` es la **fuente de documentación** del proyecto, reconstruida desde el código real:
 
-```bash
-cd backend-rust
-cargo build
+```
+specs/
+├── descripcion-proyecto.md      # Qué es el producto y qué queda fuera de alcance
+├── documentacion-cliente.md     # Documento de negocio (12 secciones, lenguaje simple)
+├── global-instruction.md        # Reglas para generar/modificar código en el repo
+├── docs/                        # Ejecución local, buenas prácticas, RNF, glosario, decisiones (ADR)
+├── modules/                     # backend/, db/, frontend/, api/ — por módulo
+└── tasks/                       # Deuda técnica con archivo de origen y severidad 🔴🟠🟡
 ```
 
----
-
-## Estructura de Archivos
-
-### Backend Express
-```
-backend-express/
-├── src/
-│   ├── __tests__/       # Tests automatizados (Jest + Supertest)
-│   ├── config/          # Configuración (env, prisma, cors, rate-limit, shutdown)
-│   ├── controllers/     # Controladores de rutas
-│   ├── dto/             # Data Transfer Objects
-│   ├── helper/          # Utilidades
-│   ├── lib/             # Auth (JWT), R2, Logger, Email
-│   ├── middleware/      # Auth, validación, error handler
-│   ├── repositories/    # Acceso a datos
-│   ├── routes/          # Definición de rutas (auth, books, bookmarks, streak)
-│   ├── schema/          # Esquemas Zod
-│   ├── services/        # Lógica de negocio
-│   └── server.ts        # Entry point
-├── prisma/              # Esquema y migraciones Prisma
-├── http/                # Endpoints listos para REST Client
-├── mock/                # PDFs de prueba
-├── doc/                 # Documentación técnica
-├── Dockerfile
-└── package.json
-```
-
-### Frontend
-```
-frontend/
-├── src/
-│   ├── __tests__/       # Tests con Vitest + Testing Library
-│   ├── api/             # Cliente Axios
-│   ├── components/      # Componentes React (pages, auth, modals, layout, common)
-│   ├── context/         # Contextos (Theme)
-│   ├── database/        # IndexedDB (idb) + sync con la API
-│   ├── hooks/           # Custom hooks
-│   ├── lib/             # Utilidades (auth, session, PDF, env)
-│   ├── pages/           # Páginas de la app
-│   ├── routes/          # Configuración de rutas (protected/public)
-│   ├── store/           # Zustand stores
-│   ├── types/           # Tipos TypeScript
-│   ├── utils/           # Funciones auxiliares
-│   └── validations/     # Esquemas Zod
-├── src-tauri/           # Configuración Tauri (incluye gen/android para Android)
-├── public/              # Assets públicos
-├── Dockerfile
-├── nginx.conf           # Configuración Nginx para producción
-└── vite.config.ts
-```
-
-### Landing Page
-```
-landing-page/
-├── src/
-│   ├── components/      # Componentes reutilizables
-│   ├── layouts/         # Layouts de página
-│   ├── pages/           # Páginas (Astro)
-│   └── sections/        # Secciones de la landing
-├── public/              # Assets estáticos
-├── astro.config.mjs
-└── package.json
-```
+- Cada endpoint, tabla, pantalla y variable de entorno documentado cita su archivo real.
+- `specs/tasks/` es el **único rastreador de trabajo**: el progreso se registra tikeando checkboxes en el propio archivo.
+- Las decisiones arquitectónicas están en `specs/docs/07-decisiones.md`, con la evidencia que las forzó.
 
 ---
 
 ## Tests
 
-### Backend Express
+### Backend Express — 150 tests / 12 suites
+
 ```bash
 cd backend-express
-pnpm test            # Ejecutar tests (Jest + Supertest)
+pnpm test            # Ejecutar tests (Jest + Supertest) — no requiere .env
 pnpm test:watch      # Modo watch
+NODE_OPTIONS=--experimental-vm-modules pnpm exec jest --coverage   # 87% statements
 ```
-Usa **Jest** + **Supertest** para tests de integración.
 
-### Frontend
+Cobertura medida (2026-09-28): **87.22% statements / 78.85% branches / 70.14% functions / 87.51% lines**.
+
+### Frontend — 78 tests / 10 archivos
+
 ```bash
 cd frontend
 pnpm exec vitest run    # Ejecutar tests unitarios
 ```
-Usa **Vitest** + **Testing Library** para tests unitarios y de componentes.
 
 ---
 
@@ -476,6 +474,9 @@ lsof -i :3000    # Backend
 lsof -i :1420    # Frontend (Vite)
 lsof -i :4321    # Landing Page
 ```
+
+### `Missing environment variable: X` al arrancar el backend
+`env.ts` valida al arrancar y no arranca con variables faltantes. Revisa que `backend-express/.env` tenga todas las variables del `.env.example` y que `JWT_SECRET`/`JWT_REFRESH_SECRET` tengan 32+ caracteres. Los tests no tienen este problema: `src/tests/setup.ts` los inyecta.
 
 ### Errores 404 tipo `/api/v1/api/...` o `/api/auth/...`
 El prefijo de la API es **`/api/v1`**. Verifica que:
@@ -516,10 +517,12 @@ docker compose up
 
 ### Convenciones
 
-- **ESLint** para consistencia en frontend
+- **Conventional Commits** (`feat`, `fix`, `refactor`, `chore`, `doc`, scope opcional: `feat(backend): ...`)
+- **ESLint** en frontend (`pnpm lint` debe pasar)
 - **Prettier** para formato en landing-page
-- **Conventional Commits**
 - TypeScript strict mode habilitado
+- Los tests pasan antes de mergear: la CI los ejecuta en cada PR
+- Si el cambio toca un contrato (endpoint, tabla, pantalla), actualiza el spec correspondiente y tikea la tarea en `specs/tasks/`
 
 ---
 
