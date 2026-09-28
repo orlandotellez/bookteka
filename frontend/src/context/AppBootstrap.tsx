@@ -1,7 +1,7 @@
 import { useEffect, useState, type CSSProperties, type FormEvent, type ReactNode } from "react";
 import {
   DEFAULT_API_URL,
-  fetchAndStoreApiUrl,
+  fetchBootstrap,
   isValidApiUrl,
   readApiUrl,
   writeApiUrl,
@@ -200,10 +200,11 @@ export function AppBootstrap({ children }: { children: ReactNode }) {
     let cancelled = false;
 
     async function init() {
-      const ok = await fetchAndStoreApiUrl();
+      const result = await fetchBootstrap();
       if (cancelled) return;
 
-      if (ok) {
+      if (result !== null) {
+        writeApiUrl(result.apiUrl);
         setState({ kind: "ready" });
         return;
       }
@@ -235,10 +236,11 @@ export function AppBootstrap({ children }: { children: ReactNode }) {
     const controller = new AbortController();
 
     async function retry() {
-      const ok = await fetchAndStoreApiUrl(controller.signal);
+      const result = await fetchBootstrap(controller.signal);
       if (controller.signal.aborted) return;
 
-      if (ok || readApiUrl() !== DEFAULT_API_URL) {
+      if (result !== null || readApiUrl() !== DEFAULT_API_URL) {
+        if (result !== null) writeApiUrl(result.apiUrl);
         setState({ kind: "ready" });
         return;
       }

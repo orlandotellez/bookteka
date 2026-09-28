@@ -41,6 +41,10 @@ export function isTauriRuntime(): boolean {
   return typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
 }
 
+export function isAndroidRuntime(): boolean {
+  return isTauriRuntime() && /Android/i.test(navigator.userAgent);
+}
+
 interface InvokeHttpArgs {
   method: string;
   url: string;

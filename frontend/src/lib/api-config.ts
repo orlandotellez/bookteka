@@ -11,7 +11,8 @@ export const DEFAULT_API_URL = "http://localhost:3000/api/v1";
  * Se usa como fallback cuando el fetch del bootstrap falla.
  * Mantener sincronizada con el valor en config-api.json del repo.
  */
-export const FALLBACK_PRODUCTION_URL = "https://localhost/api/v1";
+export const FALLBACK_PRODUCTION_URL =
+  "https://bookteka-production.up.railway.app/api/v1";
 
 // En dev (vite dev / pnpm dev) se usa el servidor local
 // En producción se usa la URL obtenida del bootstrap remoto
@@ -42,16 +43,24 @@ export function writeApiUrl(value: string): void {
   }
 }
 
-export async function fetchAndStoreApiUrl(
+export interface BootstrapResult {
+  apiUrl: string;
+  appVersion: string | null;
+  apkUrl: string | null;
+}
+
+export async function fetchBootstrap(
   externalSignal?: AbortSignal,
-): Promise<boolean> {
-  // En dev no consultamos el bootstrap remoto: usamos el servidor local directamente
+): Promise<BootstrapResult | null> {
   if (IS_DEV) {
-    writeApiUrl(DEFAULT_API_URL);
-    return true;
+    return {
+      apiUrl: DEFAULT_API_URL,
+      appVersion: null,
+      apkUrl: null,
+    };
   }
 
-  if (externalSignal?.aborted) return false;
+  if (externalSignal?.aborted) return null;
   const controller = new AbortController();
   const timeoutId = window.setTimeout(
     () => controller.abort(),
@@ -67,18 +76,34 @@ export async function fetchAndStoreApiUrl(
       },
       cache: "no-cache",
     });
-    if (!response.ok) return false;
-    const data = (await response.json()) as { current_api_url?: unknown };
-    if (!isValidApiUrl(data.current_api_url)) return false;
-    if (externalSignal?.aborted) return false;
-    writeApiUrl(data.current_api_url);
-    return true;
+    if (!response.ok) return null;
+    const data = (await response.json()) as {
+      current_api_url?: unknown;
+      app_version?: unknown;
+      apk_url?: unknown;
+    };
+    if (!isValidApiUrl(data.current_api_url)) return null;
+    if (externalSignal?.aborted) return null;
+    return {
+      apiUrl: data.current_api_url,
+      appVersion:
+        typeof data.app_version === "string" && data.app_version.trim() !== ""
+          ? data.app_version.trim()
+          : null,
+      apkUrl: isValidApiUrl(data.apk_url) ? data.apk_url : null,
+    };
   } catch (err) {
     // Si el fetch remoto falla (ej. Rust reqwest, red, TLS), usamos la URL de producción
     // como fallback para que la app pueda arrancar sin intervención manual.
-    console.warn("[bootstrap] fetch remoto falló, usando URL de producción como fallback:", err);
-    writeApiUrl(FALLBACK_PRODUCTION_URL);
-    return true;
+    console.warn(
+      "[bootstrap] fetch remoto falló, usando URL de producción como fallback:",
+      err,
+    );
+    return {
+      apiUrl: FALLBACK_PRODUCTION_URL,
+      appVersion: null,
+      apkUrl: null,
+    };
   } finally {
     window.clearTimeout(timeoutId);
     externalSignal?.removeEventListener("abort", onAbort);
