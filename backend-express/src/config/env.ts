@@ -19,8 +19,10 @@ interface EnvConfig {
   RESEND_FROM_EMAIL: string;
 }
 
-function getEnvVar(key: string): string {
-  const value = process.env[key];
+type ProcessEnvLike = Record<string, string | undefined>;
+
+function getEnvVar(processEnv: ProcessEnvLike, key: string): string {
+  const value = processEnv[key];
 
   if (!value) {
     throw new Error(`Missing environment variable: ${key}`);
@@ -29,25 +31,32 @@ function getEnvVar(key: string): string {
   return value;
 }
 
-function getJwtSecret(key: "JWT_SECRET" | "JWT_REFRESH_SECRET"): string {
-  const value = process.env[key];
+function getJwtSecret(
+  processEnv: ProcessEnvLike,
+  key: "JWT_SECRET" | "JWT_REFRESH_SECRET",
+): string {
+  const value = processEnv[key];
   if (!value || value.length < 32) {
     throw new Error(`${key} must contain at least 32 characters`);
   }
   return value;
 }
 
-export const env: EnvConfig = {
-  PORT: parseInt(process.env.PORT || "3000", 10),
-  DATABASE_URL: getEnvVar("DATABASE_URL"),
-  FRONTEND_URL: getEnvVar("FRONTEND_URL"),
-  JWT_SECRET: getJwtSecret("JWT_SECRET"),
-  JWT_REFRESH_SECRET: getJwtSecret("JWT_REFRESH_SECRET"),
-  R2_ACCESS_KEY_ID: getEnvVar("R2_ACCESS_KEY_ID"),
-  R2_SECRET_ACCESS_KEY: getEnvVar("R2_SECRET_ACCESS_KEY"),
-  R2_ENDPOINT: getEnvVar("R2_ENDPOINT"),
-  R2_BUCKET: getEnvVar("R2_BUCKET"),
-  R2_PUBLIC_DOMAIN: getEnvVar("R2_PUBLIC_DOMAIN"),
-  RESEND_API_KEY: getEnvVar("RESEND_API_KEY"),
-  RESEND_FROM_EMAIL: getEnvVar("RESEND_FROM_EMAIL"),
-};
+export function buildEnv(processEnv: ProcessEnvLike): EnvConfig {
+  return {
+    PORT: parseInt(processEnv.PORT || "3000", 10),
+    DATABASE_URL: getEnvVar(processEnv, "DATABASE_URL"),
+    FRONTEND_URL: getEnvVar(processEnv, "FRONTEND_URL"),
+    JWT_SECRET: getJwtSecret(processEnv, "JWT_SECRET"),
+    JWT_REFRESH_SECRET: getJwtSecret(processEnv, "JWT_REFRESH_SECRET"),
+    R2_ACCESS_KEY_ID: getEnvVar(processEnv, "R2_ACCESS_KEY_ID"),
+    R2_SECRET_ACCESS_KEY: getEnvVar(processEnv, "R2_SECRET_ACCESS_KEY"),
+    R2_ENDPOINT: getEnvVar(processEnv, "R2_ENDPOINT"),
+    R2_BUCKET: getEnvVar(processEnv, "R2_BUCKET"),
+    R2_PUBLIC_DOMAIN: getEnvVar(processEnv, "R2_PUBLIC_DOMAIN"),
+    RESEND_API_KEY: getEnvVar(processEnv, "RESEND_API_KEY"),
+    RESEND_FROM_EMAIL: getEnvVar(processEnv, "RESEND_FROM_EMAIL"),
+  };
+}
+
+export const env: EnvConfig = buildEnv(process.env);
