@@ -292,7 +292,7 @@ export class AuthService {
 }
 
 /** Singleton que usan el controller y el guard. */
-export const authService = new AuthService();
+const authService = new AuthService();
 
 /**
  * Fachada que conserva la forma pública que usan el resto de módulos.

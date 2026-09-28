@@ -145,8 +145,8 @@ export function makeBook(overrides: Partial<book> = {}): book {
   } as book;
 }
 
-export const makeBooksRepo = (overrides: Partial<IBooksRepository> = {}): IBooksRepository =>
-  ({
+export const makeBooksRepo = (overrides: Partial<IBooksRepository> = {}): IBooksRepository => {
+  const base = {
     getUserBooks: jest.fn(async () => []),
     findByHash: jest.fn(async () => null),
     createBook: jest.fn(async () => makeBook()),
@@ -157,8 +157,15 @@ export const makeBooksRepo = (overrides: Partial<IBooksRepository> = {}): IBooks
     deleteBook: jest.fn(async () => makeBook()),
     createAuditLog: jest.fn(async () => ({}) as never),
     updateUserBook: jest.fn(async () => makeUserBook()),
-    ...overrides,
-  }) as unknown as IBooksRepository;
+  };
+  const merged = { ...base, ...overrides };
+  return {
+    ...merged,
+    transaction: jest.fn(
+      (fn: (tx: IBooksRepository) => Promise<unknown>) => fn(merged as never),
+    ) as unknown as IBooksRepository["transaction"],
+  } as unknown as IBooksRepository;
+};
 
 // ── bookmarks ─────────────────────────────────────────────────────────────
 

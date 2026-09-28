@@ -66,19 +66,25 @@ const { r2 } = await import("@/core/storage/s3.client.js");
 const { deleteR2Quietly } = await import("@/modules/books/application/common/books.storage.js");
 const { getSignedUrl } = await import("@aws-sdk/s3-request-presigner");
 
-const makeMockRepo = (overrides: any = {}): any => ({
-  getUserBooks: jest.fn(async () => []),
-  findByHash: jest.fn(async () => null),
-  createBook: jest.fn(async () => undefined),
-  upsertUserBook: jest.fn(async () => undefined),
-  findUserBook: jest.fn(async () => null),
-  countOtherUsers: jest.fn(async () => 0),
-  deleteUserBook: jest.fn(async () => undefined),
-  deleteBook: jest.fn(async () => undefined),
-  createAuditLog: jest.fn(async () => undefined),
-  updateUserBook: jest.fn(async () => undefined),
-  ...overrides,
-});
+const makeMockRepo = (overrides: any = {}): any => {
+  const base = {
+    getUserBooks: jest.fn(async () => []),
+    findByHash: jest.fn(async () => null),
+    createBook: jest.fn(async () => undefined),
+    upsertUserBook: jest.fn(async () => undefined),
+    findUserBook: jest.fn(async () => null),
+    countOtherUsers: jest.fn(async () => 0),
+    deleteUserBook: jest.fn(async () => undefined),
+    deleteBook: jest.fn(async () => undefined),
+    createAuditLog: jest.fn(async () => undefined),
+    updateUserBook: jest.fn(async () => undefined),
+  };
+  const merged = { ...base, ...overrides };
+  return {
+    ...merged,
+    transaction: jest.fn(async (fn: (tx: any) => Promise<any>) => fn(merged)),
+  };
+};
 
 describe("BooksService.getUserBooks", () => {
   it("plana cada user_book al shape del cliente con timestamp ms", async () => {
@@ -240,7 +246,7 @@ describe("BooksService.deleteBook", () => {
     await expect(svc.deleteBook({ userId: "user1", bookId: "book1" })).rejects.toThrow(
       new AppError("NOT_FOUND", 404, "Libro no encontrado para este usuario"),
     );
-    expect(dbPrisma.$transaction).not.toHaveBeenCalled();
+    expect(repo.transaction).not.toHaveBeenCalled();
   });
 
   it("con `otherUsers=0`: borra R2 + escribe los 3 writes en una transacción", async () => {
@@ -263,15 +269,14 @@ describe("BooksService.deleteBook", () => {
 
     expect(deleteR2Quietly).toHaveBeenCalledWith("books/user1/book1.pdf");
 
-    expect(dbPrisma.$transaction).toHaveBeenCalledTimes(1);
+    expect(repo.transaction).toHaveBeenCalledTimes(1);
 
-    expect(dbPrisma.audit_log.create).toHaveBeenCalledTimes(1);
-    expect(dbPrisma.user_book.delete).toHaveBeenCalledWith({
-      where: { id: "ub1" },
-    });
-    expect(dbPrisma.book.delete).toHaveBeenCalledWith({
-      where: { id: "book1" },
-    });
+    expect(repo.createAuditLog).toHaveBeenCalledTimes(1);
+    expect(repo.createAuditLog).toHaveBeenCalledWith(
+      expect.objectContaining({ action: "DELETE", entityType: "BOOK" }),
+    );
+    expect(repo.deleteUserBook).toHaveBeenCalledWith("ub1");
+    expect(repo.deleteBook).toHaveBeenCalledWith("book1");
 
     expect(result).toEqual({
       success: true,
@@ -300,10 +305,10 @@ describe("BooksService.deleteBook", () => {
 
     expect(deleteR2Quietly).not.toHaveBeenCalled();
 
-    expect(dbPrisma.$transaction).toHaveBeenCalledTimes(1);
-    expect(dbPrisma.audit_log.create).toHaveBeenCalledTimes(1);
-    expect(dbPrisma.user_book.delete).toHaveBeenCalledTimes(1);
-    expect(dbPrisma.book.delete).not.toHaveBeenCalled();
+    expect(repo.transaction).toHaveBeenCalledTimes(1);
+    expect(repo.createAuditLog).toHaveBeenCalledTimes(1);
+    expect(repo.deleteUserBook).toHaveBeenCalledTimes(1);
+    expect(repo.deleteBook).not.toHaveBeenCalled();
   });
 });
 

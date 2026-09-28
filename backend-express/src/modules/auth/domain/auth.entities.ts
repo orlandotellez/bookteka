@@ -19,10 +19,7 @@ export interface TokenPayload {
  * Payload del refresh token: solo necesita el `userId` para resolver al
  * usuario. El `jti` sirve para distinguir dos refresh del mismo usuario.
  */
-export interface RefreshTokenPayload {
-  userId: string;
-  jti: string;
-}
+
 
 /**
  * Usuario tal como sale hacia el cliente.
@@ -51,10 +48,7 @@ export interface AuthResponse {
 }
 
 /** Tokens emitidos junto a la respuesta. */
-export interface TokenPair {
-  accessToken: string;
-  refreshToken: string;
-}
+
 
 /** Sesión resuelta por `auth.api.getSession`. */
 export interface ResolvedSession {
@@ -68,7 +62,4 @@ export interface ResolvedSession {
 }
 
 /** Resultado de un refresh válido. */
-export interface RefreshResult {
-  session: { id: string; token: string; expires_at: Date };
-  user: PublicUser;
-}
+

@@ -8,7 +8,7 @@ import type { PrismaClient } from "@prisma/client";
  * Todos los métodos son arrow functions de instancia: se pasan bound a otras
  * capas (los services usan este mismo patrón para sus repositorios).
  */
-export class AuthPrismaRepository implements IAuthRepository {
+class AuthPrismaRepository implements IAuthRepository {
   constructor(private readonly client: PrismaClient = dbPrisma) {}
 
   // ── usuarios ──

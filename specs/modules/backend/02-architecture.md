@@ -10,7 +10,7 @@ Arquitectura del backend Express del Bookteka — **módulos verticales** con ca
 2. **Capas internas con dirección única.** Dentro de cada módulo, la dependencia fluye de la frontera hacia adentro: `presentation → application → domain`. `infrastructure` implementa los contratos que `application` declara en `domain`.
 3. **Los services dependen de interfaces de repositorio, nunca de Prisma.** `domain/<feature>.interface.ts` declara el contrato; `infrastructure/<feature>.prisma.repository.ts` lo implementa; los tests inyectan un fake de `src/tests/fakes.ts`.
 4. **El controller es la única capa que conoce Express.** `route → controller → service`.
-5. **Errores**: `AppError` en `core/errors/AppError.ts`, mensajes centralizados en `core/errors/error-messages.ts`, y un solo `errorHandler` en `config/error-handler.ts`.
+5. **Errores**: `AppError` en `core/errors/AppError.ts` y un solo `errorHandler` en `config/error-handler.ts`.
 
 ---
 
@@ -39,14 +39,12 @@ backend-express/
 │   │
 │   ├── core/                      # Compartido entre módulos
 │   │   ├── errors/
-│   │   │   ├── AppError.ts        # class AppError(code, statusCode, message)
-│   │   │   └── error-messages.ts  # ERROR_MESSAGES + httpError helpers
+│   │   │   └── AppError.ts        # class AppError(code, statusCode, message)
 │   │   ├── http/
 │   │   │   ├── validate.ts        # middleware Zod body/params/query
 │   │   │   └── express.utils.ts   # bodyOf/paramsOf/queryOf tipados
 │   │   ├── storage/
 │   │   │   └── s3.client.ts       # S3Client para Cloudflare R2
-│   │   └── audit.types.ts         # tipo AuditLog
 │   │
 │   ├── http/                      # Composición de rutas y health
 │   │   ├── routes.ts              # registerRoutes: limiters + routers + 404
@@ -81,7 +79,6 @@ backend-express/
 │   │   │   │       ├── books.utils.ts         # generateFileHash, normalizedFileName
 │   │   │   │       └── books.storage.ts       # deleteR2Quietly
 │   │   │   ├── domain/
-│   │   │   │   ├── books.entities.ts          # UserBookResponse, UploadBookResponse...
 │   │   │   │   ├── books.interface.ts         # IBooksRepository
 │   │   │   │   ├── books.types.ts             # Book, UserBook, inputs
 │   │   │   │   └── books.dto-types.ts         # upload/params/response DTOs
@@ -214,10 +211,9 @@ export class AppError extends Error {
 }
 ```
 
-### Mensajes centralizados (core/errors/error-messages.ts)
-
-Los textos de error viven en `ERROR_MESSAGES` y hay helpers tipados (`httpError.unauthorized(...)`).
-Antes estaban interpolados en cada `throw`, con riesgo de divergencia.
+Los mensajes de error se escriben directo en cada `AppError`. Un intento de
+centralizarlos en `core/errors/error-messages.ts` quedó sin consumidores y se
+eliminó en `specs/tasks/backend/04-codigo-muerto.md`.
 
 ### `errorHandler` (config/error-handler.ts)
 

@@ -1,13 +1,20 @@
 import { dbPrisma } from "@/config/prisma.js";
 import type { IBooksRepository } from "@/modules/books/domain/books.interface.js";
 import { CreateBookInput, UpsertUserBookInput } from "@/modules/books/domain/books.types.js";
-import { audit_log, book, Prisma, user_book } from "@prisma/client";
-
-
+import { Prisma, PrismaClient } from "@prisma/client";
 
 export class BooksPrismaRepository implements IBooksRepository {
+  constructor(private readonly client: PrismaClient = dbPrisma) {}
+
+  transaction = <T>(
+    fn: (tx: IBooksRepository) => Promise<T>,
+  ): Promise<T> =>
+    this.client.$transaction(async (tx) =>
+      fn(new BooksPrismaRepository(tx as unknown as PrismaClient)),
+    );
+
   getUserBooks = (userId: string) => {
-    return dbPrisma.user_book.findMany({
+    return this.client.user_book.findMany({
       where: { userId },
       orderBy: { lastReadAt: "desc" },
       include: {
@@ -27,13 +34,13 @@ export class BooksPrismaRepository implements IBooksRepository {
   }
 
   findByHash = (fileHash: string) => {
-    return dbPrisma.book.findUnique({
+    return this.client.book.findUnique({
       where: { fileHash },
     });
   };
 
   createBook = (data: CreateBookInput) => {
-    return dbPrisma.book.create({
+    return this.client.book.create({
       data,
     });
   };
@@ -45,7 +52,7 @@ export class BooksPrismaRepository implements IBooksRepository {
     scrollPosition,
     currentPage,
   }: UpsertUserBookInput) => {
-    return dbPrisma.user_book.upsert({
+    return this.client.user_book.upsert({
       where: {
         userId_bookId: {
           userId,
@@ -61,18 +68,17 @@ export class BooksPrismaRepository implements IBooksRepository {
       },
       update: {},
     });
-
   }
 
   findUserBook = (userId: string, bookId: string) => {
-    return dbPrisma.user_book.findFirst({
+    return this.client.user_book.findFirst({
       where: { userId, bookId },
       include: { book: true },
     });
   }
 
   countOtherUsers = (bookId: string, userId: string) => {
-    return dbPrisma.user_book.count({
+    return this.client.user_book.count({
       where: {
         bookId,
         NOT: { userId },
@@ -81,19 +87,19 @@ export class BooksPrismaRepository implements IBooksRepository {
   }
 
   deleteUserBook = (id: string) => {
-    return dbPrisma.user_book.delete({
+    return this.client.user_book.delete({
       where: { id },
     });
   }
 
   deleteBook = (id: string) => {
-    return dbPrisma.book.delete({
+    return this.client.book.delete({
       where: { id },
     });
   }
 
   createAuditLog = (data: Prisma.audit_logUncheckedCreateInput) => {
-    return dbPrisma.audit_log.create({
+    return this.client.audit_log.create({
       data,
     });
   };
@@ -102,7 +108,7 @@ export class BooksPrismaRepository implements IBooksRepository {
     id: string,
     data: Prisma.user_bookUncheckedUpdateInput,
   ) => {
-    return dbPrisma.user_book.update({
+    return this.client.user_book.update({
       where: { id },
       data,
     });

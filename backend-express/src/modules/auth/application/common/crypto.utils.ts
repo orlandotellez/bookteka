@@ -5,7 +5,7 @@ import bcrypt from "bcrypt";
 const BCRYPT_COST = 10;
 
 /** Longitud del código de verificación de correo. */
-export const VERIFICATION_CODE_LENGTH = 6;
+const VERIFICATION_CODE_LENGTH = 6;
 
 /** Alfabeto del código: sin caracteres que se confunden (0/O, 1/I/L). */
 const VERIFICATION_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";

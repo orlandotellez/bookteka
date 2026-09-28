@@ -23,7 +23,7 @@ function getHeader(
 }
 
 /** Parsea el header `Cookie` en un objeto plano. */
-export function parseCookies(
+function parseCookies(
   cookieHeader: string | undefined,
 ): Record<string, string> {
   if (!cookieHeader) return {};

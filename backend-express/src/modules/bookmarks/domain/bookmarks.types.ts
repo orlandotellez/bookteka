@@ -14,21 +14,11 @@ export interface UpdateBookmarkInput {
 
 
 /** Payload que acepta `POST /books/:bookId/bookmarks`. */
-export interface CreateBookmarkRequestDTO {
-  name: string;
-  pageNumber: number;
-  textPreview?: string;
-}
+
 
 /** Params de las rutas de marcadores. */
-export interface GetBookmarkParams {
-  bookId: string;
-}
 
-export interface CreateBookmarkParams {
-  bookId: string;
-}
 
-export interface DeleteBookmarkParams {
-  bookId: string;
-}
+
+
+

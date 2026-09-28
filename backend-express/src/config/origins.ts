@@ -32,7 +32,7 @@ if (configured.includes(STAR)) {
   );
 }
 
-export const ALLOWED_ORIGINS: string[] = isProduction
+const ALLOWED_ORIGINS: string[] = isProduction
   ? configured
   : [...configured, ...DEV_EXTRA_ORIGINS];
 
@@ -42,7 +42,7 @@ export const ALLOWED_ORIGINS: string[] = isProduction
  * permite acceder desde cualquier IP/puerto de la LAN sin editar `compose`.
  * Activar sólo cuando el servicio está detrás de un proxy de confianza.
  */
-export const TRUST_BACKEND_ORIGINS: boolean =
+const TRUST_BACKEND_ORIGINS: boolean =
   process.env.TRUST_BACKEND_ORIGINS === "true";
 
 function protoFromRequest(req: Pick<Request, "headers">): string {
@@ -72,7 +72,7 @@ function expectedOriginFromRequest(
   return `${protoFromRequest(req)}://${host}`;
 }
 
-export function isAllowedOrigin(origin: string | undefined): boolean {
+function isAllowedOrigin(origin: string | undefined): boolean {
   if (!origin) return false;
   return ALLOWED_ORIGINS.includes(origin);
 }
@@ -97,19 +97,4 @@ export function isRequestOriginAllowed(
  * resuelto en cada request. Si el flag está activo, devuelve el Origin del
  * request siempre que su host coincida con el del proxy.
  */
-export function originsForRequest(
-  req: Pick<Request, "headers">,
-): string[] {
-  const origin = req.headers.origin;
-  if (
-    TRUST_BACKEND_ORIGINS &&
-    typeof origin === "string" &&
-    origin === expectedOriginFromRequest(req) &&
-    !ALLOWED_ORIGINS.includes(origin)
-  ) {
-    return [...ALLOWED_ORIGINS, origin];
-  }
-  return ALLOWED_ORIGINS;
-}
 
-export const isProductionEnv = isProduction;

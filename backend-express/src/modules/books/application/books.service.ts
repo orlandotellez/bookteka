@@ -6,10 +6,9 @@ import { logger } from "@/config/logger.js";
 import { BooksPrismaRepository } from "@/modules/books/infrastructure/books.prisma.repository.js";
 import { DeleteBookInput, DownloadBookInput, StreamBookInput, UpdateBookProgressInput, UploadBookInput } from "@/modules/books/domain/books.types.js";
 import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
-import { Prisma } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { env } from "@/config/env.js";
-import { dbPrisma } from "@/config/prisma.js";
 
 const booksPrismaRepository = new BooksPrismaRepository();
 
@@ -103,7 +102,7 @@ export class BooksService {
       await deleteR2Quietly(userBook.book.fileKey);
     }
 
-    const auditData: Prisma.audit_logUncheckedCreateInput = {
+    const auditData = {
       action: "DELETE",
       entityType: "BOOK",
       entityId: bookId,
@@ -117,11 +116,11 @@ export class BooksService {
       },
     };
 
-    await dbPrisma.$transaction(async (tx) => {
-      await tx.audit_log.create({ data: auditData });
-      await tx.user_book.delete({ where: { id: userBook.id } });
+    await this.repo.transaction(async (tx) => {
+      await tx.createAuditLog(auditData);
+      await tx.deleteUserBook(userBook.id);
       if (otherUsers === 0) {
-        await tx.book.delete({ where: { id: bookId } });
+        await tx.deleteBook(bookId);
       }
     });
 

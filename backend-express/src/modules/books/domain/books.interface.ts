@@ -8,6 +8,7 @@ import type { CreateBookInput, UpsertUserBookInput } from "@/modules/books/domai
  * implementación, y los tests inyectan un fake que cumple el contrato.
  */
 export interface IBooksRepository {
+  transaction: <T>(fn: (tx: IBooksRepository) => Promise<T>) => Promise<T>;
   getUserBooks: (userId: string) => Promise<user_book[] | null>;
   findByHash: (fileHash: string) => Promise<book | null>;
   createBook: (data: CreateBookInput) => Promise<book>;
