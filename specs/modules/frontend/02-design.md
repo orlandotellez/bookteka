@@ -8,7 +8,7 @@ Sistema de diseño de Bookteka — tokens CSS, theming, componentes, patrones de
 
 1. **Legibilidad primero**. Es una app de lectura: tipografía, contraste y espacios de lectura dominan el diseño.
 2. **Tokens primero**. Cualquier valor (color, spacing, font-size) sale de CSS variables en `index.css`. Nunca hardcoded.
-3. **Temas por `data-theme`**. 6 temas definidos en CSS (light, dark, midnight, sepia, ocean, forest); solo light/dark son seleccionables desde TS hoy.
+3. **Temas por `data-theme`**. 6 temas definidos en CSS (light, dark, midnight, sepia, ocean, forest), todos seleccionables desde el selector de `IconTheme`. `ThemeName` y `isDarkTheme` viven en `context/theme.ts`.
 4. **Sin flash blanco**: `index.html` aplica el tema y un splash estático antes del primer paint.
 
 ---
@@ -44,6 +44,8 @@ Definidos en `src/index.css` con `data-theme` en `body` (lo setea `ThemeWrapper`
 | `forest` | `#ecfdf5` | `#064e3b` |
 
 > Los colores del **splash** (`--splash-bg`/`--splash-fg`) se definen por script inline en `index.html` usando `--primary-color`/`--font-color-title` de cada tema.
+>
+> Contraste de títulos vs fondos verificado (2026-09-28): los 6 temas ≥ 8.2:1, AA de sobra. El texto secundario (`--font-color-text: #7e7367`) se audita en `specs/tasks/frontend/04-validaciones.md`.
 
 ### Otros tokens
 

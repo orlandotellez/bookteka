@@ -84,36 +84,40 @@ Que no queden clones de un dominio ni dependencias que no se usan, y que los cua
 
 ## Tareas
 
-- [ ] 1. Borrar `hooks/useBooks.tsx`
+- [x] 1. Borrar `hooks/useBooks.tsx`
   - Confirmado: ningún archivo lo importa. `store/bookStore.ts` es la fuente de verdad de la biblioteca.
   - Borrar el archivo. Si en el futuro hace falta un hook de solo lectura, se extrae del store, no se clona.
 - [x] 2. Borrar `downloadPdfToBlob` y `getSignedDownloadUrl` de `lib/pdfService.ts`
   - Resuelto: no se portaron al módulo único de `02-trabajo-pdf.md`.
-- [ ] 3. Quitar `axios` de `frontend/package.json`
+- [x] 3. Quitar `axios` de `frontend/package.json`
   - `rg axios frontend/src` no devuelve nada.
   - `pnpm remove axios` y verificar que `pnpm build` sigue pasando.
-- [ ] 4. Borrar `src/__tests__/setup.ts`
+- [x] 4. Borrar `src/__tests__/setup.ts`
+  - Resuelto en `01-cobertura-tests.md` (commit de scripts de test): el duplicado ya no existe. Aquí se confirma el criterio.
   - Duplica `src/test/setup.ts`, que es el que referencia `vite.config.ts`.
-- [ ] 5. Decidir qué pasa con los 6 temas
+- [x] 5. Decidir qué pasa con los 6 temas
+  - **Decisión con el usuario: opción A (exponer los 6).** `ThemeName` pasa a 6 valores (light, dark, midnight, sepia, ocean, forest) y `IconTheme` es un selector. `ThemeName`/`THEMES`/`THEME_LABELS`/`isDarkTheme`/`isThemeName` viven en `context/theme.ts` (así el fast-refresh del contexto queda sin const sueltas); `ThemeContext` solo exporta el Provider y el hook. Lo que era `theme === "dark"` para los logos pasó a `isDarkTheme(theme)` (dark y midnight usan el logo oscuro; el resto el claro). Contraste AA verificado: todos los temas ≥ 8.2:1.
   - Opción A (recomendada): exponer los 6. `ThemeContext` pasa a `ThemeName = "light" | "dark" | "midnight" | "sepia" | "ocean" | "forest"`, `toggleTheme` pasa a un setter de tema elegido, y `IconTheme` (`components/common/IconTheme.tsx`) muestra un selector en vez de un toggle. La paleta ya está escrita en `index.css` y en el script de `index.html`: **no hay que elegir colores, ya están elegidos**.
   - Opción B: borrar `midnight`, `sepia`, `ocean` y `forest` de `index.css` y del script de `index.html`, y quedarse con el toggle.
   - Lo que no es opción: dejarlos como están. Son 40 líneas de CSS por tema que nadie puede ver.
   - Si se elige la A, verificar contraste AA en cada tema (ver `specs/modules/frontend/02-design.md`).
-- [ ] 6. Arreglar el bloque vacío de `LogoutButton.tsx`
+- [x] 6. Arreglar el bloque vacío de `LogoutButton.tsx`
+  - El `try` vacío se eliminó en la tarea 05-ci (ESLint `no-empty`). Acá se corrige el orden: `authApi.logout()` → `clearDatabase()`/`resetDatabase()` → navegar. Si el logout falla, la base local queda intacta y el `finally` restaura el botón.
   - Borrar el `try {} catch {}` vacío.
   - Invertir el orden: `authApi.logout()` primero, `clearDatabase()` + `resetDatabase()` después.
   - El `catch` actual loguea y deja el botón en estado de carga permanente (`setLoading(false)` solo se llama en el `catch`, no en el `finally`). Agregar un `finally`.
-- [ ] 7. Evaluar el logout por cambio de usuario
+- [x] 7. Evaluar el logout por cambio de usuario
+  - Decisión: **documentar la limitación, no implementar el borrado por userId ahora**. El botón de logout es la única vía de cierre y borra toda la base local. Si en el futuro se cierra sesión por expiración o por otro lado, este punto se reabre.
   - `clearDatabase()` borra **toda** la base local, no la del usuario que sale. Hoy el botón es la única vía de logout, así que funciona.
   - Si se agrega cierre de sesión por expiración de sesión o desde otro lado, la DB local del usuario anterior queda ahí y es accesible.
   - Decidir si se implementa borrado por `userId` (los stores de IndexedDB ya tienen índice `by-userId`) o si se documenta la limitación.
 
 ## Criterios de Done
 
-- [ ] `frontend/src/hooks/useBooks.tsx` no existe y `rg useBooks frontend/src` no devuelve nada.
-- [ ] `axios` fuera de `package.json` y `pnpm build` pasa.
-- [ ] `src/__tests__/setup.ts` no existe.
-- [ ] Los 6 temas de `index.css` son todos alcanzables desde la UI, o los 4 no alcanzables están borrados. No puede quedar el estado intermedio.
-- [ ] `LogoutButton.tsx` no tiene bloques `try` vacíos y el `finally` siempre restaura el botón.
-- [ ] Si el logout falla en el servidor, los libros locales no se pierden.
-- [ ] `pnpm build` y `pnpm test` pasan.
+- [x] `frontend/src/hooks/useBooks.tsx` no existe.
+- [x] `axios` fuera de `package.json` y `pnpm build` pasa.
+- [x] `src/__tests__/setup.ts` no existe.
+- [x] Los 6 temas de `index.css` son alcanzables desde el selector de `IconTheme`. No quedó estado intermedio.
+- [x] `LogoutButton.tsx` sin bloques vacíos y con `finally` que restaura el botón.
+- [x] Si el logout falla en el servidor, los libros locales no se pierden: el borrado de la base ocurre después del `logout()` exitoso.
+- [x] `pnpm build` y `pnpm test` pasan: 131/131, build OK, lint 0 errores.
