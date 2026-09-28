@@ -1,3 +1,117 @@
-.buttonTheme {
-  background-color: transparent;
+.picker {
+  position: relative;
+}
+
+.themeButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--window-color);
+  color: var(--font-color-title);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.themeButton:hover {
+  background: var(--card-color);
+  border-color: var(--secondary-color);
+}
+
+.themeButton:focus-visible {
+  outline: 2px solid var(--secondary-color);
+  outline-offset: 1px;
+}
+
+.swatch {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.swatchDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid var(--border-color);
+}
+
+.currentLabel {
+  white-space: nowrap;
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 170px;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  background: var(--card-color);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  z-index: 2100;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--font-color-title);
+  font-size: 13px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.option:hover,
+.optionActive {
+  background: var(--window-color);
+}
+
+.option:focus-visible {
+  outline: 2px solid var(--secondary-color);
+  outline-offset: -2px;
+}
+
+.optionSwatch {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.optionDot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid var(--border-color);
+}
+
+.optionLabel {
+  flex: 1;
+}
+
+.check {
+  color: var(--secondary-color);
+  font-weight: bold;
+  font-size: 14px;
+}
+
+@media only screen and (max-width: 1024px) {
+  .currentLabel {
+    display: none;
+  }
+
+  .themeButton {
+    padding: 6px 8px;
+  }
 }
