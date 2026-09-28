@@ -31,7 +31,7 @@ Reglas transversales que toda IA (o humano) debe respetar al generar, modificar 
 - **Auth**: JWT propio. Access 15 min + refresh 7 días con **rotación real** (compare-and-delete de la sesión). Passwords con bcrypt (cost 10). Todo centralizado en `lib/auth.ts` (`auth.api.*`).
 - **Transporte de tokens**: cookies `httpOnly` (`accessToken`/`refreshToken`) + headers `Authorization: Bearer`, `x-session-token`, `x-refresh-token` (Tauri).
 - **Storage**: Cloudflare R2 (S3-compatible) con `@aws-sdk/client-s3` + `@aws-sdk/s3-request-presigner`. Uploads con Multer (memoryStorage, máx 25MB).
-- **Email**: Resend (`lib/email.ts`). ⚠️ `sendEmail()` está implementado pero **nadie lo llama**: el código de verificación se imprime por consola (`lib/auth.ts` → `createVerification`). No des por hecho que los emails salen.
+- **Email**: Resend. `createVerification` envía el código por correo; si el envío falla se loguea y el registro no se rompe.
 - **Rate limit**: `express-rate-limit` (`config/rate-limit.ts`): auth 10/min, get-session 200/15min, progress 600/15min, global 100/15min.
 - **Seguridad**: helmet + CORS con guard de orígenes (`config/cors.ts`, `lib/origins.ts`).
 - **Logging**: pino + pino-http.

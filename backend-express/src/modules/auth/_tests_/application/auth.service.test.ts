@@ -10,6 +10,14 @@ jest.unstable_mockModule("@/config/prisma.js", () => ({
   dbPrisma: {},
 }));
 
+const sendEmailMock = jest.fn(async () => undefined);
+jest.unstable_mockModule(
+  "@/modules/auth/application/common/email.utils.js",
+  () => ({
+    sendEmail: sendEmailMock,
+  }),
+);
+
 const { AuthService } = await import("@/modules/auth/application/auth.service.js");
 const { signAccessToken, signRefreshToken } = await import(
   "@/modules/auth/application/common/token.utils.js"
@@ -19,6 +27,11 @@ const { makeAuthRepo, makeUser, makeAccount, makeSession, makeVerification } =
   await import("@/tests/fakes.js");
 
 const svc = (repo: unknown) => new AuthService(repo as never);
+
+beforeEach(() => {
+  sendEmailMock.mockReset();
+  sendEmailMock.mockResolvedValue(undefined);
+});
 
 // ── login ─────────────────────────────────────────────────────────────────
 
@@ -362,5 +375,67 @@ describe("AuthService.createVerification", () => {
     expect(repo.deleteVerificationsByIdentifier).toHaveBeenCalledWith(
       "user@test.com",
     );
+  });
+});
+
+describe("AuthService: envío del correo de verificación", () => {
+  it("register envía el correo con el código para el email normalizado", async () => {
+    const repo = makeAuthRepo({ userExistsByEmail: jest.fn(async () => false) });
+
+    await svc(repo).register({
+      name: "Carlos",
+      email: "CARLOS@Test.com",
+      password: "MiPassword123",
+    });
+
+    expect(sendEmailMock).toHaveBeenCalledTimes(1);
+    const [params] = (sendEmailMock as jest.Mock).mock.calls[0] as [
+      { to: string },
+    ];
+    expect(params.to).toBe("carlos@test.com");
+  });
+
+  it("createVerification manda el código en el cuerpo, no en el asunto", async () => {
+    const repo = makeAuthRepo();
+
+    await svc(repo).createVerification("user@test.com");
+
+    expect(sendEmailMock).toHaveBeenCalledTimes(1);
+    const [params] = (sendEmailMock as jest.Mock).mock.calls[0] as [
+      { to: string; subject: string; html: string },
+    ];
+    expect(params.to).toBe("user@test.com");
+    expect(params.subject).not.toMatch(/[A-Z0-9]{6}/);
+    expect(params.html).toMatch(/[A-Z0-9]{6}/);
+  });
+
+  it("la verificación se persiste y el fallo queda en el logger", async () => {
+    sendEmailMock.mockRejectedValue(new Error("resend down"));
+    const repo = makeAuthRepo();
+
+    const { logger } = await import("@/config/logger.js");
+    const errorSpy = jest.spyOn(logger, "error").mockImplementation(() => logger);
+
+    const result = await svc(repo).createVerification("user@test.com");
+
+    expect(repo.createVerification).toHaveBeenCalled();
+    expect(result.message).toBe("Si el correo existe, se envió un código");
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ err: expect.any(Error) }),
+      "Failed to send verification email",
+    );
+    errorSpy.mockRestore();
+  });
+
+  it("no imprime el código por consola", async () => {
+    const consoleSpy = jest.spyOn(console, "info").mockImplementation(() => undefined);
+    const repo = makeAuthRepo();
+
+    await svc(repo).createVerification("user@test.com");
+
+    expect(consoleSpy).not.toHaveBeenCalledWith(
+      expect.stringContaining("Código de verificación"),
+    );
+    consoleSpy.mockRestore();
   });
 });

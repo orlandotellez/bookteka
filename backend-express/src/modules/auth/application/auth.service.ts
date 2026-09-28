@@ -1,6 +1,9 @@
 import type { Request } from "express";
 import type { ROLE, user } from "@prisma/client";
 import { AppError } from "@/core/errors/AppError.js";
+import { logger } from "@/config/logger.js";
+import { sendEmail } from "@/modules/auth/application/common/email.utils.js";
+import { verificationEmailTemplate } from "@/modules/auth/application/common/email-templates.js";
 import {
   hashPassword,
   verifyPassword,
@@ -268,16 +271,6 @@ export class AuthService {
     return { message: "Correo verificado correctamente" };
   }
 
-  /**
-   * Genera un código de verificación y lo persiste.
-   *
-   * ⚠️ **El código no se envía por email.** `sendEmail` existe en
-   * `application/common/email.utils.ts` pero ningún módulo lo llama: el código
-   * se registra en consola. Ver `specs/tasks/backend/02-email-verificacion.md`.
-   *
-   * El mensaje de respuesta es genérico a propósito: confirmar si un correo
-   * está registrado filtraría qué cuentas existen.
-   */
   async createVerification(
     identifier: string,
   ): Promise<{ message: string; expiresAt: Date }> {
@@ -287,8 +280,12 @@ export class AuthService {
     await this.repo.deleteVerificationsByIdentifier(identifier);
     await this.repo.createVerification({ identifier, value, expires_at: expiresAt });
 
-    // eslint-disable-next-line no-console
-    console.info(`[auth] Código de verificación para ${identifier}: ${value}`);
+    const email = verificationEmailTemplate({ code: value });
+    try {
+      await sendEmail({ to: identifier, subject: email.subject, html: email.html });
+    } catch (err) {
+      logger.error({ err, identifier }, "Failed to send verification email");
+    }
 
     return { message: "Si el correo existe, se envió un código", expiresAt };
   }

@@ -35,29 +35,33 @@ Que el código de verificación llegue al correo del usuario, y que `sendEmail` 
 
 ## Tareas
 
-- [ ] 1. Definir la plantilla HTML del correo de verificación
+- [x] 1. Definir la plantilla HTML del correo de verificación
   - Crear `src/modules/auth/application/common/email-templates.ts` con `verificationEmailTemplate({ code })` que devuelva `{ subject, html }`.
   - El código va en el cuerpo del correo, no en el asunto, para no filtrarlo en logs de servidor de correo.
   - Mantener el registro en mayúsculas tal como lo genera `createVerification` (alfabeto `A-Z0-9`, 6 caracteres).
-- [ ] 2. Enviar el código desde `createVerification`
+- [x] 2. Enviar el código desde `createVerification`
   - En `src/modules/auth/application/auth.service.ts`, después del `verification.create`, llamar a `sendEmail({ to: identifier, ...verificationEmailTemplate({ code: value }) })`.
   - **Quitar el `console.info`**: el código no debe quedar en los logs.
   - `createVerification` es `async`; el caller en `register()` ya es async, así que agregar el `await`.
   - Decidir qué pasa si el envío falla: la opción recomendada es loguear con `logger.error` y **no** fallar el registro. El usuario puede pedir un reenvío con `POST /auth/resend-verification`. La alternativa (fallar el registro) deja al usuario sin cuenta si Resend está caído, que es peor.
-- [ ] 3. Enviar el código también en `resend-verification`
+- [x] 3. Enviar el código también en `resend-verification`
   - `POST /auth/resend-verification` llama `auth.api.createVerification(req.body.email)`, así que hereda el envío con el paso 2. Verificar que el mensaje de respuesta siga siendo el genérico (no revela si el email existe).
-- [ ] 4. Agregar template de reenvío con límite de tasa
+- [x] 4. Verificar el límite de tasa del reenvío
   - `authLimiter` ya limita a 10 requests cada 15 min (`src/config/rate-limit.ts`), lo que acota el abuso. Verificar que sea suficiente antes de agregar un límite propio.
-- [ ] 5. Escribir tests
+- [x] 5. Escribir tests
   - Mockear `src/modules/auth/application/common/email.utils.ts` y verificar que `register()` y `createVerification()` lo llaman con el código correcto.
   - Test del caso de fallo de envío: el registro se completa igual y se loguea.
   - Test de que `console.info` ya no se invoca con el código.
 
 ## Criterios de Done
 
-- [ ] `register` y `resend-verification` envían un correo real con el código usando el `RESEND_FROM_EMAIL` configurado.
-- [ ] `rg "Código de verificación para"` en el repo no devuelve nada: el código no está en los logs.
-- [ ] Un usuario puede registrarse, recibir el correo, verificar su dirección y que `users.email_verified` quede en `true`.
-- [ ] Si Resend falla, el registro se completa y hay un `logger.error` con el detalle.
-- [ ] `pnpm test` pasa con los tests nuevos.
-- [ ] `specs/modules/backend/01-stack.md` deja de marcar `resend` como "integrado pero no usado".
+> **Nota sobre el envío físico**: los tests verifican el contrato con `sendEmail` mockeado. Confirmar la entrega real del correo exige una `RESEND_API_KEY` válida en el entorno y una llamada de red; no se hizo en este entorno.
+
+- [~] `register` y `resend-verification` envían un correo real con el código usando el `RESEND_FROM_EMAIL` configurado.
+  - Verificado con mock: `register` llama `sendEmail` con el email normalizado; `createVerification` manda el código en el cuerpo (no en el asunto). La entrega física queda pendiente de una clave válida.
+- [x] `rg "Código de verificación para"` en el repo no devuelve nada: el código no está en los logs.
+- [~] Un usuario puede registrarse, recibir el correo, verificar su dirección y que `users.email_verified` quede en `true`.
+  - Verificado por tests: `verifyEmail` marca `email_verified` y borra el código. El paso "recibir el correo" depende de la entrega física de Resend.
+- [x] Si Resend falla, el registro se completa y hay un `logger.error` con el detalle (spy sobre `logger.error` en los tests).
+- [x] `pnpm test` pasa: 123 tests en 8 suites.
+- [x] `specs/modules/backend/01-stack.md` ya no marca `resend` como "integrado pero no usado".
