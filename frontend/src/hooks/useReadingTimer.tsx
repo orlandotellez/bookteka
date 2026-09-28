@@ -5,10 +5,6 @@ interface UseReadingTimerProps {
   saveInterval?: number; // Segundos entre guardados
 }
 
-/**
- * Hook para el temporizador de lectura
- * Implementa un sistema de guardado robusto para evitar duplicados
- */
 export function useReadingTimer({
   onTimeUpdate,
   saveInterval = 30,
@@ -19,33 +15,30 @@ export function useReadingTimer({
   const intervalRef = useRef<number | null>(null);
   const onTimeUpdateRef = useRef(onTimeUpdate);
   const isSavedRef = useRef(false);
-  
+  const sessionSecondsRef = useRef(0);
+
   // Mantener actualizada la referencia al callback
   useEffect(() => {
     onTimeUpdateRef.current = onTimeUpdate;
   }, [onTimeUpdate]);
 
-  // Función para guardar tiempo - solo se ejecuta una vez por período
-  const saveTime = useCallback(() => {
-    // Evitar guardado múltiple en el mismo ciclo
+  const flushPending = useCallback(() => {
     if (isSavedRef.current) return;
-    
-    const currentOnTimeUpdate = onTimeUpdateRef.current;
-    if (sessionSeconds > lastSaveRef.current && currentOnTimeUpdate) {
-      const secondsToSave = sessionSeconds - lastSaveRef.current;
-      
-      if (secondsToSave > 0) {
-        isSavedRef.current = true;
-        currentOnTimeUpdate(secondsToSave);
-        lastSaveRef.current = sessionSeconds;
-        
-        // Resetear el flag después de un pequeño delay
-        setTimeout(() => {
-          isSavedRef.current = false;
-        }, 100);
-      }
-    }
-  }, [sessionSeconds]);
+
+    const callback = onTimeUpdateRef.current;
+    const current = sessionSecondsRef.current;
+    const secondsToSave = current - lastSaveRef.current;
+
+    if (secondsToSave <= 0 || !callback) return;
+
+    isSavedRef.current = true;
+    callback(secondsToSave);
+    lastSaveRef.current = current;
+
+    setTimeout(() => {
+      isSavedRef.current = false;
+    }, 100);
+  }, []);
 
   // Iniciar el temporizador
   const start = useCallback(() => {
@@ -55,16 +48,17 @@ export function useReadingTimer({
   // Pausar el temporizador y guardar inmediatamente
   const pause = useCallback(() => {
     setIsRunning(false);
-    saveTime();
-  }, [saveTime]);
+    flushPending();
+  }, [flushPending]);
 
   // Resetear la sesión
   const reset = useCallback(() => {
-    saveTime();
+    flushPending();
     setIsRunning(false);
     setSessionSeconds(0);
+    sessionSecondsRef.current = 0;
     lastSaveRef.current = 0;
-  }, [saveTime]);
+  }, [flushPending]);
 
   // Toggle del temporizador
   const toggle = useCallback(() => {
@@ -79,7 +73,10 @@ export function useReadingTimer({
   useEffect(() => {
     if (isRunning) {
       intervalRef.current = window.setInterval(() => {
-        setSessionSeconds((prev) => prev + 1);
+        // El ref primero: `flushPending` puede dispararse en el mismo ciclo
+        // y necesita ver el segundo que acaba de pasar.
+        sessionSecondsRef.current += 1;
+        setSessionSeconds(sessionSecondsRef.current);
       }, 1000);
     } else {
       if (intervalRef.current) {
@@ -95,59 +92,31 @@ export function useReadingTimer({
     };
   }, [isRunning]);
 
-  // Efecto para guardado periódico - usa setInterval independiente
   useEffect(() => {
-    if (!isRunning || !onTimeUpdateRef.current) return;
-    
+    if (!isRunning) return;
+    if (!onTimeUpdateRef.current) return;
+
     const saveIntervalId = setInterval(() => {
-      setSessionSeconds((current) => {
-        const secondsToSave = current - lastSaveRef.current;
-        
-        if (secondsToSave > 0 && !isSavedRef.current) {
-          isSavedRef.current = true;
-          onTimeUpdateRef.current!(secondsToSave);
-          lastSaveRef.current = current;
-          
-          setTimeout(() => {
-            isSavedRef.current = false;
-          }, 100);
-        }
-        
-        return current;
-      });
+      flushPending();
     }, saveInterval * 1000);
 
     return () => clearInterval(saveIntervalId);
-  }, [isRunning, saveInterval]);
+  }, [isRunning, saveInterval, flushPending]);
 
-  // Guardar al desmontar el componente - usa refs para evitar dependencias problemáticas
   useEffect(() => {
-    const currentSessionSeconds = sessionSeconds;
-    const currentLastSave = lastSaveRef.current;
-    const currentCallback = onTimeUpdateRef.current;
-    
     return () => {
-      if (currentSessionSeconds > currentLastSave && currentCallback) {
-        const secondsToSave = currentSessionSeconds - currentLastSave;
-        if (secondsToSave > 0) {
-          currentCallback(secondsToSave);
-        }
-      }
+      flushPending();
     };
-  }, [sessionSeconds]); // Desmontar: sessionSeconds fresco
+  }, [flushPending]);
 
-  // Guardar cuando el usuario cierra la pestaña/navegador
   useEffect(() => {
     const handleBeforeUnload = () => {
-      const secondsToSave = sessionSeconds - lastSaveRef.current;
-      if (secondsToSave > 0 && onTimeUpdateRef.current) {
-        onTimeUpdateRef.current(secondsToSave);
-      }
+      flushPending();
     };
 
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [sessionSeconds]);
+  }, [flushPending]);
 
   return {
     isRunning,
