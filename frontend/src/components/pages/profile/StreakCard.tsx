@@ -7,7 +7,12 @@ export const StreakCard = ({
   onCompleteDay,
   onInitializeStreak,
   isLoading,
-}: any) => {
+}: {
+  streakData: { currentStreak: number; startDate: string | null; hasCompletedToday: boolean };
+  onCompleteDay: () => Promise<boolean | undefined>;
+  onInitializeStreak: (days: number, startDate?: string) => Promise<void>;
+  isLoading: boolean;
+}) => {
   const [showSettings, setShowSettings] = useState(false);
   const [startDate, setStartDate] = useState("");
 
@@ -30,7 +35,7 @@ export const StreakCard = ({
   };
 
   // Función para formatear fecha - maneja diferentes formatos
-  const formatDate = (str: any) => {
+  const formatDate = (str: string | null | undefined) => {
     if (!str) return "No iniciada";
 
     // Convertir a string por seguridad
@@ -51,7 +56,7 @@ export const StreakCard = ({
         if (!isNaN(date.getTime())) {
           return date.toLocaleDateString("es-ES");
         }
-      } catch (e) {
+      } catch {
         return "No iniciada";
       }
       return "No iniciada";

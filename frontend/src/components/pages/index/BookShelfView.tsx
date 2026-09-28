@@ -99,15 +99,6 @@ const ShelfBook = ({
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [bookModalOpen, setBookModalOpen] = useState(false);
   const [hovered, setHovered] = useState(false);
-
-  // Al abrir el modal (click), limpiar el tooltip para que no se quede
-  // pegado al cerrar el modal (el mouseLeave nunca se dispara porque
-  // el modal se interpone).
-  const openBookModal = useCallback(() => {
-    setHovered(false);
-    setTipPos(null);
-    setBookModalOpen(true);
-  }, []);
   const [tipPos, setTipPos] = useState<{
     top: number;
     left: number;
@@ -115,6 +106,12 @@ const ShelfBook = ({
     below: boolean;
     arrowLeft: number;
   } | null>(null);
+
+  const openBookModal = useCallback(() => {
+    setHovered(false);
+    setTipPos(null);
+    setBookModalOpen(true);
+  }, []);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
   const tipRef = useRef<HTMLDivElement | null>(null);
   const hideTimerRef = useRef<number | null>(null);
@@ -164,7 +161,7 @@ const ShelfBook = ({
       const h = 280; // altura estimada para el cálculo provisional; updateTip la refina
       const below = rect.top - gap - h < margin;
       const top = below ? rect.bottom + gap : rect.top - gap;
-      let left = Math.max(margin, Math.min(rect.left + rect.width / 2 - w / 2, window.innerWidth - w - margin));
+      const left = Math.max(margin, Math.min(rect.left + rect.width / 2 - w / 2, window.innerWidth - w - margin));
       let arrowLeft = rect.left + rect.width / 2 - left;
       arrowLeft = Math.max(14, Math.min(arrowLeft, w - 14));
       // Posición provisional para montar el portal; updateTip la refina al medir

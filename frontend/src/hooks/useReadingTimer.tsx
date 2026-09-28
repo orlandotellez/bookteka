@@ -134,7 +134,7 @@ export function useReadingTimer({
         }
       }
     };
-  }, []); // Solo se ejecuta al desmontar
+  }, [sessionSeconds]); // Desmontar: sessionSeconds fresco
 
   // Guardar cuando el usuario cierra la pestaña/navegador
   useEffect(() => {
@@ -147,7 +147,7 @@ export function useReadingTimer({
 
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, []); // Solo se ejecuta al montar/desmontar
+  }, [sessionSeconds]);
 
   return {
     isRunning,

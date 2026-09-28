@@ -14,10 +14,6 @@ export const LogoutButton = () => {
 
     try {
       toast.info("Cerrando sesión...");
-      try {
-      } catch (syncError) {
-        console.warn("Error al sincronizar al logout:", syncError);
-      }
 
       // Eliminar la base de datos local
       await clearDatabase();

@@ -25,14 +25,24 @@ export async function getBookmarksByBook(bookId: string): Promise<Bookmark[]> {
   // Migrar bookmarks viejos que tienen scrollPosition en vez de pageNumber
   const migrated: Bookmark[] = [];
   for (const bm of userBookmarks) {
-    if (typeof (bm as any).pageNumber !== "number") {
-      const oldBm = bm as any;
+    const legacy = bm as unknown as {
+      id: string;
+      userId: string;
+      bookId: string;
+      name?: string | null;
+      pageNumber?: unknown;
+      color?: unknown;
+      textPreview?: string | null;
+      createdAt: number;
+    };
+    if (typeof legacy.pageNumber !== "number") {
+      const oldBm = legacy;
       console.warn("[Bookmark] Migrando bookmark con scrollPosition → pageNumber:", oldBm.id);
       const newBm: Bookmark = {
         id: oldBm.id,
         userId: oldBm.userId,
         bookId: oldBm.bookId,
-        name: oldBm.name,
+        name: oldBm.name ?? "",
         pageNumber: 1, // default a página 1 (no podemos calcular desde scroll sin DOM)
         textPreview: oldBm.textPreview || "",
         color: getRandomBookmarkColor(),
@@ -40,7 +50,7 @@ export async function getBookmarksByBook(bookId: string): Promise<Bookmark[]> {
       };
       await db.put("bookmarks", newBm);
       migrated.push(newBm);
-    } else if (!((bm as any).color)) {
+    } else if (!legacy.color) {
       const newBm: Bookmark = {
         ...bm,
         color: getRandomBookmarkColor(),

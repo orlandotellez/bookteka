@@ -128,7 +128,13 @@ export const TextReader = forwardRef<TextReaderHandle, TextReaderProps>(({
   const containerRef = useRef<HTMLDivElement>(null);
   const hasRestoredPosition = useRef(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [selection, setSelection] = useState<any>(null);
+  const [selection, setSelection] = useState<{
+    text: string;
+    paragraphIndex: number;
+    startOffset: number;
+    endOffset: number;
+    position: { x: number; y: number };
+  } | null>(null);
   const noop = useCallback(() => { }, []);
 
   const onScrollPositionChangeRef = useRef(onScrollPositionChange);

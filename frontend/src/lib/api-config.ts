@@ -28,14 +28,18 @@ export function readApiUrl(): string {
   try {
     const stored = localStorage.getItem(API_URL_STORAGE_KEY);
     if (isValidApiUrl(stored)) return stored;
-  } catch { }
+  } catch {
+    return DEFAULT_API_URL;
+  }
   return DEFAULT_API_URL;
 }
 
 export function writeApiUrl(value: string): void {
   try {
     localStorage.setItem(API_URL_STORAGE_KEY, value);
-  } catch { }
+  } catch {
+    return;
+  }
 }
 
 export async function fetchAndStoreApiUrl(

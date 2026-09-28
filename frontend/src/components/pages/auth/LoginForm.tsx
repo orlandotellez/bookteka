@@ -45,7 +45,7 @@ export const LoginForm = () => {
     }
   };
 
-  const onError = (errors: any) => {
+  const onError = (errors: unknown) => {
     console.log("Errores de validación:", errors);
   };
 
