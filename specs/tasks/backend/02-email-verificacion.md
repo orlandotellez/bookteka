@@ -2,7 +2,7 @@
 
 ## Estado Actual
 
-La verificación de correo está implementada **a medias**. En `src/lib/auth.ts`:
+La verificación de correo está implementada **a medias**. En `src/modules/auth/application/auth.service.ts`:
 
 - `createVerification(identifier)` genera un código aleatorio de 6 caracteres, borra los anteriores, inserta en la tabla `verification` con 15 minutos de expiración y **lo imprime con `console.info`**:
   ```ts
@@ -10,9 +10,9 @@ La verificación de correo está implementada **a medias**. En `src/lib/auth.ts`
   ```
 - `verifyEmail(identifier, code)` valida el código, marca `email_verified = true` y borra el registro. Esta parte sí funciona.
 
-El servicio de email **existe y no se usa**. `src/lib/email.ts` implementa `sendEmail({ to, subject, html })` con el SDK de Resend, maneja el error y loguea. `RESEND_API_KEY` y `RESEND_FROM_EMAIL` son variables de entorno obligatorias (`src/config/env.ts`): si faltan, **el backend no arranca**, aunque el correo nunca se mande.
+El servicio de email **existe y no se usa**. `src/modules/auth/application/common/email.utils.ts` implementa `sendEmail({ to, subject, html })` con el SDK de Resend, maneja el error y loguea. `RESEND_API_KEY` y `RESEND_FROM_EMAIL` son variables de entorno obligatorias (`src/config/env.ts`): si faltan, **el backend no arranca**, aunque el correo nunca se mande.
 
-Verificado: `rg "sendEmail|lib/email"` en todo el repo solo encuentra la definición en `src/lib/email.ts` y su mención en `doc/DOC.md`. Ningún archivo la importa.
+Verificado: `rg "sendEmail|lib/email"` en todo el repo solo encuentra la definición en `src/modules/auth/application/common/email.utils.ts` y su mención en `doc/DOC.md`. Ningún archivo la importa.
 
 El impacto: `email_verified` nunca puede pasar a `true` sin acceso a los logs del servidor. Y `POST /auth/resend-verification` responde siempre igual ("Si el correo existe, se envió un código") para no filtrar qué emails están registrados, lo cual es correcto, pero miente sobre lo que ocurrió.
 
@@ -36,11 +36,11 @@ Que el código de verificación llegue al correo del usuario, y que `sendEmail` 
 ## Tareas
 
 - [ ] 1. Definir la plantilla HTML del correo de verificación
-  - Crear `src/lib/email-templates.ts` con `verificationEmailTemplate({ code })` que devuelva `{ subject, html }`.
+  - Crear `src/modules/auth/application/common/email-templates.ts` con `verificationEmailTemplate({ code })` que devuelva `{ subject, html }`.
   - El código va en el cuerpo del correo, no en el asunto, para no filtrarlo en logs de servidor de correo.
   - Mantener el registro en mayúsculas tal como lo genera `createVerification` (alfabeto `A-Z0-9`, 6 caracteres).
 - [ ] 2. Enviar el código desde `createVerification`
-  - En `src/lib/auth.ts`, después del `verification.create`, llamar a `sendEmail({ to: identifier, ...verificationEmailTemplate({ code: value }) })`.
+  - En `src/modules/auth/application/auth.service.ts`, después del `verification.create`, llamar a `sendEmail({ to: identifier, ...verificationEmailTemplate({ code: value }) })`.
   - **Quitar el `console.info`**: el código no debe quedar en los logs.
   - `createVerification` es `async`; el caller en `register()` ya es async, así que agregar el `await`.
   - Decidir qué pasa si el envío falla: la opción recomendada es loguear con `logger.error` y **no** fallar el registro. El usuario puede pedir un reenvío con `POST /auth/resend-verification`. La alternativa (fallar el registro) deja al usuario sin cuenta si Resend está caído, que es peor.
@@ -49,7 +49,7 @@ Que el código de verificación llegue al correo del usuario, y que `sendEmail` 
 - [ ] 4. Agregar template de reenvío con límite de tasa
   - `authLimiter` ya limita a 10 requests cada 15 min (`src/config/rate-limit.ts`), lo que acota el abuso. Verificar que sea suficiente antes de agregar un límite propio.
 - [ ] 5. Escribir tests
-  - Mockear `src/lib/email.ts` y verificar que `register()` y `createVerification()` lo llaman con el código correcto.
+  - Mockear `src/modules/auth/application/common/email.utils.ts` y verificar que `register()` y `createVerification()` lo llaman con el código correcto.
   - Test del caso de fallo de envío: el registro se completa igual y se loguea.
   - Test de que `console.info` ya no se invoca con el código.
 

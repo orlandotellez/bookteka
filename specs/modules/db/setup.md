@@ -63,7 +63,7 @@ RESEND_FROM_EMAIL=onboarding@resend.dev
 
 > ⚠️ `JWT_SECRET` y `JWT_REFRESH_SECRET` deben tener **al menos 32 caracteres** (lo valida `config/env.ts`).
 >
-> `FRONTEND_URL` es la allowlist de CORS separada por comas. `backend-express/.env.example` trae `http://localhost:5173`, pero el dev server de Vite corre en `1420`; ambos están hardcodeados en `DEV_EXTRA_ORIGINS` (`src/lib/origins.ts`), así que en desarrollo funciona cualquiera de los dos.
+> `FRONTEND_URL` es la allowlist de CORS separada por comas. `backend-express/.env.example` trae `http://localhost:5173`, pero el dev server de Vite corre en `1420`; ambos están hardcodeados en `DEV_EXTRA_ORIGINS` (`src/config/origins.ts`), así que en desarrollo funciona cualquiera de los dos.
 
 ---
 

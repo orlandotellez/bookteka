@@ -8,7 +8,7 @@ Registro de decisiones que el código ya toma. Cada una está con la evidencia q
 
 **Contexto.** El esquema tiene tablas `session`, `account` y `verification`, que son la forma de un producto de auth anterior.
 
-**Decisión.** `src/lib/auth.ts` implementa el auth a mano: firma JWT con `jsonwebtoken`, hash con `bcrypt`, y cookies HTTP-only. El refresh token se persiste en `session` y rota en cada uso.
+**Decisión.** `src/modules/auth/application/auth.service.ts` implementa el auth a mano: firma JWT con `jsonwebtoken`, hash con `bcrypt`, y cookies HTTP-only. El refresh token se persiste en `session` y rota en cada uso.
 
 **Evidencia en el código.** Las migraciones `20260801000000_add_jwt_auth` y `20260802020000_normalize_legacy_auth` adaptan las tablas heredadas al flujo actual: renombran `provider_id` de `credential` a `credentials` y borran las sesiones cuyo token no tiene forma de JWT.
 
@@ -24,7 +24,7 @@ Registro de decisiones que el código ya toma. Cada una está con la evidencia q
 
 **Decisión.** El mismo token se acepta por cuatro vías: cookie `httpOnly`, `Authorization: Bearer`, `x-session-token` y `x-refresh-token`. El frontend guarda los tokens en `localStorage` y los manda por header.
 
-**Evidencia en el código.** `src/lib/auth.ts` (`tokenFromHeaders` prioriza Bearer → header → cookie); `frontend/vite.config.ts` documenta en un comentario largo por qué el proxy `/api` de Vite existe; `frontend/src/lib/sessionToken.ts`; la lista de headers permitidos en `src/config/cors.ts`.
+**Evidencia en el código.** `src/modules/auth/application/auth.service.ts` (`tokenFromHeaders` prioriza Bearer → header → cookie); `frontend/vite.config.ts` documenta en un comentario largo por qué el proxy `/api` de Vite existe; `frontend/src/lib/sessionToken.ts`; la lista de headers permitidos en `src/config/cors.ts`.
 
 **Alternativas consideradas.** Solo cookies (rompe Android); solo headers (rompe web y deja el token accesible a JavaScript).
 
@@ -38,7 +38,7 @@ Registro de decisiones que el código ya toma. Cada una está con la evidencia q
 
 **Decisión.** Se hashea el contenido con SHA-256 y se usa `book.fileHash` con `@unique` como clave. Si el hash ya existe, no se sube el archivo: se reutiliza la fila y el objeto de R2.
 
-**Evidencia en el código.** `book.fileHash String @unique` en `prisma/schema.prisma`; `src/helper/format.ts` — `generateFileHash`; `src/services/book.service.ts` — `uploadBook` busca por hash antes de subir.
+**Evidencia en el código.** `book.fileHash String @unique` en `prisma/schema.prisma`; `src/modules/books/application/common/books.utils.ts` — `generateFileHash`; `src/modules/books/application/books.service.ts` — `uploadBook` busca por hash antes de subir.
 
 **Alternativas consideradas.** Un `book` por usuario (sin dedup, duplica almacenamiento); hashear nombre + tamaño (colisiona al cambiar contenido).
 
@@ -52,7 +52,7 @@ Registro de decisiones que el código ya toma. Cada una está con la evidencia q
 
 **Decisión.** Al eliminar un libro se borra siempre el `user_book` del usuario. El objeto de R2 y la fila `book` solo se borran si `countOtherUsers(bookId, userId) === 0`. Cada borrado deja un registro en `audit_log`.
 
-**Evidencia en el código.** `src/services/book.service.ts` — `deleteBook`; el `if (otherUsers === 0)` que rodea tanto el borrado de R2 como el de la fila; la transacción que escribe la auditoría y borra las filas.
+**Evidencia en el código.** `src/modules/books/application/books.service.ts` — `deleteBook`; el `if (otherUsers === 0)` que rodea tanto el borrado de R2 como el de la fila; la transacción que escribe la auditoría y borra las filas.
 
 **Alternativas consideradas.** Borrado en cascada automático (rompe libros compartidos); no borrar nunca (fuga de almacenamiento).
 
@@ -80,7 +80,7 @@ Registro de decisiones que el código ya toma. Cada una está con la evidencia q
 
 **Decisión.** El refresh se hace con `deleteMany({ where: { id, token } })` dentro de una transacción. Si `count !== 1`, es que otro request ya lo consumió y se responde 401.
 
-**Evidencia en el código.** `src/lib/auth.ts` — `refresh()`: borra, verifica el conteo y emite los tokens nuevos en la misma transacción.
+**Evidencia en el código.** `src/modules/auth/application/auth.service.ts` — `refresh()`: borra, verifica el conteo y emite los tokens nuevos en la misma transacción.
 
 **Consecuencias.** Un refresh paralelo hace que una de las dos requests falle con 401. Es intencional: el cliente reintenta con el token nuevo.
 
@@ -118,7 +118,7 @@ Registro de decisiones que el código ya toma. Cada una está con la evidencia q
 
 **Decisión.** `updateBookProgress` compara cada campo con el valor persistido y solo escribe los que representan avance. El scroll tiene una tolerancia de 50px para absorber el jitter de scroll. Si nada avanzó, devuelve el estado actual sin tocar la fila.
 
-**Evidencia en el código.** `src/services/book.service.ts` — las constantes `isNewerTime`, `isNewerScroll` (con `SCROLL_TOLERANCE_PX = 50`), `isNewerPage`, y el `logger.debug` del caso no-op.
+**Evidencia en el código.** `src/modules/books/application/books.service.ts` — las constantes `isNewerTime`, `isNewerScroll` (con `SCROLL_TOLERANCE_PX = 50`), `isNewerPage`, y el `logger.debug` del caso no-op.
 
 **Consecuencias.** El progreso es monotónico. Editar el tiempo a la baja desde el perfil funciona porque usa `setReadingTime`, que es un valor absoluto y no pasa por esta comparación.
 
@@ -130,7 +130,7 @@ Registro de decisiones que el código ya toma. Cada una está con la evidencia q
 
 **Decisión.** `updateStreakConditionally` usa `updateMany` con `lastActiveDate` como predicado. Si `count === 0`, otro request ganó y el service relee el estado ganador. Además, la creación de la fila captura la violación de `P2002` y relee.
 
-**Evidencia en el código.** `src/repositories/streak.repository.ts` — `updateStreakConditionally`; los dos `catch` de `P2002` en `src/services/streak.service.ts`.
+**Evidencia en el código.** `src/modules/streak/infrastructure/streak.prisma.repository.ts` — `updateStreakConditionally`; los dos `catch` de `P2002` en `src/modules/streak/application/streak.service.ts`.
 
 **Alternativas consideradas.** Un lock en memoria (no funciona con más de una instancia); confiar en el cliente.
 
@@ -144,7 +144,7 @@ Registro de decisiones que el código ya toma. Cada una está con la evidencia q
 
 **Decisión.** `POST /streak/complete` acepta `clientDate` en formato `YYYY-MM-DD`. Si viene, esa es la fecha que cuenta; si no, se usa la del servidor. Las comparaciones entre días usan UTC (`getUTCDateOnly`).
 
-**Evidencia en el código.** `src/schema/streak.schema.ts` — regex `YYYY_MM_DD`; `src/services/streak.service.ts` — `new Date(clientDate + "T12:00:00.000Z")` (mediodía UTC para evitar el borde de DST); `src/helper/time.ts` — `toDateString` y `getUTCDateOnly`.
+**Evidencia en el código.** `src/modules/streak/presentation/streak.dto.ts` — regex `YYYY_MM_DD`; `src/modules/streak/application/streak.service.ts` — `new Date(clientDate + "T12:00:00.000Z")` (mediodía UTC para evitar el borde de DST); `src/modules/streak/application/common/streak.utils.ts` — `toDateString` y `getUTCDateOnly`.
 
 **Consecuencias.** El cliente puede manipular su propia racha; es aceptable porque la racha no tiene valor monetario. El noon-UTC evita que un cambio de horario de verano mueva el día.
 
@@ -156,7 +156,7 @@ Registro de decisiones que el código ya toma. Cada una está con la evidencia q
 
 **Decisión.** Lista explícita de origins, cargada desde `FRONTEND_URL`, más una lista de desarrollo hardcodeada. El carácter `*` está prohibido por código. Con `TRUST_BACKEND_ORIGINS=true` se acepta además cualquier origin cuyo host coincida con `X-Forwarded-Host`/`Host`.
 
-**Evidencia en el código.** `src/lib/origins.ts` — el `throw` si `FRONTEND_URL` contiene `*`, `DEV_EXTRA_ORIGINS`, `expectedOriginFromRequest`; `src/config/cors.ts` — `corsOriginGuard` rechaza con 403 antes de que el middleware de CORS responda.
+**Evidencia en el código.** `src/config/origins.ts` — el `throw` si `FRONTEND_URL` contiene `*`, `DEV_EXTRA_ORIGINS`, `expectedOriginFromRequest`; `src/config/cors.ts` — `corsOriginGuard` rechaza con 403 antes de que el middleware de CORS responda.
 
 **Consecuencias.** `TRUST_BACKEND_ORIGINS` solo es seguro detrás de un proxy de confianza: activo, cualquiera en la LAN puede llamar a la API. En `docker-compose.yml` viene en `true`.
 
@@ -168,7 +168,7 @@ Registro de decisiones que el código ya toma. Cada una está con la evidencia q
 
 **Decisión.** El backend sirve el PDF crudo por streaming y el cliente lo procesa con pdf.js una sola vez. El texto resultante se cachea en IndexedDB con marcadores de página.
 
-**Evidencia en el código.** `src/services/book.service.ts` — `streamBookPdf` con `stream.pipeline`; `frontend/src/lib/pdfService.ts` — `processBookForReading` con salida temprana si el texto ya existe; `frontend/src/store/bookStore.ts` — overlay de "Preparando libro n%".
+**Evidencia en el código.** `src/modules/books/application/books.service.ts` — `streamBookPdf` con `stream.pipeline`; `frontend/src/lib/pdfService.ts` — `processBookForReading` con salida temprana si el texto ya existe; `frontend/src/store/bookStore.ts` — overlay de "Preparando libro n%".
 
 **Alternativas consideradas.** Extraer en el backend (sube el costo de infra y la latencia); renderizar el PDF con un visor embebido (pesa mucho más y no da texto seleccionable uniforme).
 
@@ -194,6 +194,6 @@ Registro de decisiones que el código ya toma. Cada una está con la evidencia q
 
 **Decisión.** Todas las operaciones pasan por buscar el `user_book` del usuario para ese libro. Si no existe, la respuesta es 403. Los marcadores cuelgan del `user_book`, no del libro.
 
-**Evidencia en el código.** `findUserBook` (`src/repositories/book.repository.ts`) y `findUserBookAccess` (`src/repositories/bookmark.repository.ts`); los `AppError("FORBIDDEN", 403, "No es tu libro")` en `book.service.ts`; `user_book` con `@@unique([userId, bookId])`.
+**Evidencia en el código.** `findUserBook` (`src/modules/books/infrastructure/books.prisma.repository.ts`) y `findUserBookAccess` (`src/modules/bookmarks/infrastructure/bookmarks.prisma.repository.ts`); los `AppError("FORBIDDEN", 403, "No es tu libro")` en `book.service.ts`; `user_book` con `@@unique([userId, bookId])`.
 
 **Consecuencias.** Cada acceso a un libro cuesta una query extra. A cambio, conocer un `bookId` ajeno no sirve de nada, y el borrado de un usuario no afecta al resto.

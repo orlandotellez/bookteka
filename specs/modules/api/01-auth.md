@@ -1,6 +1,6 @@
 # 01 · Auth — Autenticación y sesión
 
-> ✅ **Implementado en Express** (`backend-express/src/routes/auth.routes.ts` + `lib/auth.ts`).
+> ✅ **Implementado en Express** (`backend-express/src/modules/auth/presentation/auth.routes.ts` + `lib/auth.ts`).
 
 Autenticación propia con **JWT access (15 min) + refresh (7 días)** y **rotación real** del refresh token (compare-and-delete de la sesión). Passwords con bcrypt (cost 10).
 

@@ -1,15 +1,16 @@
 # Backend Architecture
 
-Arquitectura del backend Express del Bookteka — MVC con capa de servicios y repositorios.
+Arquitectura del backend Express del Bookteka — **módulos verticales** con capas internas (`presentation → application → domain → infrastructure`).
 
 ---
 
 ## Principios
 
-1. **Controller = HTTP**: extrae datos del request, verifica auth (`auth.api.getSession` o middleware `requireAuth`), llama al service, devuelve la response.
-2. **Service = negocio**: orquesta repositorios + lógica (dedup, permisos, streak, URLs firmadas). No conoce Express.
-3. **Repository = datos**: queries Prisma. Interfaz + implementación.
-4. **Errores**: `AppError` en services; `errorHandler` central los convierte en HTTP.
+1. **Un módulo por feature.** `auth`, `books`, `bookmarks` y `streak` son módulos autocontenidos. Todo lo que una feature necesita vive en su carpeta: rutas, controller, service, repositorio, dominio y tests.
+2. **Capas internas con dirección única.** Dentro de cada módulo, la dependencia fluye de la frontera hacia adentro: `presentation → application → domain`. `infrastructure` implementa los contratos que `application` declara en `domain`.
+3. **Los services dependen de interfaces de repositorio, nunca de Prisma.** `domain/<feature>.interface.ts` declara el contrato; `infrastructure/<feature>.prisma.repository.ts` lo implementa; los tests inyectan un fake de `src/tests/fakes.ts`.
+4. **El controller es la única capa que conoce Express.** `route → controller → service`.
+5. **Errores**: `AppError` en `core/errors/AppError.ts`, mensajes centralizados en `core/errors/error-messages.ts`, y un solo `errorHandler` en `config/error-handler.ts`.
 
 ---
 
@@ -20,131 +21,190 @@ backend-express/
 ├── prisma/
 │   ├── schema.prisma              # 9 modelos + enum ROLE
 │   └── migrations/                # Migraciones versionadas
+├── http/                          # Ejemplos REST Client por feature
 ├── src/
 │   ├── server.ts                  # Entry point: app.listen + graceful shutdown
-│   ├── app.ts                     # Express app: helmet, cors, body-parser, registerRoutes
-│   ├── http /routes.ts            # ⚠️ Carpeta con espacio literal ("http /") — registerRoutes
-│   ├── routes/
-│   │   ├── auth.routes.ts         # POST /register, /login, /refresh, /logout, GET /get-session, /verify-email, /resend-verification
-│   │   ├── book.routes.ts         # upload, list, download, stream, progress, delete (requireAuth + multer)
-│   │   ├── bookmark.routes.ts     # GET/POST /:bookId/bookmarks, DELETE /:bookmarkId
-│   │   └── streak.routes.ts       # GET /, POST /complete, POST /initialize
-│   ├── controllers/
-│   │   ├── book.controller.ts
-│   │   ├── bookmark.controller.ts
-│   │   └── streak.controller.ts
-│   ├── services/
-│   │   ├── book.service.ts
-│   │   ├── bookmark.service.ts
-│   │   └── streak.service.ts
-│   ├── repositories/
-│   │   ├── book.repository.ts
-│   │   ├── bookmark.repository.ts
-│   │   └── streak.repository.ts
-│   ├── schema/                    # auth.schema.ts, book.schema.ts, bookmark.schema.ts, streak.schema.ts
-│   ├── dto/
-│   │   ├── book/{params,request,response}.ts
-│   │   └── bookmark/{params,request,response}.ts
-│   ├── middleware/
-│   │   ├── requireAuth.ts         # protege rutas (cookie / Bearer / x-session-token)
-│   │   ├── validate.ts            # valida body/params/query con Zod
-│   │   └── errorHandler.ts        # mapea Zod/AppError/Multer/Prisma → HTTP
-│   ├── config/
-│   │   ├── env.ts                 # variables validadas (JWT secrets ≥ 32 chars)
-│   │   ├── prisma.ts              # singleton dbPrisma
-│   │   ├── db.ts                  # pool pg (healthcheck)
+│   ├── app.ts                     # helmet, cors, body-parser, registerRoutes
+│   │
+│   ├── config/                    # Transversal, una responsabilidad por archivo
+│   │   ├── env.ts                 # Variables validadas (JWT ≥ 32 chars)
+│   │   ├── prisma.ts              # Singleton dbPrisma
+│   │   ├── logger.ts              # pino (transport, redact de secretos)
+│   │   ├── http-logger.ts         # pino-http (req.id, nivel por status)
+│   │   ├── error-handler.ts       # mapea Zod/AppError/Multer/Prisma → HTTP
+│   │   ├── graceful-shutdown.ts   # SIGTERM/SIGINT con cierre de Prisma
 │   │   ├── cors.ts                # corsOptions + corsOriginGuard
-│   │   ├── rate-limit.ts          # 4 limiters + isProgressPath
-│   │   ├── http-logger.ts         # pino-http
-│   │   └── shutdown.ts            # graceful shutdown
-│   ├── lib/
-│   │   ├── auth.ts                # JWT/bcrypt/sesiones (auth.api, auth.cookies, auth.tokens)
-│   │   ├── r2.ts                  # S3Client para Cloudflare R2
-│   │   ├── email.ts               # Resend
-│   │   ├── logger.ts              # pino
-│   │   └── origins.ts             # allowlist de orígenes + TRUST_BACKEND_ORIGINS
-│   ├── helper/
-│   │   ├── errors.ts              # class AppError
-│   │   ├── express.ts             # bodyOf/paramsOf/queryOf tipados
-│   │   ├── format.ts              # normalizedFileName, generateFileHash
-│   │   └── time.ts                # toDateString, getUTCDateOnly
-│   └── __tests__/                 # Jest + Supertest
-├── http/                          # REST Client (books.http, bookmarks.http, streaks.http)
-├── doc/                           # Manual técnico (DOC.md, PRISMA.md)
+│   │   ├── origins.ts             # allowlist + TRUST_BACKEND_ORIGINS
+│   │   └── rate-limit.ts          # 4 limiters + isProgressPath
+│   │
+│   ├── core/                      # Compartido entre módulos
+│   │   ├── errors/
+│   │   │   ├── AppError.ts        # class AppError(code, statusCode, message)
+│   │   │   └── error-messages.ts  # ERROR_MESSAGES + httpError helpers
+│   │   ├── http/
+│   │   │   ├── validate.ts        # middleware Zod body/params/query
+│   │   │   └── express.utils.ts   # bodyOf/paramsOf/queryOf tipados
+│   │   ├── storage/
+│   │   │   └── s3.client.ts       # S3Client para Cloudflare R2
+│   │   └── audit.types.ts         # tipo AuditLog
+│   │
+│   ├── http/                      # Composición de rutas y health
+│   │   ├── routes.ts              # registerRoutes: limiters + routers + 404
+│   │   └── health.ts              # healthcheck DB + R2 con timeout de 2s
+│   │
+│   ├── modules/
+│   │   ├── auth/
+│   │   │   ├── application/
+│   │   │   │   ├── auth.service.ts            # login/register/refresh/logout/getSession/verify
+│   │   │   │   └── common/
+│   │   │   │       ├── auth.guard.ts          # requireAuth (cookie/Bearer/x-session-token)
+│   │   │   │       ├── token.utils.ts         # firma/verificación de JWT + tokenFromHeaders
+│   │   │   │       ├── cookie.utils.ts        # setAuthCookies/clearAuthCookies
+│   │   │   │       ├── crypto.utils.ts        # bcrypt + código de verificación
+│   │   │   │       └── email.utils.ts         # sendEmail (Resend) — ⚠️ sin usar
+│   │   │   ├── domain/
+│   │   │   │   ├── auth.entities.ts           # PublicUser, AuthResponse, TokenPayload...
+│   │   │   │   └── auth.interface.ts          # IAuthRepository
+│   │   │   ├── infrastructure/
+│   │   │   │   └── auth.prisma.repository.ts  # implementación con Prisma
+│   │   │   ├── presentation/
+│   │   │   │   ├── auth.controller.ts         # handlers HTTP
+│   │   │   │   ├── auth.dto.ts                # schemas Zod (register/login/verify...)
+│   │   │   │   └── auth.routes.ts             # router puro
+│   │   │   └── _tests_/
+│   │   │       └── application/
+│   │   │           └── auth.service.test.ts   # 25 tests con repositorio fake
+│   │   ├── books/
+│   │   │   ├── application/
+│   │   │   │   ├── books.service.ts
+│   │   │   │   └── common/
+│   │   │   │       ├── books.utils.ts         # generateFileHash, normalizedFileName
+│   │   │   │       └── books.storage.ts       # deleteR2Quietly
+│   │   │   ├── domain/
+│   │   │   │   ├── books.entities.ts          # UserBookResponse, UploadBookResponse...
+│   │   │   │   ├── books.interface.ts         # IBooksRepository
+│   │   │   │   ├── books.types.ts             # Book, UserBook, inputs
+│   │   │   │   └── books.dto-types.ts         # upload/params/response DTOs
+│   │   │   ├── infrastructure/
+│   │   │   │   └── books.prisma.repository.ts
+│   │   │   ├── presentation/
+│   │   │   │   ├── books.controller.ts
+│   │   │   │   ├── books.dto.ts               # schemas Zod (progress, params)
+│   │   │   │   └── books.routes.ts
+│   │   │   └── _tests_/
+│   │   │       ├── application/books.service.test.ts
+│   │   │       └── presentation/books.routes.test.ts   # HTTP con Supertest
+│   │   ├── bookmarks/ ...     # misma forma: application, domain, infrastructure, presentation, _tests_
+│   │   └── streak/ ...        # misma forma
+│   │
+│   ├── scripts/
+│   │   └── seed.ts            # pnpm seed — usuario demo + sesión
+│   ├── tests/
+│   │   ├── fakes.ts           # makeXxxRepo + makeXxx data para todos los módulos
+│   │   └── example.test.ts    # plantilla
+│   └── types/
+│       ├── express.d.ts       # augmentation de Express.Request.userId
+│       └── auth.d.ts          # tipos globales de auth
 ├── jest.config.ts
+├── tsconfig.json
 └── package.json
 ```
 
-> ⚠️ **Quirk**: la carpeta `src/http /routes.ts` tiene un espacio en el nombre (`"http /"`). Funciona, pero es candidata a renombrarse a `routes/index.ts` o similar en una limpieza futura.
+> La carpeta `src/http/routes.ts` con el espacio literal en el nombre **ya no
+> existe**: se renombró a `src/http/routes.ts` y quedó documentado en
+> `specs/tasks/backend/04-codigo-muerto.md`.
 
 ---
 
-## Capas en detalle
+## Capas por módulo
 
-### `routes/`
+### `presentation/` — la frontera HTTP
 
-- Routers Express por feature.
-- Auth pública en `auth.routes.ts` (register/login/refresh/logout/get-session/verify-email/resend).
-- `book.routes.ts`, `bookmark.routes.ts`, `streak.routes.ts` usan `requireAuth` a nivel de router.
-- Multer (25MB) se configura en `book.routes.ts` con campos `file` y `pdf` (compatibilidad).
+| Archivo | Responsabilidad |
+|---|---|
+| `*.routes.ts` | Declara las rutas y sus validaciones. **No tiene lógica.** |
+| `*.controller.ts` | Recibe `req/res`, resuelve el usuario (`req.userId` o params), llama al service, responde. |
+| `*.dto.ts` | Schemas Zod de la frontera: validan lo que entra y tipan lo que sale. |
 
-### `controllers/`
+### `application/` — los casos de uso
 
-- Funciones async exportadas que reciben `(req, res)`.
-- Usan `auth.api.getSession({ headers: req.headers })` para resolver el usuario, o confían en `req.userId` seteado por `requireAuth`.
-- Devuelven `res.json(...)` o lanzan errores que captura `errorHandler`.
+| Archivo | Responsabilidad |
+|---|---|
+| `*.service.ts` | Orquesta repositorios, valida permisos, aplica reglas de negocio. **No conoce Express.** Emite `AppError`. |
+| `common/*.utils.ts` | Utilidades de la feature (JWT, cookies, hash, hashing de archivos). |
 
-### `services/`
+Los services reciben su repositorio por constructor con un default, lo que
+permite tests con fake sin tocar el total del sistema:
 
-- **Clases con métodos de instancia e inyección por constructor**, NO métodos estáticos. Cada service recibe su repositorio por defecto en el constructor y se exporta como singleton.
-  ```ts
-  // services/book.service.ts
-  const bookRepository = new BookRepository();
-  export class BookService {
-    constructor(private readonly repo: BookRepository = bookRepository) {}
-    async getUserBooks(userId: string) { ... }   // método de instancia
-  }
-  export const bookService = new BookService();  // singleton que usan los controllers
-  ```
-  Los controllers llaman **`bookService.getUserBooks(userId)`**, nunca `BookService.getUserBooks(...)`. El default del constructor existe para que los tests puedan inyectar un repo fake: `new BookService(fakeRepo)`.
-- Lanzan `AppError(code, status, message)`.
-- `BookService.uploadBook`: hash SHA-256 → buscar por hash → si no existe, subir a R2 + crear book → upsert user_book.
-- `BookService.deleteBook`: verificar ownership → contar otros usuarios → borrar de R2 solo si es el único → auditoría → borrar user_book (y book si quedó solo).
-- `BookService.updateBookProgress`: solo persiste los campos que representan avance real (tolerancia de 50px en `scrollPosition`); si nada avanzó devuelve el estado persistido sin tocar la fila.
-- `StreakService.completeDay`: lógica de días consecutivos con `clientDate` opcional.
+```ts
+// modules/books/application/books.service.ts
+const booksPrismaRepository = new BooksPrismaRepository();
 
-### `repositories/`
-
-- Interfaz + clase con queries Prisma.
-- `BookRepository`: getUserBooks, findByHash, createBook, upsertUserBook, findUserBook, countOtherUsers, deleteUserBook, deleteBook, createAuditLog, updateUserBook.
-- `BookmarkRepository`: findUserBookAccess, getBookmarksByUserBookId, createBookmark, findBookmark, deleteBookmark.
-- `StreakRepository`: findByUserId, createStreak, updateStreak, **updateStreakConditionally** (`updateMany` con `lastActiveDate` como predicado de concurrencia; devuelve `null` si otro request ganó la carrera), upsertStreak.
-
-### `lib/auth.ts` (corazón del auth)
-
-- `signAccessToken({ userId, email, role })` — JWT 15 min.
-- `signRefreshToken(userId)` — JWT 7 días con `jti` (uuid).
-- `issueTokens(user, headers?, client?)` — access + refresh + INSERT session.
-- `getSession({ headers })` — acepta `Authorization: Bearer`, `x-session-token`, o cookie `accessToken`.
-- `refresh(refreshToken)` — verifica, **compare-and-delete** la sesión (rotación single-use), emite tokens nuevos en transacción.
-- `login` / `register` — bcrypt compare/hash; register crea user + account en transacción.
-- Cookies: `accessToken`/`refreshToken`, `httpOnly`, `secure` en prod, `sameSite: none` (prod) / `lax` (dev).
-
----
-
-## Dependency flow
-
-```
-Routes → Controllers → Services → Repositories → Prisma (dbPrisma)
-                 ↑                        ↓
-              lib/auth.ts            helper/errors.ts (AppError)
+export class BooksService {
+  constructor(
+    private readonly repo: IBooksRepository = booksPrismaRepository,
+  ) {}
+  // método de instancia; los controllers usan el singleton `booksService`
+}
+export const booksService = new BooksService();
 ```
 
-Inversión parcial: los services dependen de la interfaz del repositorio; la implementación concreta se instancia dentro del service.
+### `domain/` — el idioma de la feature
+
+| Archivo | Responsabilidad |
+|---|---|
+| `*.interface.ts` | Contrato de persistencia (`IBooksRepository`, `IAuthRepository`...). |
+| `*.entities.ts` | Entidades y respuestas que salen del service. |
+| `*.types.ts` | Tipos de entrada y del modelo. |
+| `*.dto-types.ts` | (books) Tipos de request/params de la API. |
+
+### `infrastructure/` — Prisma detrás de la interfaz
+
+Un solo archivo por feature implementa la interfaz del dominio. Los métodos
+son arrow functions bound, para que puedan pasarse a otras capas sin perder el
+`this`:
+
+```ts
+export class BooksPrismaRepository implements IBooksRepository {
+  getUserBooks = (userId: string) => dbPrisma.user_book.findMany({ ... });
+}
+```
 
 ---
 
-## AppError (errores)
+## Flujo de una request
+
+```
+HTTP request
+   ↓
+config/rate-limit.ts ──(limiter por ruta)──┐
+   ↓                                       │
+http/routes.ts (registra routers)          │
+   ↓                                       │
+modules/<f>/presentation/*.routes.ts       │
+   ↓                                       │
+core/http/validate.ts (Zod: body/params)   │
+   ↓                                       │
+modules/<f>/presentation/*.controller.ts   │
+   ↓                                       │
+modules/<f>/application/*.service.ts  ←── auth.guard (req.userId)
+   ↓
+modules/<f>/domain/*.interface.ts
+   ↓
+modules/<f>/infrastructure/*.prisma.repository.ts
+   ↓
+Prisma → PostgreSQL / R2
+```
+
+Los módulos protegidos usan `auth.guard` (`modules/auth/application/common/auth.guard.ts`)
+a nivel de router. El guard resuelve la sesión con `auth api.getSession`, que
+acepta los cuatro transportes (cookie, Bearer, x-session-token, x-refresh-token).
+
+---
+
+## Errores
+
+### `AppError` (core/errors/AppError.ts)
 
 ```ts
 export class AppError extends Error {
@@ -154,13 +214,18 @@ export class AppError extends Error {
 }
 ```
 
-### `errorHandler` (middleware/errorHandler.ts)
+### Mensajes centralizados (core/errors/error-messages.ts)
+
+Los textos de error viven en `ERROR_MESSAGES` y hay helpers tipados (`httpError.unauthorized(...)`).
+Antes estaban interpolados en cada `throw`, con riesgo de divergencia.
+
+### `errorHandler` (config/error-handler.ts)
 
 | Error | HTTP | Shape |
 |---|---|---|
 | `ZodError` | 400 | `{ error: "Validation failed", details: [{ path, message }] }` |
 | `AppError` | `err.statusCode` | `{ error: err.message, code: err.code }` |
-| `multer.MulterError` LIMIT_FILE_SIZE | 413 | `{ error: "El archivo excede el tamaño máximo permitido (20MB)", code }` |
+| `multer.MulterError` LIMIT_FILE_SIZE | 413 | `{ error, code }` |
 | `multer.MulterError` (otro) | 400 | `{ error, code }` |
 | Prisma P2002 | 409 | `{ error: "Registro duplicado", code }` |
 | Prisma P2025 | 404 | `{ error: "Recurso no encontrado", code }` |
@@ -182,7 +247,7 @@ export class AppError extends Error {
 
 ---
 
-## CORS (config/cors.ts + lib/origins.ts)
+## CORS (config/cors.ts + config/origins.ts)
 
 - `origin: true` (refleja el origin) + `credentials: true`.
 - `allowedHeaders`: `Content-Type`, `Authorization`, `x-session-token`, `x-refresh-token`.
@@ -194,13 +259,13 @@ export class AppError extends Error {
 
 ## Logging
 
-- `pino` + `pino-http` (`config/http-logger.ts`).
-- Cada request queda logueado con `req.id`, method, url, statusCode, responseTime.
-- El `errorHandler` logea los 500 explícitamente (pino-http no captura errores async).
+- `pino` (config/logger.ts) con `redact` de `authorization`, `cookie`, `password`, `secret` y `token`.
+- `pino-http` (config/http-logger.ts) con `req.id` (respeta `x-request-id`), nivel por status y exclusión del health check.
+- El `errorHandler` loguea los 500 explícitamente.
 
 ---
 
-## Montaje de rutas (src/http /routes.ts)
+## Montaje de rutas (src/http/routes.ts)
 
 ```
 GET    /api/v1/health                    (healthHandler: DB + R2)
@@ -208,7 +273,7 @@ POST   /api/v1/auth/*                    (authLimiter)
 GET    /api/v1/auth/get-session          (sessionLimiter)
 PATCH  /api/v1/books/:id/progress        (progressLimiter)
 GET/POST/PATCH/DELETE /api/v1/books/*    (globalLimiter)
-GET/POST/DELETE /api/v1/books/:bookId/bookmarks/*
+GET/POST/PATCH/DELETE /api/v1/books/:bookId/bookmarks/*
 GET/POST /api/v1/streak/*
 404 → { error: "Ruta no encontrada" }
 errorHandler
@@ -220,10 +285,11 @@ errorHandler
 
 | Concepto | Convención |
 |---|---|
-| Archivo de ruta | `snake_case.routes.ts` |
-| Archivo de controller | `snake_case.controller.ts` |
-| Archivo de service | `snake_case.service.ts` (clase `PascalCaseService`) |
-| Archivo de repository | `snake_case.repository.ts` (interfaz `I*Repository` + clase `*Repository`) |
-| Schemas Zod | `PascalCaseSchema` (`LoginSchema`, `BookIdParamSchema`) |
-| DTO | `PascalCase` + sufijo `DTO`/`Response`/`Params` |
+| Archivo de módulo | `<feature>.<capa>.ts` (kebab en `config/` y `core/`: `error-handler.ts`) |
+| Service | `PascalCase` singular del feature + `Service` (`BooksService`), singleton `camelCase` (`booksService`) |
+| Repositorio | `PascalCase` + `PrismaRepository` (`BooksPrismaRepository`) |
+| Interfaz de repositorio | `I` + feature + `Repository` (`IBooksRepository`) |
+| Controller | export de funciones `camelCase` (`updateBookmark`) |
+| Schemas Zod | `PascalCase` + `Schema` (`UpdateBookmarkBodySchema`), en `*.dto.ts` |
 | Errores | `AppError("CODE", status, "mensaje")` con codes en UPPER_SNAKE |
+| Tests | Bajo `_tests_/application/` (service con fake) y `_tests_/presentation/` (HTTP con Supertest) |

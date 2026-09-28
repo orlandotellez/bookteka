@@ -249,7 +249,7 @@ Solo `users.deleted_at`. `login` y `getSession` ya filtran por `deleted_at: null
 
 ### Deduplicación
 
-`book.fileHash` con `@unique`. El hash es el SHA-256 del contenido del archivo (`generateFileHash` en `src/helper/format.ts`). Si el hash ya existe, el upload no sube el archivo de nuevo.
+`book.fileHash` con `@unique`. El hash es el SHA-256 del contenido del archivo (`generateFileHash` en `src/modules/books/application/common/books.utils.ts`). Si el hash ya existe, el upload no sube el archivo de nuevo.
 
 ### Borrado
 

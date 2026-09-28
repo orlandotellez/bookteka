@@ -72,7 +72,7 @@ Que las tablas de sesión y verificación no crezcan sin control, y que el histo
 ## Tareas
 
 - [ ] 1. Crear la purga de `session` expiradas
-  - Agregar `src/scripts/purge-sessions.ts` (o una función en `src/lib/auth.ts` expuesta por comando) que haga `deleteMany({ where: { expires_at: { lt: new Date() } } })`.
+  - Agregar `src/scripts/purge-sessions.ts` (o una función en `src/modules/auth/application/auth.service.ts` expuesta por comando) que haga `deleteMany({ where: { expires_at: { lt: new Date() } } })`.
   - Executarla desde `docker-entrypoint.sh` antes de `prisma migrate deploy`, o como paso de un job externo (Railway cron, si se configura).
   - Decidir si se borra por antigüedad (`expires_at`) o por inactividad. `expires_at` es suficiente.
 - [ ] 2. Crear la purga de `verification` expiradas

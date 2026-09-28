@@ -8,21 +8,21 @@ Consecuencia directa: un cambio puede mergearse con los tests rotos y nadie se e
 
 ### Lo que sí está cubierto
 
-El backend tiene 2.897 líneas de tests en 7 suites (`src/__tests__/`), con dos niveles: HTTP vía Supertest (`book.test.ts`, `bookmark.test.ts`, `streak.test.ts`) y service con repositorio fake (`book.service.test.ts`, `bookmark.service.test.ts`, `streak.service.test.ts`). La cobertura de reglas de negocio es decente: hay tests del progreso monotónico, de la deduplicación por hash, de la rotación de refresh token y de la concurrencia de la racha.
+El backend tiene 119 tests en 8 suites (uno por servicio + uno por capa HTTP + los de auth):, con dos niveles por feature, bajo `_tests_/presentation/` (HTTP vía Supertest) y `_tests_/application/` (service con repositorio fake de `src/tests/fakes.ts`). La cobertura de reglas de negocio es decente: hay tests del progreso monotónico, de la deduplicación por hash, de la rotación de refresh token y de la concurrencia de la racha.
 
 ### Lo que no está cubierto
 
 | Área | Gap |
 |---|---|
-| **Auth** | `src/lib/auth.ts` tiene 373 líneas y **cero tests**. No hay ningún test de `login`, `register`, `refresh`, `verifyEmail` ni `createVerification`. Es la pieza con más superficie de seguridad del backend. |
+| **Auth (HTTP + integración)** | `modules/auth/application/auth.service.ts` tiene 25 tests de service (`_tests_/application/auth.service.test.ts`, agregados con el refactor a módulos) pero los handlers HTTP y el guard no tienen tests de ruta. |
 | **Configuración y env** | `src/config/env.ts` (validación de secretos, longitud mínima) sin test. |
-| **CORS** | `src/config/cors.ts` + `src/lib/origins.ts` sin test. El reject de origin no permitido y el comportamiento de `TRUST_BACKEND_ORIGINS` no tienen verificación. |
+| **CORS** | `src/config/cors.ts` + `src/config/origins.ts` sin test. El reject de origin no permitido y el comportamiento de `TRUST_BACKEND_ORIGINS` no tienen verificación. |
 | **Rate limiting** | `src/config/rate-limit.ts` sin test. |
-| **Health check** | `src/http /health.ts` sin test: ni el 503 cuando R2 no responde, ni el timeout de 2s. |
-| **Middleware de errores** | `src/middleware/errorHandler.ts` sin test del mapeo de códigos Prisma. |
+| **Health check** | `src/http/health.ts` sin test: ni el 503 cuando R2 no responde, ni el timeout de 2s. |
+| **Middleware de errores** | `src/config/error-handler.ts` sin test del mapeo de códigos Prisma. |
 | **Uploads** | No hay test del límite de 25MB ni del campo alias `file` vs `pdf`. |
 | **Frontend** | 59 tests en 8 archivos. Sin cobertura de `streakStore`, `userPreferencesStore`, `api/*`, `database/sync.ts`, `routes/*` ni de la vista `reader/`. Ver `specs/tasks/frontend/01-cobertura-tests.md`. |
-| **Mensaje de error desactualizado** | `src/middleware/errorHandler.ts` responde `"...(20MB)"` cuando el límite de Multer en `src/routes/book.routes.ts` es 25MB. El spec ya lo marca, el código no. |
+| **Mensaje de error desactualizado** | `src/config/error-handler.ts` responde `"...(20MB)"` cuando el límite de Multer en `src/modules/books/presentation/books.routes.ts` es 25MB. El spec ya lo marca, el código no. |
 
 ### ESLint no está configurado
 
@@ -64,18 +64,18 @@ Que ningún cambio pueda mergearse con los tests rotos, que el typecheck se ejec
   - `prisma migrate status` necesita una base de datos. Levantar un servicio `postgres:16-alpine` en el job, o al menos correr `prisma validate` que no la necesita.
 - [ ] 2. Subir `npx prisma validate` y `prisma migrate status` al pipeline
   - Detectar drift entre `schema.prisma` y `prisma/migrations/` es un error que hoy nadie ve hasta que Prisma falla en runtime.
-- [ ] 3. Testear `src/lib/auth.ts`
+- [ ] 3. Testear la capa HTTP de auth (el service ya está cubierto por 25 tests)
   - `login`: credenciales válidas, email inexistente, password incorrecto, usuario con `deleted_at` seteado (debe rechazar).
   - `register`: email duplicado (409), creación del par `user` + `account` en transacción, emisión de sesión.
   - `refresh`: rotación (el token viejo deja de servir), token expirado, token sin sesión en DB, refresh concurrente (solo uno gana).
   - `verifyEmail`: código válido, código expirado, código inexistente.
   - Los tests pueden reutilizar el patrón de `book.service.test.ts`: pasar un cliente fake por el parámetro `client` de `issueTokens` y `createSession`, que ya existe para eso.
 - [ ] 4. Testear CORS, env y health
-  - `src/lib/origins.ts`: origin permitido, origin rechazado, `FRONTEND_URL` con `*` (debe lanzar), `TRUST_BACKEND_ORIGINS` activo e inactivo.
+  - `src/config/origins.ts`: origin permitido, origin rechazado, `FRONTEND_URL` con `*` (debe lanzar), `TRUST_BACKEND_ORIGINS` activo e inactivo.
   - `src/config/env.ts`: variable faltante lanza, secreto JWT de menos de 32 caracteres lanza, secreto válido pasa.
-  - `src/http /health.ts`: DB y R2 OK devuelve 200; cualquiera caído devuelve 503 con el campo correspondiente en `false`.
+  - `src/http/health.ts`: DB y R2 OK devuelve 200; cualquiera caído devuelve 503 con el campo correspondiente en `false`.
 - [ ] 5. Corregir el mensaje del 413
-  - En `src/middleware/errorHandler.ts`, cambiar `"...(20MB)"` por el valor real. Mejor: derivarlo de la constante del límite, que hoy está inline en `src/routes/book.routes.ts` como `25 * 1024 * 1024`. Extraer la constante a un lugar compartido y usarla en ambos.
+  - En `src/config/error-handler.ts`, cambiar `"...(20MB)"` por el valor real. Mejor: derivarlo de la constante del límite, que hoy está inline en `src/modules/books/presentation/books.routes.ts` como `25 * 1024 * 1024`. Extraer la constante a un lugar compartido y usarla en ambos.
 - [ ] 6. Configurar ESLint en el frontend
   - Crear `frontend/eslint.config.js` con el flat config usando las dependencias ya instaladas: `@eslint/js`, `typescript-eslint`, `eslint-plugin-react-hooks`, `eslint-plugin-react-refresh`, `globals`.
   - Agregar el script `"lint": "eslint ."` a `frontend/package.json`.
@@ -89,7 +89,7 @@ Que ningún cambio pueda mergearse con los tests rotos, que el typecheck se ejec
 
 - [ ] Un PR que rompa un test falla la CI.
 - [ ] `pnpm build` del frontend corre en la CI, así que el typecheck es obligatorio para mergear.
-- [ ] `src/lib/auth.ts`, `src/lib/origins.ts`, `src/config/env.ts` y `src/http /health.ts` tienen tests.
+- [ ] `src/modules/auth/application/auth.service.ts`, `src/config/origins.ts`, `src/config/env.ts` y `src/http/health.ts` tienen tests.
 - [ ] El mensaje del 413 dice el tamaño real y ese valor viene de una constante compartida.
 - [ ] `pnpm lint` en el frontend funciona y pasa.
 - [ ] La cobertura se mide una vez y el número queda anotado en `specs/modules/backend/05-testing.md`.

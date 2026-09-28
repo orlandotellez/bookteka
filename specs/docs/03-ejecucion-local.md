@@ -114,11 +114,12 @@ pnpm test:watch
 
 | Suite | Cubre |
 |---|---|
-| `src/__tests__/book.test.ts` | Los 6 endpoints de libros vía HTTP. |
-| `src/__tests__/book.service.test.ts` | `BookService` con repositorio fake. |
-| `src/__tests__/bookmark.test.ts` / `bookmark.service.test.ts` | Marcadores por HTTP y por service. |
-| `src/__tests__/streak.test.ts` / `streak.service.test.ts` | Rachas por HTTP y por service. |
-| `src/__tests__/example.test.ts` | Plantilla de test. |
+| `src/modules/books/_tests_/presentation/books.routes.test.ts` | Los 6 endpoints de libros vía HTTP. |
+| `src/modules/books/_tests_/application/books.service.test.ts` | `BooksService` con repositorio fake. |
+| `src/modules/bookmarks/_tests_/presentation/books.routes.test.ts` + `application/bookmarks.service.test.ts` | Marcadores por HTTP y por service. |
+| `src/modules/streak/_tests_/presentation/streak.routes.test.ts` + `application/streak.service.test.ts` | Rachas por HTTP y por service. |
+| `src/modules/auth/_tests_/application/auth.service.test.ts` | 25 tests de auth (el service no tenía ninguno). |
+| `src/tests/example.test.ts` | Plantilla de test. |
 
 Configuración en `jest.config.ts`: preset ESM, `testEnvironment: node`, alias `@/` resueltos por `moduleNameMapper`.
 
@@ -172,7 +173,7 @@ curl http://localhost:3000/api/v1/health
 docker compose exec db psql -U bookteka -d bookteka_db -c '\dt'
 ```
 
-Si el health devuelve `503`, el `status` del campo que falló (`db` o `r2`) dice cuál de los dos es. `src/http /health.ts` loguea el motivo.
+Si el health devuelve `503`, el `status` del campo que falló (`db` o `r2`) dice cuál de los dos es. `src/http/health.ts` loguea el motivo.
 
 ---
 
@@ -182,7 +183,7 @@ Si el health devuelve `503`, el `status` del campo que falló (`db` o `r2`) dice
 |---|---|---|
 | `Missing environment variable: R2_BUCKET` al arrancar | `.env` incompleto | `src/config/env.ts` |
 | `JWT_SECRET must contain at least 32 characters` | Secreto corto o ausente | `getJwtSecret` en `src/config/env.ts` |
-| `Origin no permitido por CORS: ...` | El origin no está en `FRONTEND_URL` | `src/lib/origins.ts`, `DEV_EXTRA_ORIGINS` |
+| `Origin no permitido por CORS: ...` | El origin no está en `FRONTEND_URL` | `src/config/origins.ts`, `DEV_EXTRA_ORIGINS` |
 | `ECONNREFUSED` en el backend | La DB no está en `5433` | `docker compose ps` |
 | El login entra y vuelve a `/auth/login` | La cookie de sesión no viaja (WebView Android) | `frontend/vite.config.ts` (proxy `/api`) y `frontend/src/lib/apiEnv.ts` |
 | Vite no arranca en otro puerto | `strictPort: true` en `vite.config.ts` | Liberar el 1420 |

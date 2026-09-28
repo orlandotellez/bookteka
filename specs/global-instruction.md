@@ -21,7 +21,7 @@ Reglas transversales que toda IA (o humano) debe respetar al generar, modificar 
 - **Módulos ESM**: `"type": "module"`. Todos los imports locales terminan en `.js` aunque el archivo fuente sea `.ts` (`import { env } from "@/config/env.js"`).
 - **Alias**: `@/*` → `src/*` (tsconfig paths + tsc-alias en build).
 - **DB**: Prisma 6 + PostgreSQL 16. Cliente singleton `dbPrisma` (`config/prisma.ts`).
-- **Validación**: Zod 4. Schemas en `src/schema/<feature>.schema.ts`. Se validan con el middleware `validate` (`middleware/validate.ts`).
+- **Validación**: Zod 4. Schemas en `src/modules/<feature>/presentation/<feature>.dto.ts`. Se validan con el middleware `validate` (`core/http/validate.ts`).
 - **Errores**: clase `AppError(code, statusCode, message)` en `helper/errors.ts`. El `errorHandler` central mapea:
   - `ZodError` → 400 `{ error: "Validation failed", details: [...] }`
   - `AppError` → `{ error: message, code }`
@@ -35,20 +35,23 @@ Reglas transversales que toda IA (o humano) debe respetar al generar, modificar 
 - **Rate limit**: `express-rate-limit` (`config/rate-limit.ts`): auth 10/min, get-session 200/15min, progress 600/15min, global 100/15min.
 - **Seguridad**: helmet + CORS con guard de orígenes (`config/cors.ts`, `lib/origins.ts`).
 - **Logging**: pino + pino-http.
-- **Estructura por feature** (replicar exactamente):
+- **Estructura por feature** (modulos verticales, replicar exactamente):
   ```
   src/
-  ├── routes/          # Routers por feature
-  ├── controllers/     # Capa HTTP (extrae req, llama service)
-  ├── services/        # Lógica de negocio (clases con métodos static)
-  ├── repositories/    # Acceso a datos (interfaz + clase)
-  ├── schema/          # Schemas Zod
-  ├── dto/             # Tipos de request/response por feature
-  ├── middleware/      # requireAuth, validate, errorHandler
-  ├── config/          # env, prisma, cors, rate-limit, shutdown
-  ├── lib/             # auth, r2, email, logger, origins
-  └── helper/          # errors, format, time, express
+  ├── modules/<feature>/
+  │   ├── application/     # servicio + common/ (utils de la feature)
+  │   ├── domain/          # entities, types, interfaz del repositorio
+  │   ├── infrastructure/  # <feature>.prisma.repository.ts
+  │   ├── presentation/    # controller, dto (Zod), routes
+  │   └── _tests_/         # application/ (service) y presentation/ (HTTP)
+  ├── config/          # env, prisma, logger, error-handler, graceful-shutdown, cors, origins, rate-limit
+  ├── core/            # errors, http/validate, storage/s3.client
+  ├── http/            # routes.ts (composicion), health.ts
+  ├── scripts/         # seed.ts
+  ├── tests/           # fakes.ts, example
+  └── types/           # express.d.ts, auth.d.ts
   ```
+  El detalle: `specs/modules/backend/02-architecture.md`.
 - **Naming**: `camelCase` archivos y funciones, `PascalCase` clases, `UPPER_SNAKE` constantes. Sufijos `*Routes`, `*Controller` (funciones exportadas), `*Service` (clase static), `*Repository` (clase).
 - **No devolver** `password`, `refresh_token` ni `account` al cliente.
 

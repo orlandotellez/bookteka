@@ -11,7 +11,7 @@ Las convenciones que el código ya sigue. Cuando agregues código nuevo, seguí 
 | Tema | Convención | Ejemplo real |
 |---|---|---|
 | Módulos | ESM. **Todo import local termina en `.js`**, aunque el fuente sea `.ts`. | `import { env } from "@/config/env.js"` |
-| Alias | `@/*` → `src/*`. Resuelto por `tsconfig.json` paths, `tsc-alias` en build y `moduleNameMapper` en Jest. | `import { AppError } from "@/helper/errors.js"` |
+| Alias | `@/*` → `src/*`. Resuelto por `tsconfig.json` paths, `tsc-alias` en build y `moduleNameMapper` en Jest. | `import { AppError } from "@/core/errors/AppError.js"` |
 | Archivos | `snake_case` con sufijo de rol. | `book.controller.ts`, `bookmark.service.ts` |
 | Clases | `PascalCase`. | `BookService`, `BookRepository` |
 | Exports de servicio | Singleton instanciado en el mismo archivo. **Métodos de instancia, nunca `static`.** | `export const bookService = new BookService()` |
@@ -158,7 +158,7 @@ Checklist:
 
 - [ ] `pnpm test` pasa.
 - [ ] `pnpm build` pasa (typecheck estricto).
-- [ ] Si tocaste una ruta: la entrada aparece en `src/routes/*.routes.ts` **y** en `src/__tests__/` hay un test HTTP.
+- [ ] Si tocaste una ruta: la entrada aparece en `src/modules/<feature>/presentation/*.routes.ts` **y** en `_tests_/presentation/` hay un test HTTP.
 - [ ] Si tocaste un service: hay un test con repositorio fake inyectado por constructor.
 - [ ] Si tocaste el schema Prisma: hay una migración nueva y `modules/db/schemas/` está actualizado.
 - [ ] Los errores de negocio son `AppError`, no `res.status(...)`.

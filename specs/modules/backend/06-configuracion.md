@@ -74,10 +74,10 @@ Los cuatro limiters y `isProgressPath`. Detalle en [04-security](./04-security.m
 ### `src/config/http-logger.ts`
 `pino-http` con `genReqId` (respeta el header `x-request-id` si viene, si no genera un UUID, y lo devuelve en la respuesta), nivel automático por status y exclusión del health check del log.
 
-### `src/config/shutdown.ts`
+### `src/config/graceful-shutdown.ts`
 Cierre ordenado en `SIGTERM`/`SIGINT`: cierra el server y desconecta Prisma, con un timeout forzado de 10 segundos. También maneja `unhandledRejection` (loguea) y `uncaughtException` (loguea, hace flush y sale con código 1).
 
-### `src/config/db.ts`
+### `src/config/prisma.ts`
 Pool de `pg`. **No lo usa nadie** — `rg "from 'pg'" src` devuelve solo este archivo. Ver `specs/tasks/backend/04-codigo-muerto.md` tarea 1.
 
 ---

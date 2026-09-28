@@ -22,10 +22,10 @@ Servicios externos que consume el backend, con su protocolo, su autenticación y
 |---|---|
 | Servicio | Cloudflare R2, compatible con S3. |
 | SDK | `@aws-sdk/client-s3` 3.x, con `@aws-sdk/s3-request-presigner` para URLs firmadas. |
-| Cliente | `src/lib/r2.ts` — un `S3Client` con `region: "auto"` y el `endpoint` de `R2_ENDPOINT`. |
+| Cliente | `src/core/storage/s3.client.ts` — un `S3Client` con `region: "auto"` y el `endpoint` de `R2_ENDPOINT`. |
 | Credenciales | `R2_ACCESS_KEY_ID` + `R2_SECRET_ACCESS_KEY` (API token de R2). |
 | Bucket | `R2_BUCKET`. |
-| Verificación al arrancar | `src/lib/r2.ts` vuelve a validar las cuatro variables y lanza `Faltan variables de entorno R2` si falta alguna. |
+| Verificación al arrancar | `src/core/storage/s3.client.ts` vuelve a validar las cuatro variables y lanza `Faltan variables de entorno R2` si falta alguna. |
 
 ### Estructura de las claves
 
@@ -33,7 +33,7 @@ Servicios externos que consume el backend, con su protocolo, su autenticación y
 books/{userId}/{timestamp}-{nombre-normalizado}
 ```
 
-`normalizedFileName` (`src/helper/format.ts`) reemplaza espacios por guiones y elimina todo lo que no sea alfanumérico, punto, guion o guion bajo. El timestamp evita colisiones.
+`normalizedFileName` (`src/modules/books/application/common/books.utils.ts`) reemplaza espacios por guiones y elimina todo lo que no sea alfanumérico, punto, guion o guion bajo. El timestamp evita colisiones.
 
 ### Operaciones usadas
 
@@ -42,8 +42,8 @@ books/{userId}/{timestamp}-{nombre-normalizado}
 | `PutObjectCommand` | `book.service.ts` — `uploadBook` | Subir el PDF. `ContentType: "application/pdf"`. |
 | `GetObjectCommand` | `book.service.ts` — `streamBookPdf` | Servir el PDF por streaming. |
 | `GetObjectCommand` + `getSignedUrl` | `book.service.ts` — `downloadBookWithUrl` | URL firmada, válida **15 minutos** (`expiresIn: 60 * 15`). |
-| `DeleteObjectCommand` | `src/helper/r2.ts` — `deleteR2Quietly` | Borrar el archivo cuando nadie más lo usa. |
-| `HeadBucketCommand` | `src/http /health.ts` | Verificar que el bucket responde. |
+| `DeleteObjectCommand` | `src/modules/books/application/common/books.storage.ts` — `deleteR2Quietly` | Borrar el archivo cuando nadie más lo usa. |
+| `HeadBucketCommand` | `src/http/health.ts` | Verificar que el bucket responde. |
 
 ### La base de datos nunca guarda el archivo
 
@@ -72,7 +72,7 @@ Solo guarda `fileKey` y `fileUrl` (`prisma/schema.prisma` — modelo `book`). `f
 | Motor | PostgreSQL 16. |
 | Acceso | Prisma 6 con el cliente singleton `dbPrisma` (`src/config/prisma.ts`). |
 | Migraciones | `prisma migrate deploy` en el entrypoint de Docker; `prisma migrate dev` en desarrollo. |
-| Connection pool | **No hay pool propio.** Prisma gestiona el suyo. `src/config/db.ts` crea un `Pool` de `pg` que nadie usa. |
+| Connection pool | **No hay pool propio.** Prisma gestiona el suyo. `src/config/prisma.ts` crea un `Pool` de `pg` que nadie usa. |
 | Health check | `dbPrisma.$queryRaw\`SELECT 1\`` con timeout de 2s. |
 
 Detalle del modelo en [`../db/`](../db/README.md).
@@ -87,7 +87,7 @@ Detalle del modelo en [`../db/`](../db/README.md).
 |---|---|
 | Servicio | Resend. |
 | SDK | `resend` 6.x. |
-| Cliente | `src/lib/email.ts` — instancia `new Resend(env.RESEND_API_KEY)` a nivel de módulo. |
+| Cliente | `src/modules/auth/application/common/email.utils.ts` — instancia `new Resend(env.RESEND_API_KEY)` a nivel de módulo. |
 | API expuesta | `sendEmail({ to, subject, html })`. Loguea y relanza el error si falla. |
 | Variables | `RESEND_API_KEY` y `RESEND_FROM_EMAIL`, ambas **obligatorias** al arrancar. |
 | Llamadas | **Cero.** `rg "sendEmail\|lib/email"` en el repo solo encuentra la definición. |

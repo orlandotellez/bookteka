@@ -14,7 +14,7 @@
 
 Los nombres internos de `env.ts` (`R2_ACCESS_KEY`, `R2_SECRET_KEY`, `R2_S3_API`) **no coinciden** con los nombres de las variables de entorno (`R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ENDPOINT`). El mapeo está en el objeto literal de `env.ts`, así que funciona, pero leer `env.R2_S3_API` no dice que viene de `R2_ENDPOINT`.
 
-**`FRONTEND_URL` en el `.env.example` del backend apunta a `http://localhost:5173`, pero el dev server de Vite corre en `1420`** (`frontend/vite.config.ts` — `port: 1420, strictPort: true`). Funciona solo porque `src/lib/origins.ts` tiene `5173` y `1420` hardcodeados en `DEV_EXTRA_ORIGINS`.
+**`FRONTEND_URL` en el `.env.example` del backend apunta a `http://localhost:5173`, pero el dev server de Vite corre en `1420`** (`frontend/vite.config.ts` — `port: 1420, strictPort: true`). Funciona solo porque `src/config/origins.ts` tiene `5173` y `1420` hardcodeados en `DEV_EXTRA_ORIGINS`.
 
 **Los secretos de JWT tienen una validador con escape.** `getJwtSecret` permite valores por defecto **cuando `NODE_ENV === "test"`**:
 ```ts
@@ -48,10 +48,10 @@ Que la configuración sea predecible: examples sincronizados, nombres de variabl
 - [ ] 1. Alinear los tres `.env.example`
   - `backend-express/.env.example` es el canónico: es el que se copia para desarrollo del backend.
   - La raíz (`.env.example`) solo sirve a `docker-compose.yml`. Revisarlo contra el bloque `environment:` de `docker-compose.yml`: ahí aparecen `DATABASE_URL`, `FRONTEND_URL`, `PORT`, `JWT_*`, `R2_*`, `RESEND_*` y `TRUST_BACKEND_ORIGINS`, que **falta** en el `.env.example` de la raíz.
-  - Agregar `TRUST_BACKEND_ORIGINS` a los examples con una nota de que solo se activa detrás de un proxy de confianza (`src/lib/origins.ts`).
+  - Agregar `TRUST_BACKEND_ORIGINS` a los examples con una nota de que solo se activa detrás de un proxy de confianza (`src/config/origins.ts`).
 - [ ] 2. Documentar el mapeo de nombres en `src/config/env.ts`
   - Agregar un comentario junto al objeto `env` que liste cada par: `R2_ACCESS_KEY ← R2_ACCESS_KEY_ID`, `R2_SECRET_KEY ← R2_SECRET_ACCESS_KEY`, `R2_S3_API ← R2_ENDPOINT`.
-  - Alternativa mejor: renombrar las claves internas para que coincidan con las de entorno y eliminar el mapeo. Es un rename interno, no afecta ningún `.env` externo. Si se hace, actualizar los 6 puntos de uso: `src/lib/r2.ts`, `src/services/book.service.ts`, `src/helper/r2.ts`, `src/http /health.ts` y los specs.
+  - Alternativa mejor: renombrar las claves internas para que coincidan con las de entorno y eliminar el mapeo. Es un rename interno, no afecta ningún `.env` externo. Si se hace, actualizar los 6 puntos de uso: `src/core/storage/s3.client.ts`, `src/modules/books/application/books.service.ts`, `src/modules/books/application/common/books.storage.ts`, `src/http/health.ts` y los specs.
 - [ ] 3. Endurecer el escape de `NODE_ENV=test`
   - `getJwtSecret` hoy devuelve un secreto conocido si `NODE_ENV === "test"`. Agregar una guarda de entorno: solo aceptarlo si además el proceso no está escuchando en un puerto de producción, o directamente exigir que los tests inyecten el valor desde el setup de Jest.
   - Más simple y suficiente: que el escape viva en el setup de tests, no en `env.ts`. `src/config/env.ts` debería exigir el secreto siempre.

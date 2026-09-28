@@ -41,7 +41,7 @@ Stack tecnológico del backend Express del Bookteka.
 | `@aws-sdk/client-s3` | 3.x | Cliente S3 para Cloudflare R2 (PutObject, GetObject, DeleteObject). |
 | `@aws-sdk/s3-request-presigner` | 3.x | URLs firmadas de descarga (15 min). |
 | `multer` | 2.x | Upload multipart (memoryStorage, máx 25MB). |
-| `resend` | 6.x | Cliente de email. **Integrado pero no usado**: `src/lib/email.ts` define `sendEmail()` y ningún archivo lo importa. La verificación de correo imprime el código con `console.info` en `lib/auth.ts` (`createVerification`). Ver `specs/tasks/backend/02-email-verificacion.md`. |
+| `resend` | 6.x | Cliente de email. **Integrado pero no usado**: `src/modules/auth/application/common/email.utils.ts` define `sendEmail()` y ningún archivo lo importa. La verificación de correo imprime el código con `console.info` en `lib/auth.ts` (`createVerification`). Ver `specs/tasks/backend/02-email-verificacion.md`. |
 
 ## Validación / Tipado
 

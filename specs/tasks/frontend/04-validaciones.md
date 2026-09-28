@@ -10,8 +10,8 @@ Los formularios y la sesión tienen desajustes concretos entre el frontend, el b
 |---|---|---|
 | `frontend/src/validations/loginValidations.ts` — `loginSchema` | `password.min(6)` | El frontend acepta 6 caracteres. |
 | `frontend/src/validations/loginValidations.ts` — `registerSchema` | `password.min(6)` | Idem para el registro. |
-| `backend-express/src/schema/auth.schema.ts` — `RegisterSchema` | `password.min(8, "La contraseña debe tener al menos 8 caracteres")` | **El registro exige 8.** |
-| `backend-express/src/schema/auth.schema.ts` — `LoginSchema` | `password.min(8, ...)` | El login exige 8. |
+| `backend-express/src/modules/auth/presentation/auth.dto.ts` — `RegisterSchema` | `password.min(8, "La contraseña debe tener al menos 8 caracteres")` | **El registro exige 8.** |
+| `backend-express/src/modules/auth/presentation/auth.dto.ts` — `LoginSchema` | `password.min(8, ...)` | El login exige 8. |
 
 Un usuario puede escribir 6 caracteres, pasar la validación del cliente, y recibir un 400 del servidor. La contraseña nunca llega a crearse: el registro falla en el primer intento y el usuario no sabe por qué, porque el mensaje que ve no viene del backend.
 

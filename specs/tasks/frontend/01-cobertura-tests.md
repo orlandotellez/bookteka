@@ -91,7 +91,7 @@ Que las rutas con más riesgo de regresión tengan test: el merge de sincronizac
   - Este test va junto con el de `specs/tasks/frontend/02-trabajo-pdf.md` tarea 6: es el contrato entre el extractor y el reader.
   - Después: `PageNavigator` (navegación) y `ReadingControls` (cambio de tipografía).
 - [ ] 8. Testear `validations/loginValidations.ts`
-  - Detectar aquí un problema real: el schema exige `min(6)` de password, pero el backend (`src/schema/auth.schema.ts` — `LoginSchema`) exige `min(8)`. Un usuario con una contraseña válida de 6 caracteres no puede registrarse, y el frontend deja intentarlo. Ver `specs/tasks/frontend/04-validaciones.md`.
+  - Detectar aquí un problema real: el schema exige `min(6)` de password, pero el backend (`src/modules/auth/presentation/auth.dto.ts` — `LoginSchema`) exige `min(8)`. Un usuario con una contraseña válida de 6 caracteres no puede registrarse, y el frontend deja intentarlo. Ver `specs/tasks/frontend/04-validaciones.md`.
 - [ ] 9. Medir la cobertura y anotarla
   - Vitest ya está configurado; falta activarle el reporter de cobertura.
   - Anotar el número real en `specs/modules/frontend/05-quality.md`. Hoy ese archivo dice 59 tests y nada más.

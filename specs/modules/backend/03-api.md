@@ -99,11 +99,11 @@ Shape de validación (Zod):
 
 ## Validación (Zod 4)
 
-- Schemas en `src/schema/<feature>.schema.ts`.
+- Schemas en `src/modules/<feature>/presentation/<feature>.dto.ts`.
 - El middleware `validate({ body?, params?, query? })` corre en la ruta.
 - Falla → `ZodError` → 400 con `details`.
 
-Ejemplo real (`src/schema/book.schema.ts`):
+Ejemplo real (`src/modules/books/presentation/books.dto.ts`):
 
 ```ts
 // El id NO se valida como UUID: es un string no vacío.
@@ -192,7 +192,7 @@ export const UpdateBookProgressBodySchema = z.object({
 }
 ```
 
-> Implementado en `src/http /health.ts`.
+> Implementado en `src/http/health.ts`.
 
 ---
 

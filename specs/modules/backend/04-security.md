@@ -6,7 +6,7 @@ Mecanismos de autenticación, autorización, validación y manejo de secretos de
 
 ## Autenticación
 
-JWT propio implementado en `src/lib/auth.ts` (373 líneas). No hay librería de auth: firma, verificación, cookies y sesiones están a mano.
+JWT propio implementado en `src/modules/auth/application/auth.service.ts` (373 líneas). No hay librería de auth: firma, verificación, cookies y sesiones están a mano.
 
 ### Tokens
 
@@ -48,7 +48,7 @@ Una fila por refresh token en la tabla `session`, con `ip_address` (del header `
 
 `createVerification` genera un código de 6 caracteres del alfabeto `A-Z0-9` con 15 minutos de validez y lo guarda en `verification`. `verifyEmail` valida, marca `email_verified = true` y borra el registro.
 
-> **El código no se envía por email.** Se imprime con `console.info` en `lib/auth.ts`. `src/lib/email.ts` implementa `sendEmail()` con Resend y **ningún archivo lo importa**. Ver `specs/tasks/backend/02-email-verificacion.md`.
+> **El código no se envía por email.** Se imprime con `console.info` en `modules/auth/application/auth.service.ts`. `src/modules/auth/application/common/email.utils.ts` implementa `sendEmail()` con Resend y **ningún archivo lo importa**. Ver `specs/tasks/backend/02-email-verificacion.md`.
 
 ---
 
@@ -84,7 +84,7 @@ El `userId` sale **siempre** de `req.userId`, que `requireAuth` setea desde la s
 
 ### Middleware `validate`
 
-`src/middleware/validate.ts` es un HOF genérico: `validate({ body?, params?, query? })` con Zod.
+`src/core/http/validate.ts` es un HOF genérico: `validate({ body?, params?, query? })` con Zod.
 
 - `body` se parsea y se **reasigna** a `req.body`.
 - `query` se reasigna a `req.query`.
@@ -116,7 +116,7 @@ Un `ZodError` se propaga por `next(err)` y el `errorHandler` lo mapea a `400` co
 ### Detalles que importan
 
 - **Los ids no se validan como UUID.** `BookIdParamSchema` usa `z.string().min(1, "id requerido")`. Los ids son `TEXT` en la base, no tipado por la validación.
-- **No hay `.strict()`.** Los schemas de body usan el comportamiento por defecto de Zod (`.strip()`): las claves desconocidas se descartan en silencio. Está documentado en `src/schema/book.schema.ts` como decisión deliberada para no romper clientes legacy.
+- **No hay `.strict()`.** Los schemas de body usan el comportamiento por defecto de Zod (`.strip()`): las claves desconocidas se descartan en silencio. Está documentado en `src/modules/books/presentation/books.dto.ts` como decisión deliberada para no romper clientes legacy.
 - **`lastReadAt` y `clientTimestamp` usan `preprocess`** para aceptar string ISO-8601 o epoch ms, más un `.refine(!isNaN)` que rechaza el `Invalid Date` que antes se persistía como `null`.
 - **`scrollPosition` se redondea**: `.nonnegative().finite().transform(v => Math.round(v))`, porque el cliente manda floats.
 
@@ -163,7 +163,7 @@ Es intencional para los tests, pero es una puerta: si `NODE_ENV=test` llega a un
 
 ### Redacción en logs
 
-`src/lib/logger.ts` configuja `pino` con `redact` sobre: `req.headers.authorization`, `req.headers.cookie`, `*.password`, `*.secret`, `*.token`, con censor `[REDACTED]`.
+`src/config/logger.ts` configuja `pino` con `redact` sobre: `req.headers.authorization`, `req.headers.cookie`, `*.password`, `*.secret`, `*.token`, con censor `[REDACTED]`.
 
 ### Git
 
@@ -182,7 +182,7 @@ Es intencional para los tests, pero es una puerta: si `NODE_ENV=test` llega a un
 | `progressLimiter` | 15 min | **600** | `PATCH /books/:id/progress` | — |
 | `globalLimiter` | 15 min | **100** | resto de `/api/v1/*` | `/health*`, `/auth*`, rutas de progress |
 
-`isProgressPath` detecta las rutas de progreso con `^\/books\/[^/]+\/progress\/?$`. El orden de montaje en `src/http /routes.ts` importa: el limiter específico va antes del global.
+`isProgressPath` detecta las rutas de progreso con `^\/books\/[^/]+\/progress\/?$`. El orden de montaje en `src/http/routes.ts` importa: el limiter específico va antes del global.
 
 El límite alto de `get-session` es deliberado: el frontend consulta la sesión al montar cada ruta, con un TTL de 5 minutos en `sessionCache.ts`.
 
@@ -192,7 +192,7 @@ El límite alto de `get-session` es deliberado: el frontend consulta la sesión 
 
 ## CORS
 
-`src/config/cors.ts` + `src/lib/origins.ts`.
+`src/config/cors.ts` + `src/config/origins.ts`.
 
 ```ts
 export const corsOptions: cors.CorsOptions = {
@@ -243,11 +243,11 @@ El resto de los defaults de helmet se aplican: `X-Content-Type-Options`, `X-Fram
 
 | Gap | Archivo | Impacto |
 |---|---|---|
-| El código de verificación no se envía | `src/lib/auth.ts` | La verificación de email no es completable por el usuario. |
+| El código de verificación no se envía | `src/modules/auth/application/auth.service.ts` | La verificación de email no es completable por el usuario. |
 | `role: admin` sin ninguna comprobación | enum `ROLE` | Si se agrega una ruta sin guard, queda abierta. |
-| El access token no se revoca al hacer logout | `src/lib/auth.ts` | Ventana de hasta 15 min. Decisión consciente (D-05). |
+| El access token no se revoca al hacer logout | `src/modules/auth/application/auth.service.ts` | Ventana de hasta 15 min. Decisión consciente (D-05). |
 | Status inconsistente 403 vs 404 | `book.service.ts` | Dificulta tests de contrato; no filtra información. |
 | Sin CSP en el shell nativo | `tauri.conf.json` | Menos aislamiento en desktop y Android. |
-| Sin tests de seguridad | `src/__tests__/` | Cero cobertura de CORS, rate limit, CSRF y escalada de privilegios. |
+| Sin tests de seguridad | `_tests_/` por módulo | Cero cobertura de CORS, rate limit, CSRF y escalada de privilegios. |
 | Escape de secreto JWT con `NODE_ENV=test` | `config/env.ts` | Puerta trasera de secreto conocido. |
 | Rate limit en memoria | `config/rate-limit.ts` | El límite real escala con el número de instancias. |

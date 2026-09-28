@@ -1,6 +1,6 @@
 # 02 · Books — Libros
 
-> ✅ **Implementado en Express** (`backend-express/src/routes/book.routes.ts`).
+> ✅ **Implementado en Express** (`backend-express/src/modules/books/presentation/books.routes.ts`).
 
 Gestión de libros PDF: lista, upload con deduplicación por hash SHA-256, descarga con URL firmada, stream, progreso de lectura y borrado con auditoría.
 
@@ -204,5 +204,5 @@ El backend proxya el `GetObjectCommand` de R2 (evita CORS y protege el bucket).
 ## Cliente (frontend)
 
 - `booksApi` (`src/api/book.ts`): `list`, `upload` (FormData), `download`, `stream` (`api.raw` → Response), `updateProgress`, `remove`.
-- `processBookForReading` (`src/lib/pdfService.ts`): stream → arrayBuffer → pdf.js extrae texto con marcadores `[PAGE_n]`.
+- `processBookForReading` (`frontend/src/lib/pdfService.ts`): stream → arrayBuffer → pdf.js extrae texto con marcadores `[PAGE_n]`.
 - El store coalesce los PATCH /progress (3s) y los flushea con keepalive al cerrar.

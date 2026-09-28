@@ -43,7 +43,7 @@ RESEND_FROM_EMAIL=onboarding@resend.dev
 
 El backend Express cubre auth, books, bookmarks, streak y health. Dos pendientes conocidos que hay que tener presentes al trabajar:
 
-- **Los emails no se envían.** `src/lib/email.ts` implementa `sendEmail()` con Resend, pero ningún archivo lo importa; el código de verificación se imprime por consola (`src/lib/auth.ts` → `createVerification`).
+- **Los emails no se envían.** `src/modules/auth/application/common/email.utils.ts` implementa `sendEmail()` con Resend, pero ningún archivo lo importa; el código de verificación se imprime por consola (`src/modules/auth/application/auth.service.ts` → `createVerification`).
 - **Falta `PATCH /books/:bookId/bookmarks/:bookmarkId`.** El cliente lo llama (`frontend/src/api/bookmark.ts`) y el backend no lo tiene, así que renombrar un marcador solo se guarda en IndexedDB.
 
 Detalle y plan de arreglo en `specs/tasks/backend/`.

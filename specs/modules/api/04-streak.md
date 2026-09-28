@@ -1,6 +1,6 @@
 # 04 · Streak — Rachas de lectura
 
-> ✅ **Implementado en Express** (`backend-express/src/routes/streak.routes.ts`).
+> ✅ **Implementado en Express** (`backend-express/src/modules/streak/presentation/streak.routes.ts`).
 
 Racha diaria de lectura: 1 fila `user_streak` por usuario. La racha **se incrementa** si el usuario completa un día consecutivo y **se reinicia a 1** si saltó un día.
 

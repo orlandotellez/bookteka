@@ -1,6 +1,6 @@
 # 03 · Bookmarks — Marcadores
 
-> ✅ **Implementado en Express** (`backend-express/src/routes/bookmark.routes.ts`).
+> ✅ **Implementado en Express** (`backend-express/src/modules/bookmarks/presentation/bookmarks.routes.ts`).
 
 Marcadores por página dentro de un libro. Un marcador pertenece a un `user_book` (relación usuario-libro), lo que garantiza que solo el dueño del libro puede listar/crear/eliminar.
 
@@ -94,7 +94,7 @@ Marcadores por página dentro de un libro. Un marcador pertenece a un `user_book
 ## PATCH `/api/v1/books/:bookId/bookmarks/:bookmarkId`
 
 Actualiza los campos editables de un marcador. Implementado en
-`backend-express/src/routes/bookmark.routes.ts`.
+`backend-express/src/modules/bookmarks/presentation/bookmarks.routes.ts`.
 
 - **Auth**: Sí.
 

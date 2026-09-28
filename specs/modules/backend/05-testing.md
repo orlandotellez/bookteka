@@ -48,10 +48,10 @@ Se monta la app de Express completa (con `requireAuth`, `validate`, rate limits 
 
 | Suite | Endpoints | Líneas |
 |---|---|---|
-| `src/__tests__/book.test.ts` | `GET /books`, `POST /books/upload`, `DELETE /books/:id`, `PATCH /books/:id/progress`, `GET /books/:id/download`, `GET /books/:id/stream` | 1005 |
-| `src/__tests__/bookmark.test.ts` | `GET/POST /books/:bookId/bookmarks`, `PATCH/DELETE /:bookmarkId` | 616 |
-| `src/__tests__/streak.test.ts` | `GET /streak`, `POST /streak/complete`, `POST /streak/initialize` | 412 |
-| `src/__tests__/example.test.ts` | Plantilla | 5 |
+| `src/modules/books/_tests_/presentation/books.routes.test.ts` | `GET /books`, `POST /books/upload`, `DELETE /books/:id`, `PATCH /books/:id/progress`, `GET /books/:id/download`, `GET /books/:id/stream` | 1005 |
+| `src/modules/bookmarks/_tests_/presentation/bookmarks.routes.test.ts` | `GET/POST /books/:bookId/bookmarks`, `PATCH/DELETE /:bookmarkId` | 616 |
+| `src/modules/streak/_tests_/presentation/streak.routes.test.ts` | `GET /streak`, `POST /streak/complete`, `POST /streak/initialize` | 412 |
+| `src/tests/example.test.ts` | Plantilla | 5 |
 
 ### Nivel 2 — Service con repositorio fake
 
@@ -59,11 +59,11 @@ Se instancia el service con un repositorio falso inyectado por el constructor y 
 
 | Suite | Cubre | Líneas |
 |---|---|---|
-| `src/__tests__/book.service.test.ts` | `getUserBooks`, `uploadBook`, `deleteBook`, `updateBookProgress`, `downloadBookWithUrl`, `streamBookPdf` | 573 |
-| `src/__tests__/streak.service.test.ts` | `getUserStreak`, `completeDay`, `initializeStreak` | 346 |
-| `src/__tests__/bookmark.service.test.ts` | `getBookmarks`, `createBookmark`, `updateBookmark`, `deleteBookmark` | 214 |
+| `src/modules/books/_tests_/application/books.service.test.ts` | `getUserBooks`, `uploadBook`, `deleteBook`, `updateBookProgress`, `downloadBookWithUrl`, `streamBookPdf` | 573 |
+| `src/modules/streak/_tests_/application/streak.service.test.ts` | `getUserStreak`, `completeDay`, `initializeStreak` | 346 |
+| `src/modules/bookmarks/_tests_/application/bookmarks.service.test.ts` | `getBookmarks`, `createBookmark`, `updateBookmark`, `deleteBookmark` | 214 |
 
-**Total: 94 tests en 7 suites.**
+**Total: 119 tests en 8 suites** (incluye 25 tests nuevos de `AuthService`, que no tenía ninguna cobertura).
 
 ### Por qué funciona la inyección
 
@@ -100,13 +100,13 @@ Las reglas de negocio más difíciles están cubiertas:
 
 | Área | Por qué importa | Tamaño |
 |---|---|---|
-| **`src/lib/auth.ts`** | 373 líneas con toda la criptografía, el login, el registro, la rotación de tokens y la verificación de correo. **Cero tests.** | La pieza con más superficie de seguridad |
+| **`src/modules/auth/application/auth.service.ts`** | 373 líneas con toda la criptografía, el login, el registro, la rotación de tokens y la verificación de correo. **Cero tests.** | La pieza con más superficie de seguridad |
 | **PUT de marcadores** | Cubierto desde `specs/tasks/backend/01-integridad-contrato.md`. | — |
 | **`src/config/env.ts`** | Validación de secretos y longitud mínima. Sin test. | — |
 | **`src/config/rate-limit.ts`** | Los cuatro limiters. Sin test. | — |
-| **`src/config/cors.ts` + `src/lib/origins.ts`** | Allowlist, el rechazo de `*`, `TRUST_BACKEND_ORIGINS`. Sin test. | — |
-| **`src/http /health.ts`** | Ni el 503 cuando R2 no responde ni el timeout de 2s. Sin test. | — |
-| **`src/middleware/errorHandler.ts`** | El mapeo de códigos Prisma (P2002/P2025/P2003). Sin test. | — |
+| **`src/config/cors.ts` + `src/config/origins.ts`** | Allowlist, el rechazo de `*`, `TRUST_BACKEND_ORIGINS`. Sin test. | — |
+| **`src/http/health.ts`** | Ni el 503 cuando R2 no responde ni el timeout de 2s. Sin test. | — |
+| **`src/config/error-handler.ts`** | El mapeo de códigos Prisma (P2002/P2025/P2003). Sin test. | — |
 | **Límite de upload** | 413 cuando el PDF pasa los 25MB. Sin test. | — |
 | **Alias `file` vs `pdf`** en el upload | Los dos campos están soportados; nadie verifica que ambos funcionen. | — |
 
@@ -132,7 +132,7 @@ Un umbral alto sin cubrir `lib/auth.ts` no aporta nada: mide líneas, no riesgo.
 
 | Tema | Convención |
 |---|---|
-| Ubicación | `src/__tests__/<nombre>.test.ts`. |
+| Ubicación | `src/modules/<feature>/_tests_/{application,presentation}/<feature>.<capa>.test.ts`. |
 | Nombres de `describe` | Nombre del endpoint o del método, con la ruta real: `describe("PATCH /api/v1/books/:id/progress")`. |
 | Nombres de `it` | En español, con `entonces` o la forma `hace X → Y`. |
 | Aislamiento | `clearMocks: true` global. |
@@ -142,7 +142,7 @@ Un umbral alto sin cubrir `lib/auth.ts` no aporta nada: mide líneas, no riesgo.
 
 ### Plantilla
 
-`src/__tests__/example.test.ts` es la referencia mínima del estilo del proyecto.
+`src/tests/example.test.ts` es la referencia mínima del estilo del proyecto.
 
 ---
 
