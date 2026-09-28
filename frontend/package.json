@@ -17,7 +17,6 @@
     "@hookform/resolvers": "^5.2.2",
     "@tauri-apps/api": "^2",
     "@tauri-apps/plugin-opener": "^2",
-    "axios": "^1.13.5",
     "idb": "^8.0.3",
     "lucide-react": "^0.563.0",
     "pdfjs-dist": "^5.4.624",
