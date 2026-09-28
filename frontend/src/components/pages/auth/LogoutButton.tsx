@@ -3,11 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { authApi } from "@/lib/auth-api";
 import { clearDatabase, resetDatabase } from "@/database";
 import { invalidateAuthSession } from "@/lib/useAuthSession";
+import { useUserPreferences } from "@/store/userPreferencesStore";
 import { toast } from "sonner";
 
 export const LogoutButton = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+
+  const authMode = useUserPreferences((s) => s.authMode);
 
   const handleLogout = async () => {
     setLoading(true);
@@ -15,13 +18,15 @@ export const LogoutButton = () => {
     try {
       toast.info("Cerrando sesión...");
 
-      await authApi.logout();
-      invalidateAuthSession();
-
       await clearDatabase();
       await resetDatabase();
 
-      navigate("/auth/login", { replace: true });
+      if (authMode === "server") {
+        await authApi.logout();
+      }
+      invalidateAuthSession();
+
+      navigate("/auth", { replace: true });
     } catch (err) {
       console.error("Error inesperado durante el logout:", err);
     } finally {

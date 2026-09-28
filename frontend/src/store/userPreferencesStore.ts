@@ -2,6 +2,10 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { LibraryView, ReadingSettings } from "@/types/reading";
 
+export type AuthMode = "local" | "server";
+
+export const LOCAL_USER_ID = "local-user";
+
 const DEFAULT_READING_SETTINGS: ReadingSettings = {
   fontSize: 18,
   fontFamily: "sans",
@@ -10,9 +14,11 @@ const DEFAULT_READING_SETTINGS: ReadingSettings = {
 };
 
 interface UserPreferences {
+  authMode: AuthMode;
   cloudSyncEnabled: boolean;
   defaultReadingSettings: ReadingSettings;
   defaultView: LibraryView;
+  setAuthMode: (mode: AuthMode) => void;
   setCloudSyncEnabled: (enabled: boolean) => void;
   setDefaultReadingSettings: (settings: ReadingSettings) => void;
   resetReadingSettings: () => void;
@@ -22,9 +28,14 @@ interface UserPreferences {
 export const useUserPreferences = create<UserPreferences>()(
   persist(
     (set) => ({
+      authMode: "server",
       cloudSyncEnabled: false,
       defaultReadingSettings: DEFAULT_READING_SETTINGS,
       defaultView: "shelf",
+
+      setAuthMode: (mode: AuthMode) => {
+        set({ authMode: mode });
+      },
 
       setCloudSyncEnabled: (enabled: boolean) => {
         set({ cloudSyncEnabled: enabled });

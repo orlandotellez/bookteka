@@ -232,12 +232,12 @@ export const useBookStore = create<BookStore>((set) => ({
         setCurrentUserId(session.user.id);
       }
 
-      // Sincronizar con la nube primero para obtener datos actualizados de otros dispositivos
-      try {
-        await syncBooksFromCloud();
-      } catch (syncError) {
-        // Si falla la sincronización, continuamos con datos locales
-        console.warn("No se pudo sincronizar con la nube, usando datos locales:", syncError);
+      if (useUserPreferences.getState().authMode === "server") {
+        try {
+          await syncBooksFromCloud();
+        } catch (syncError) {
+          console.warn("No se pudo sincronizar con la nube, usando datos locales:", syncError);
+        }
       }
 
       // Cargar libros después de sincronizar
@@ -261,8 +261,9 @@ export const useBookStore = create<BookStore>((set) => ({
       // Establecer el usuario actual en la base de datos
       setCurrentUserId(session.user.id);
 
-      // Sincronizar desde la nube
-      await syncBooksFromCloud();
+      if (useUserPreferences.getState().authMode === "server") {
+        await syncBooksFromCloud();
+      }
 
       // Recargar libros locales después de sincronizar
       const loadedBooks = await getAllBooks();
@@ -293,8 +294,7 @@ export const useBookStore = create<BookStore>((set) => ({
     let bookId: string;
     let isSynced = false;
 
-    // Solo subir a la nube si está habilitado Y hay archivo
-    if (file && cloudSyncEnabled) {
+    if (file && cloudSyncEnabled && useUserPreferences.getState().authMode === "server") {
       try {
         const formData = new FormData();
 
