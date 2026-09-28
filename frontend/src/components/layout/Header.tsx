@@ -4,13 +4,16 @@ import styles from "./Header.module.css";
 import { useBookStore } from "@/store/bookStore";
 import { useTheme } from "@/context/ThemeContext";
 import { isDarkTheme } from "@/context/theme";
-import { User } from "lucide-react";
+import { Download, User } from "lucide-react";
 import { Link } from "react-router-dom";
 import { IconTheme } from "../common/IconTheme";
+import { AppVersion } from "../common/AppVersion";
+import { useUpdate } from "@/context/UpdateContext";
 
 export const Header = () => {
   const { setShowUploader } = useBookStore();
   const { theme } = useTheme();
+  const { hasUpdate, openUpdatePrompt } = useUpdate();
 
   return (
     <header className={styles.header}>
@@ -27,6 +30,7 @@ export const Header = () => {
           )}
           <div className={styles.article}>
             <h1>Bookteka</h1>
+            <AppVersion />
           </div>
         </div>
 
@@ -34,6 +38,16 @@ export const Header = () => {
           <IconTheme />
 
           <div className={styles.buttonContainer}>
+            {hasUpdate && (
+              <button
+                className={styles.updateBtn}
+                onClick={openUpdatePrompt}
+                aria-label="Actualizar app"
+              >
+                <Download size={18} />
+                <span className={styles.addBookSpan}>Actualizar app</span>
+              </button>
+            )}
             <button onClick={() => setShowUploader(true)}>
               + <span className={styles.addBookSpan}>
                 Añadir libro

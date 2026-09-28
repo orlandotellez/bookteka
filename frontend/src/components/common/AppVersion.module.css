@@ -1,0 +1,8 @@
+.tag {
+  font-size: 12px;
+  line-height: 1;
+  color: var(--font-color-text);
+  /* Evita el "salto" de ancho al pasar de 1.2.0 a 1.10.0 */
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}

@@ -1,0 +1,171 @@
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+import { invoke } from "@tauri-apps/api/core";
+import { isNewerVersion } from "@/lib/version";
+import styles from "./UpdatePrompt.module.css";
+
+const IGNORED_UPDATE_KEY = "BOOKTEKA_IGNORED_UPDATE_VERSION";
+
+function readIgnoredVersion(): string | null {
+  try {
+    return localStorage.getItem(IGNORED_UPDATE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function writeIgnoredVersion(version: string): void {
+  try {
+    localStorage.setItem(IGNORED_UPDATE_KEY, version);
+  } catch {
+    return;
+  }
+}
+
+type Phase =
+  | { kind: "checking" } // comparando versión local vs remota
+  | { kind: "prompt" } // mostrar pregunta
+  | { kind: "downloading" } // bajando APK
+  | { kind: "installer" } // instalador abierto (Kotlin ya resolvió)
+  | { kind: "error"; message: string };
+
+interface Props {
+  appVersion: string;
+  apkUrl: string;
+  onClose: () => void;
+  manual?: boolean;
+}
+
+export function UpdatePrompt({
+  appVersion,
+  apkUrl,
+  onClose,
+  manual = false,
+}: Props) {
+  const [phase, setPhase] = useState<Phase>({ kind: "checking" });
+
+  // Al montar: comparar versión local vs remota. Si no hay update real,
+  // cerramos sin mostrar nada (el padre re-chequea en cada arranque).
+  useEffect(() => {
+    let cancelled = false;
+
+    async function check() {
+      try {
+        const localVersion = await invoke<string>("get_app_version");
+        if (cancelled) return;
+
+        if (!isNewerVersion(appVersion, localVersion)) {
+          onClose();
+          return;
+        }
+        if (!manual && readIgnoredVersion() === appVersion) {
+          onClose();
+          return;
+        }
+        setPhase({ kind: "prompt" });
+      } catch (err) {
+        if (cancelled) return;
+        // Sin comando nativo (web dev / desktop) → no mostrar nada.
+        console.warn("[update] no se pudo leer la versión local:", err);
+        onClose();
+      }
+    }
+
+    void check();
+    return () => {
+      cancelled = true;
+    };
+  }, [appVersion, manual, onClose]);
+
+  async function handleDownload() {
+    setPhase({ kind: "downloading" });
+    try {
+      const result = await invoke<{ path: string }>("download_apk", {
+        args: { url: apkUrl },
+      });
+      await invoke("install_apk", { args: { path: result.path } });
+      setPhase({ kind: "installer" });
+    } catch (err) {
+      const message =
+        typeof err === "string" ? err : "No se pudo descargar la actualización";
+      setPhase({ kind: "error", message });
+    }
+  }
+
+  function handleLater() {
+    writeIgnoredVersion(appVersion);
+    onClose();
+  }
+
+  return createPortal(
+    <div className={styles.overlay}>
+      <div className={styles.dialog} role="dialog" aria-modal="true">
+        {phase.kind === "checking" && (
+          <>
+            <h2 className={styles.title}>Verificando actualizaciones…</h2>
+            <div className={styles.spinner} aria-hidden="true" />
+          </>
+        )}
+
+        {phase.kind === "prompt" && (
+          <>
+            <h2 className={styles.title}>Nueva versión disponible</h2>
+            <p className={styles.message}>
+              Hay una versión nueva de Bookteka disponible (v{appVersion}).
+              ¿Querés descargarla e instalarla ahora?
+            </p>
+            <div className={styles.actions}>
+              <button className={styles.cancelBtn} onClick={handleLater}>
+                Ahora no
+              </button>
+              <button className={styles.confirmBtn} onClick={handleDownload}>
+                Descargar e instalar
+              </button>
+            </div>
+          </>
+        )}
+
+        {phase.kind === "downloading" && (
+          <>
+            <h2 className={styles.title}>Descargando actualización…</h2>
+            <div className={styles.spinner} aria-hidden="true" />
+            <p className={styles.message}>
+              No cierres la app. Esto puede tardar unos segundos.
+            </p>
+          </>
+        )}
+
+        {phase.kind === "installer" && (
+          <>
+            <h2 className={styles.title}>Instalación en curso</h2>
+            <p className={styles.message}>
+              Se abrió el instalador de Android. Seguí los pasos en pantalla
+              para completar la actualización.
+            </p>
+            <div className={styles.actions}>
+              <button className={styles.confirmBtn} onClick={onClose}>
+                Cerrar
+              </button>
+            </div>
+          </>
+        )}
+
+        {phase.kind === "error" && (
+          <>
+            <h2 className={styles.title}>No se pudo actualizar</h2>
+            <p className={styles.message}>{phase.message}</p>
+            <div className={styles.actions}>
+              <button className={styles.cancelBtn} onClick={handleLater}>
+                Ahora no
+              </button>
+              <button className={styles.confirmBtn} onClick={handleDownload}>
+                Reintentar
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>,
+    document.body,
+  );
+}

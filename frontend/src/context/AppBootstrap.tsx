@@ -6,6 +6,7 @@ import {
   readApiUrl,
   writeApiUrl,
 } from "@/lib/api-config";
+import { UpdateProvider, type UpdateInfo } from "@/context/UpdateContext";
 
 type State =
   | { kind: "loading" }
@@ -195,6 +196,7 @@ function ManualConfigForm({
 
 export function AppBootstrap({ children }: { children: ReactNode }) {
   const [state, setState] = useState<State>({ kind: "loading" });
+  const [updateInfo, setUpdateInfo] = useState<UpdateInfo | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -205,6 +207,11 @@ export function AppBootstrap({ children }: { children: ReactNode }) {
 
       if (result !== null) {
         writeApiUrl(result.apiUrl);
+        // Solo hay auto-update si el bucket publica ambas cosas: una versión
+        // a la que actualizar y el APK donde obtenerla.
+        if (result.appVersion && result.apkUrl) {
+          setUpdateInfo({ appVersion: result.appVersion, apkUrl: result.apkUrl });
+        }
         setState({ kind: "ready" });
         return;
       }
@@ -240,7 +247,15 @@ export function AppBootstrap({ children }: { children: ReactNode }) {
       if (controller.signal.aborted) return;
 
       if (result !== null || readApiUrl() !== DEFAULT_API_URL) {
-        if (result !== null) writeApiUrl(result.apiUrl);
+        if (result !== null) {
+          writeApiUrl(result.apiUrl);
+          if (result.appVersion && result.apkUrl) {
+            setUpdateInfo({
+              appVersion: result.appVersion,
+              apkUrl: result.apkUrl,
+            });
+          }
+        }
         setState({ kind: "ready" });
         return;
       }
@@ -261,7 +276,15 @@ export function AppBootstrap({ children }: { children: ReactNode }) {
     return () => controller.abort();
   }, [isRetrieving]);
 
-  if (state.kind === "ready") return <>{children}</>;
+  // El prompt de actualización vive en <UpdateProvider>, que se entera del
+  // updateInfo y se encarga del auto-prompt y del botón "Actualizar app".
+  if (state.kind === "ready") {
+    return (
+      <UpdateProvider updateInfo={updateInfo}>
+        {children}
+      </UpdateProvider>
+    );
+  }
   if (state.kind === "loading") return <SplashScreen />;
 
   if (state.kind === "retrieving") {

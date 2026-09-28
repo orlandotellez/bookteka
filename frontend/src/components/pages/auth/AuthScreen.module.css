@@ -1,4 +1,5 @@
 .side {
+  position: relative;
   width: 100%;
   height: 100vh;
   display: flex;
@@ -16,6 +17,15 @@
 .themeTop {
   position: absolute;
   top: 24px;
+  right: 24px;
+}
+
+/* Tag de versión en la esquina inferior derecha del panel. Se ancla a `.side`
+   y no a SideLogo porque esa columna se oculta con `display: none` por debajo
+   de 1024px, justo las tablets donde Bookteka se usa. */
+.versionBottom {
+  position: absolute;
+  bottom: 24px;
   right: 24px;
 }
 
