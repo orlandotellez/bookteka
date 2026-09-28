@@ -44,6 +44,8 @@ jobs:
         run: pnpm prisma:generate
 
       - name: Prisma validate
+        env:
+          DATABASE_URL: postgresql://bookteka:bookteka123@localhost:5432/bookteka_db?schema=public
         run: npx prisma validate
 
       - name: Prisma migrate deploy
