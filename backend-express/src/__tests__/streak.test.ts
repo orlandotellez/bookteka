@@ -28,7 +28,7 @@ describe("GET /api/v1/streak", () => {
     }))
 
     //@ts-ignore
-    const mod = await import("@/server")
+    const mod = await import("@/app")
     const app = mod.default
 
     const res = await request(app).get("/api/v1/streak")
@@ -71,7 +71,7 @@ describe("GET /api/v1/streak", () => {
     }))
 
     //@ts-ignore
-    const mod = await import("@/server")
+    const mod = await import("@/app")
     const app = mod.default
 
     const res = await request(app).get("/api/v1/streak")
@@ -114,7 +114,7 @@ describe("GET /api/v1/streak", () => {
     }))
 
     //@ts-ignore
-    const mod = await import("@/server")
+    const mod = await import("@/app")
     const app = mod.default
 
     const res = await request(app).get("/api/v1/streak")
@@ -146,7 +146,7 @@ describe("POST /api/v1/streak/complete", () => {
     }))
 
     //@ts-ignore
-    const mod = await import("@/server")
+    const mod = await import("@/app")
     const app = mod.default
 
     const res = await request(app).post("/api/v1/streak/complete")
@@ -184,7 +184,7 @@ describe("POST /api/v1/streak/complete", () => {
     }))
 
     //@ts-ignore
-    const mod = await import("@/server")
+    const mod = await import("@/app")
     const app = mod.default
 
     const res = await request(app)
@@ -244,7 +244,7 @@ describe("POST /api/v1/streak/complete", () => {
     })
 
     //@ts-ignore
-    const mod = await import("@/server")
+    const mod = await import("@/app")
     const app = mod.default
 
     const res = await request(app)
@@ -287,7 +287,7 @@ describe("POST /api/v1/streak/complete", () => {
     }))
 
     //@ts-ignore
-    const mod = await import("@/server")
+    const mod = await import("@/app")
     const app = mod.default
 
     const res = await request(app)
@@ -323,7 +323,7 @@ describe("POST /api/v1/streak/initialize", () => {
     }))
 
     //@ts-ignore
-    const mod = await import("@/server")
+    const mod = await import("@/app")
     const app = mod.default
 
     const res = await request(app)
@@ -352,7 +352,7 @@ describe("POST /api/v1/streak/initialize", () => {
     }))
 
     //@ts-ignore
-    const mod = await import("@/server")
+    const mod = await import("@/app")
     const app = mod.default
 
     const res = await request(app)
@@ -398,7 +398,7 @@ describe("POST /api/v1/streak/initialize", () => {
     }))
 
     //@ts-ignore
-    const mod = await import("@/server")
+    const mod = await import("@/app")
     const app = mod.default
 
     const res = await request(app)

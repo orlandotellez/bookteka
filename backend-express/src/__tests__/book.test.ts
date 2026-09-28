@@ -29,7 +29,7 @@ describe("GET /api/v1/books", () => {
     }))
 
     //@ts-ignore
-    const mod = await import("@/server")
+    const mod = await import("@/app")
     const app = mod.default
 
     const res = await request(app).get("/api/v1/books")
@@ -108,7 +108,7 @@ describe("GET /api/v1/books", () => {
     }))
 
     //@ts-ignore
-    const mod = await import("@/server")
+    const mod = await import("@/app")
     const app = mod.default
 
     const res = await request(app).get("/api/v1/books")
@@ -140,7 +140,7 @@ describe("POST /api/v1/books/upload", () => {
     }))
 
     //@ts-ignore
-    const mod = await import("@/server")
+    const mod = await import("@/app")
     const app = mod.default
 
     const res = await request(app)
@@ -169,7 +169,7 @@ describe("POST /api/v1/books/upload", () => {
     }))
 
     //@ts-ignore
-    const mod = await import("@/server")
+    const mod = await import("@/app")
     const app = mod.default
 
     const res = await request(app)
@@ -219,7 +219,7 @@ describe("POST /api/v1/books/upload", () => {
     }))
 
     //@ts-ignore
-    const mod = await import("@/server")
+    const mod = await import("@/app")
     const app = mod.default
 
     const res = await request(app)
@@ -255,7 +255,7 @@ describe("POST /api/v1/books/upload", () => {
     }));
 
     //@ts-ignore
-    const mod = await import("@/server");
+    const mod = await import("@/app");
     const app = mod.default;
 
     const res = await request(app)
@@ -305,7 +305,7 @@ describe("POST /api/v1/books/upload", () => {
     }))
 
     //@ts-ignore
-    const mod = await import("@/server")
+    const mod = await import("@/app")
     const app = mod.default
 
     const res = await request(app)
@@ -336,7 +336,7 @@ describe("DELETE /api/v1/books/:id", () => {
     }));
 
     //@ts-ignore
-    const mod = await import("@/server");
+    const mod = await import("@/app");
     const app = mod.default;
 
     const res = await request(app).delete("/api/v1/books/123");
@@ -364,7 +364,7 @@ describe("DELETE /api/v1/books/:id", () => {
     }));
 
     //@ts-ignore
-    const mod = await import("@/server");
+    const mod = await import("@/app");
     const app = mod.default;
 
     const res = await request(app).delete("/api/v1/books/123");
@@ -427,7 +427,7 @@ describe("DELETE /api/v1/books/:id", () => {
     }));
 
     //@ts-ignore
-    const mod = await import("@/server");
+    const mod = await import("@/app");
     const app = mod.default;
 
     const res = await request(app).delete("/api/v1/books/book1");
@@ -461,7 +461,7 @@ describe("PATCH /api/v1/books/:id/progress", () => {
     }));
 
     //@ts-ignore
-    const mod = await import("@/server");
+    const mod = await import("@/app");
     const app = mod.default;
 
     const res = await request(app)
@@ -495,7 +495,7 @@ describe("PATCH /api/v1/books/:id/progress", () => {
     }));
 
     //@ts-ignore
-    const mod = await import("@/server");
+    const mod = await import("@/app");
     const app = mod.default;
 
     const res = await request(app)
@@ -541,7 +541,7 @@ describe("PATCH /api/v1/books/:id/progress", () => {
     }));
 
     //@ts-ignore
-    const mod = await import("@/server");
+    const mod = await import("@/app");
     const app = mod.default;
 
     const res = await request(app)
@@ -587,7 +587,7 @@ describe("PATCH /api/v1/books/:id/progress", () => {
     jest.unstable_mockModule("@/lib/r2", () => ({ r2: {} }));
 
     //@ts-ignore
-    const mod = await import("@/server");
+    const mod = await import("@/app");
     const app = mod.default;
 
     const res = await request(app)
@@ -635,7 +635,7 @@ describe("PATCH /api/v1/books/:id/progress", () => {
     jest.unstable_mockModule("@/lib/r2", () => ({ r2: {} }));
 
     //@ts-ignore
-    const mod = await import("@/server");
+    const mod = await import("@/app");
     const app = mod.default;
 
     const res = await request(app)
@@ -686,7 +686,7 @@ describe("PATCH /api/v1/books/:id/progress", () => {
     jest.unstable_mockModule("@/lib/r2", () => ({ r2: {} }));
 
     //@ts-ignore
-    const mod = await import("@/server");
+    const mod = await import("@/app");
     const app = mod.default;
 
     const res = await request(app)
@@ -734,7 +734,7 @@ describe("PATCH /api/v1/books/:id/progress", () => {
     jest.unstable_mockModule("@/lib/r2", () => ({ r2: {} }));
 
     //@ts-ignore
-    const mod = await import("@/server");
+    const mod = await import("@/app");
     const app = mod.default;
 
     const res = await request(app)
@@ -773,7 +773,7 @@ describe("GET /api/v1/books/:id/download", () => {
     }));
 
     //@ts-ignore
-    const mod = await import("@/server");
+    const mod = await import("@/app");
     const app = mod.default;
 
     const res = await request(app).get("/api/v1/books/book1/download");
@@ -802,7 +802,7 @@ describe("GET /api/v1/books/:id/download", () => {
     }));
 
     //@ts-ignore
-    const mod = await import("@/server");
+    const mod = await import("@/app");
     const app = mod.default;
 
     const res = await request(app).get("/api/v1/books/book1/download");
@@ -844,7 +844,7 @@ describe("GET /api/v1/books/:id/download", () => {
     }));
 
     //@ts-ignore
-    const mod = await import("@/server");
+    const mod = await import("@/app");
     const app = mod.default;
 
     const res = await request(app).get("/api/v1/books/book1/download");
@@ -872,7 +872,7 @@ describe("GET /api/v1/books/:id/stream", () => {
     }));
 
     //@ts-ignore
-    const mod = await import("@/server");
+    const mod = await import("@/app");
     const app = mod.default;
 
     const res = await request(app).get("/api/v1/books/book1/stream");
@@ -901,7 +901,7 @@ describe("GET /api/v1/books/:id/stream", () => {
     }));
 
     //@ts-ignore
-    const mod = await import("@/server");
+    const mod = await import("@/app");
     const app = mod.default;
 
     const res = await request(app).get("/api/v1/books/book1/stream");
@@ -940,7 +940,7 @@ describe("GET /api/v1/books/:id/stream", () => {
     }));
 
     //@ts-ignore
-    const mod = await import("@/server");
+    const mod = await import("@/app");
     const app = mod.default;
 
     const res = await request(app).get("/api/v1/books/book1/stream");
@@ -993,7 +993,7 @@ describe("GET /api/v1/books/:id/stream", () => {
     });
 
     //@ts-ignore
-    const mod = await import("@/server");
+    const mod = await import("@/app");
     const app = mod.default;
 
     const res = await request(app).get("/api/v1/books/book1/stream");
