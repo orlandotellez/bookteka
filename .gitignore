@@ -1,5 +1,6 @@
 .env
 .atl
+odd
 
 node_modules
 dist
