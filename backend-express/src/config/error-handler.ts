@@ -3,6 +3,7 @@ import { ZodError } from "zod";
 import multer from "multer";
 import { AppError } from "@/core/errors/AppError.js";
 import { logger } from "@/config/logger.js";
+import { MAX_UPLOAD_MB } from "@/core/upload.js";
 
 // Códigos de error de Prisma más comunes -> mapeo HTTP seguro
 const PRISMA_ERROR_MAP: Record<string, { status: number; message: string }> = {
@@ -42,7 +43,7 @@ export function errorHandler(
     // El exceso de tamaño tiene status canónico 413 (Request Entity Too Large)
     if (err.code === "LIMIT_FILE_SIZE") {
       return res.status(413).json({
-        error: "El archivo excede el tamaño máximo permitido (20MB)",
+        error: `El archivo excede el tamaño máximo permitido (${MAX_UPLOAD_MB}MB)`,
         code: err.code,
       });
     }

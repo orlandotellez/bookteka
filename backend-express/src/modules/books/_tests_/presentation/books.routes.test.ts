@@ -1003,3 +1003,41 @@ describe("GET /api/v1/books/:id/stream", () => {
     expect(res.headers["content-disposition"]).toContain("Test Book");
   });
 });
+
+describe("POST /api/v1/books/upload — límite de tamaño", () => {
+  beforeEach(() => {
+    jest.resetModules()
+  })
+
+  it("debería devolver 413 si el PDF supera los 25MB", async () => {
+    const bigBuffer = Buffer.alloc(26 * 1024 * 1024, 0)
+
+    jest.unstable_mockModule("@/modules/auth/application/auth.service", () => ({
+      auth: {
+        api: {
+          getSession: async () => ({
+            user: { id: "123" }
+          })
+        }
+      }
+    }))
+
+    jest.unstable_mockModule("@/config/prisma", () => ({
+      dbPrisma: {}
+    }))
+
+    jest.unstable_mockModule("@/core/storage/s3.client", () => ({
+      r2: {}
+    }))
+
+    //@ts-ignore
+    const mod = await import("@/app")
+    const app = mod.default
+
+    const res = await request(app)
+      .post("/api/v1/books/upload")
+      .attach("pdf", bigBuffer, "libro-grande.pdf")
+
+    expect(res.status).toBe(413)
+  })
+})

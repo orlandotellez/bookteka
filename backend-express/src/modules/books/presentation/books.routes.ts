@@ -1,4 +1,5 @@
 import multer from "multer";
+import { MAX_UPLOAD_BYTES } from "@/core/upload.js";
 import { Router } from "express";
 import {
   uploadBook,
@@ -21,7 +22,7 @@ booksRoutes.use(requireAuth);
 
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 25 * 1024 * 1024 }, // 25MB
+  limits: { fileSize: MAX_UPLOAD_BYTES },
 });
 
 booksRoutes.post(
