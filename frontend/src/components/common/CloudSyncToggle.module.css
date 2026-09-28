@@ -9,6 +9,10 @@
   margin-bottom: 20px;
 }
 
+.container[data-local] {
+  opacity: 0.75;
+}
+
 .icon {
   display: flex;
   align-items: center;
@@ -29,6 +33,19 @@
   font-size: 13px;
   color: var(--font-color-text);
   margin: 0;
+}
+
+.actionLink {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--secondary-color);
+  text-decoration: none;
+}
+
+.actionLink:hover {
+  text-decoration: underline;
 }
 
 .toggle {
@@ -74,4 +91,14 @@
 
 .toggle input:checked+.slider:before {
   transform: translateX(24px);
+}
+
+/* Input disabled: el slider queda gris y el cursor muestra que no responde. */
+.toggle input:disabled {
+  cursor: not-allowed;
+}
+
+.toggle input:disabled+.slider {
+  background-color: var(--border-color);
+  cursor: not-allowed;
 }

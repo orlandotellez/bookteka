@@ -25,6 +25,7 @@ import {
 } from "@/database";
 import { generateId } from "@/utils/generateId";
 import { getCachedSession } from "@/lib/sessionCache";
+import { CLOUD_REQUIRES_ACCOUNT_ERROR, isCloudAvailable } from "@/lib/cloud";
 import { processBookForReading } from "@/lib/pdf";
 import { deleteBookInCloud, updateBookProgress, uploadBook } from "@/api/book";
 import {
@@ -763,6 +764,13 @@ export const useBookStore = create<BookStore>((set) => ({
   // Subir un libro específico a la nube manualmente
   uploadBookToCloud: async (bookId: string) => {
     try {
+      // En modo local no hay backend. El check de `session` NO alcanza:
+      // `getCachedSession` devuelve una sesión sintética con id "local-user",
+      // así que sin este gate la subida se intentaba de verdad contra la red.
+      if (!isCloudAvailable(useUserPreferences.getState().authMode)) {
+        throw new Error(CLOUD_REQUIRES_ACCOUNT_ERROR);
+      }
+
       const session = await getCachedSession();
       if (!session?.user?.id) {
         throw new Error("No hay sesión activa");
@@ -782,8 +790,6 @@ export const useBookStore = create<BookStore>((set) => ({
       }
 
       set({ uploadingBookId: bookId });
-
-      console.log(book)
 
       // Si tiene fileBlob, subirlo
       if (book.fileBlob) {
@@ -839,6 +845,12 @@ export const useBookStore = create<BookStore>((set) => ({
   // Descargar un libro desde la nube manualmente
   downloadBookFromCloud: async (bookId: string) => {
     try {
+      // Mismo gate que en `uploadBookToCloud`: la sesión sintética del modo
+      // local no puede autorizarse contra la nube.
+      if (!isCloudAvailable(useUserPreferences.getState().authMode)) {
+        throw new Error(CLOUD_REQUIRES_ACCOUNT_ERROR);
+      }
+
       const session = await getCachedSession();
       if (!session?.user?.id) {
         throw new Error("No hay sesión activa");

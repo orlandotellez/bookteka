@@ -11,6 +11,8 @@ import type { Book } from "@/types/book";
 import { formatTime } from "@/utils/time";
 import { Spinner } from "@/components/common/Spinner";
 import { Pagination } from "@/components/pages/index/Pagination";
+import { useUserPreferences } from "@/store/userPreferencesStore";
+import { isCloudAvailable } from "@/lib/cloud";
 import styles from "./ProfileBooksTable.module.css";
 
 const BOOKS_PER_PAGE = 10;
@@ -31,6 +33,7 @@ const ProfileBooksTable = ({
   onDownload,
 }: ProfileBooksTableProps) => {
   const [booksPage, setBooksPage] = useState(1);
+  const cloudAvailable = isCloudAvailable(useUserPreferences((s) => s.authMode));
 
   // Orden por tiempo de lectura (mayor a menor)
   const booksByReadingTime = [...books].sort(
@@ -90,9 +93,10 @@ const ProfileBooksTable = ({
               )}
             </div>
 
-            {/* Botón acción: descargar si está en nube, subir si no */}
+            {/* Botón acción: descargar si está en nube, subir si no.
+                En modo local no hay backend, así que no se ofrece. */}
             <div className={styles.actionButtons}>
-              {book.isSynced ? (
+              {!cloudAvailable ? null : book.isSynced ? (
                 <button
                   onClick={() => onDownload(book.id, book.name)}
                   className={styles.actionButton}
