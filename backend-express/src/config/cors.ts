@@ -1,8 +1,8 @@
 import cors from "cors";
 import type { Request, Response, NextFunction } from "express";
 
-import { isRequestOriginAllowed } from "@/lib/origins.js";
-import { AppError } from "@/helper/errors.js";
+import { isRequestOriginAllowed } from "@/config/origins.js";
+import { AppError } from "@/core/errors/AppError.js";
 
 export const corsOptions: cors.CorsOptions = {
   origin: true,

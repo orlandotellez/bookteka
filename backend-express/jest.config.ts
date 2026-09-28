@@ -31,7 +31,7 @@ const config: Config = {
   moduleFileExtensions: ["ts", "js", "json"],
 
   testMatch: [
-    "**/__tests__/**/*.test.ts",
+    "**/modules/**/_tests_/**/*.test.ts",
     "**/?(*.)+(spec|test).ts",
   ],
 

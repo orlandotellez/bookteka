@@ -1,0 +1,63 @@
+import { dbPrisma } from "@/config/prisma.js";
+import type { IBookmarksRepository } from "@/modules/bookmarks/domain/bookmarks.interface.js";
+import { CreateBookmarkInput, UpdateBookmarkInput } from "@/modules/bookmarks/domain/bookmarks.types.js";
+import { bookmark, user_book } from "@prisma/client";
+
+
+
+export class BookmarksPrismaRepository implements IBookmarksRepository {
+  // Verifica que el usuario tenga acceso al libro (vía user_book)
+  findUserBookAccess = (userId: string, bookId: string) => {
+    return dbPrisma.user_book.findFirst({
+      where: { userId, bookId },
+    });
+  };
+
+  // Obtiene todos los bookmarks de un user_book
+  getBookmarksByUserBookId = (userBookId: string) => {
+    return dbPrisma.bookmark.findMany({
+      where: { userBookId },
+      orderBy: { createdAt: "desc" },
+    });
+  };
+
+  // Crea un nuevo bookmark
+  createBookmark = (data: CreateBookmarkInput) => {
+    return dbPrisma.bookmark.create({
+      data: {
+        userId: data.userId,
+        userBookId: data.userBookId,
+        name: data.name,
+        pageNumber: data.pageNumber,
+        textPreview: data.textPreview,
+      },
+    });
+  };
+
+  // Busca un bookmark verificando que pertenezca al user_book
+  findBookmark = (bookmarkId: string, userBookId: string) => {
+    return dbPrisma.bookmark.findFirst({
+      where: {
+        id: bookmarkId,
+        userBookId,
+      },
+    });
+  };
+
+  // Actualiza solo los campos editables de un marcador.
+  // El service ya validó con `findBookmark` que el marcador pertenece al
+  // `user_book` del usuario, así que acá alcanza con el id.
+  updateBookmark = (bookmarkId: string, data: UpdateBookmarkInput) => {
+    return dbPrisma.bookmark.update({
+      where: { id: bookmarkId },
+      data,
+    });
+  };
+
+  // Elimina un bookmark por id
+  deleteBookmark = (bookmarkId: string) => {
+    return dbPrisma.bookmark.delete({
+      where: { id: bookmarkId },
+    });
+  };
+}

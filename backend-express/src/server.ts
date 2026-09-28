@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { env } from "@/config/env.js";
-import { logger } from "@/lib/logger.js";
-import { setupGracefulShutdown } from "@/config/shutdown.js";
+import { logger } from "@/config/logger.js";
+import { setupGracefulShutdown } from "@/config/graceful-shutdown.js";
 import app from "./app.js";
 
 const server = app.listen(env.PORT, () =>

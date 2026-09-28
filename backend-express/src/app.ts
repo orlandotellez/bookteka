@@ -4,7 +4,7 @@ import cors from "cors";
 
 import { httpLogger } from "@/config/http-logger.js";
 import { corsOptions, corsOriginGuard } from "@/config/cors.js";
-import { registerRoutes } from "./http /routes.js";
+import { registerRoutes } from "./http/routes.js";
 
 const app: Express = express();
 
