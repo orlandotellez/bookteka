@@ -168,7 +168,7 @@ Registro de decisiones que el código ya toma. Cada una está con la evidencia q
 
 **Decisión.** El backend sirve el PDF crudo por streaming y el cliente lo procesa con pdf.js una sola vez. El texto resultante se cachea en IndexedDB con marcadores de página.
 
-**Evidencia en el código.** `src/modules/books/application/books.service.ts` — `streamBookPdf` con `stream.pipeline`; `frontend/src/lib/pdfService.ts` — `processBookForReading` con salida temprana si el texto ya existe; `frontend/src/store/bookStore.ts` — overlay de "Preparando libro n%".
+**Evidencia en el código.** `src/modules/books/application/books.service.ts` — `streamBookPdf` con `stream.pipeline`; `frontend/src/lib/pdf.ts` — `processBookForReading` con salida temprana si el texto ya existe; `frontend/src/store/bookStore.ts` — overlay de "Preparando libro n%".
 
 **Alternativas consideradas.** Extraer en el backend (sube el costo de infra y la latencia); renderizar el PDF con un visor embebido (pesa mucho más y no da texto seleccionable uniforme).
 

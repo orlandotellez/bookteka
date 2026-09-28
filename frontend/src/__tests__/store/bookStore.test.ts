@@ -75,7 +75,7 @@ vi.mock("@/api/book", () => ({
   updateBookProgress: vi.fn(() => Promise.resolve()),
 }));
 
-vi.mock("@/lib/pdfService", () => ({
+vi.mock("@/lib/pdf", () => ({
   processBookForReading: vi.fn((book: Book) =>
     Promise.resolve({ ...book, text: "Texto procesado del PDF" }),
   ),

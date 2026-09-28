@@ -25,7 +25,7 @@ import {
 } from "@/database";
 import { generateId } from "@/utils/generateId";
 import { getCachedSession } from "@/lib/sessionCache";
-import { processBookForReading } from "@/lib/pdfService";
+import { processBookForReading } from "@/lib/pdf";
 import { deleteBookInCloud, updateBookProgress, uploadBook } from "@/api/book";
 import {
   createBookmark as createBookmarkApi,

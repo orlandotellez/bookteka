@@ -5,13 +5,12 @@ import type { Book } from "@/types/book";
 
 afterEach(cleanup);
 
-// ─── Mock de pdfExtractor ───────────────────────────────────────────────────
-// ShowUploaderModal usa isValidPDF y extractTextFromPDF de lib/pdfExtractor.
+// Mock de lib/pdf (extractTextFromFile + isValidPDF).
 // Las mockeamos para no tener que cargar pdfjs-dist en los tests.
 
-vi.mock("@/lib/pdfExtractor", () => ({
+vi.mock("@/lib/pdf", () => ({
   isValidPDF: vi.fn(() => true),
-  extractTextFromPDF: vi.fn(() =>
+  extractTextFromFile: vi.fn(() =>
     Promise.resolve({
       pages: [{ pageNumber: 1, text: "Texto de prueba" }],
       totalPages: 1,
@@ -107,9 +106,9 @@ describe("ShowUploaderModal", () => {
   });
 
   it("shows loading state while processing", async () => {
-    // Hacer que extractTextFromPDF demore
-    const { extractTextFromPDF } = await import("@/lib/pdfExtractor");
-    vi.mocked(extractTextFromPDF).mockImplementationOnce(
+    // Hacer que extractTextFromFile demore
+    const { extractTextFromFile } = await import("@/lib/pdf");
+    vi.mocked(extractTextFromFile).mockImplementationOnce(
       () =>
         new Promise((resolve) =>
           setTimeout(
@@ -139,8 +138,8 @@ describe("ShowUploaderModal", () => {
   }, 10000);
 
   it("shows error toast when PDF extraction fails", async () => {
-    const { extractTextFromPDF } = await import("@/lib/pdfExtractor");
-    vi.mocked(extractTextFromPDF).mockRejectedValueOnce(
+    const { extractTextFromFile } = await import("@/lib/pdf");
+    vi.mocked(extractTextFromFile).mockRejectedValueOnce(
       new Error("PDF corrupto"),
     );
 

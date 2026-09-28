@@ -1,7 +1,7 @@
 import styles from "./ShowUploaderModal.module.css";
 import PDFUploader from "@/components/pages/index/PDFUploader";
 import { useState, useCallback } from "react";
-import { isValidPDF, extractTextFromPDF } from "@/lib/pdfExtractor";
+import { isValidPDF, extractTextFromFile } from "@/lib/pdf";
 import { toast } from "sonner";
 import type { Book } from "@/types/book";
 
@@ -32,7 +32,7 @@ export const ShowUploaderModal = ({
       setIsUploading(true);
 
       try {
-        const result = await extractTextFromPDF(file);
+        const result = await extractTextFromFile(file);
         if (!result.fullText.trim()) {
           toast.error("No se pudo extraer texto del PDF. El archivo podría ser un documento escaneado sin texto seleccionable.");
           return;

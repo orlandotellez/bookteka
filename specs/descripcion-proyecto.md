@@ -127,7 +127,7 @@ BOOKTEKA-REPO/
 │   │   ├── database/            # IndexedDB (idb) + features + sync
 │   │   ├── store/               # bookStore, streakStore, userPreferencesStore (Zustand)
 │   │   ├── hooks/               # useBooks, useReadingTimer
-│   │   ├── lib/                 # sessionToken, sessionCache, api-config, fetch, pdfService
+│   │   ├── lib/                 # sessionToken, sessionCache, api-config, fetch, pdf
 │   │   ├── pages/               # Index (Library), Profile, auth/{Login,Register}, NotFound
 │   │   └── routes/              # AppRoutes, ProtectedRoute, PublicRoute
 │   ├── src-tauri/               # Tauri 2 + gen/android (APK)

@@ -9,8 +9,8 @@ Verificado con `rg` sobre `frontend/src`. Cada entrada de esta lista aparece **s
 | Símbolo | Archivo | Qué es |
 |---|---|---|
 | `useBooks` | `frontend/src/hooks/useBooks.tsx` | Un hook completo de 122 líneas con `books`, `addBook`, `deleteBook`, `getBookById`, `updateReadingTime`, `setReadingTime`, `updateScrollPosition`. Es una **segunda implementación** del estado de la biblioteca, que ya vive en `useBookStore`. |
-| `downloadPdfToBlob` | `frontend/src/lib/pdfService.ts` | Descarga un PDF a `Blob` por `fileUrl`. No se usa: el flujo real usa `booksApi.stream`. |
-| `getSignedDownloadUrl` | `frontend/src/lib/pdfService.ts` | Envuelve `booksApi.download`. El llamador directo es `pages/Profile.tsx`. |
+| `downloadPdfToBlob` | `frontend/src/lib/pdfService.ts` | **✅ Resuelto en `02-trabajo-pdf.md`**: no se portó al módulo único. |
+| `getSignedDownloadUrl` | `frontend/src/lib/pdfService.ts` | **✅ Resuelto en `02-trabajo-pdf.md`**: no se portó al módulo único. |
 | — | `frontend/src/__tests__/setup.ts` | Duplica `src/test/setup.ts`. `vite.config.ts` solo referencia el segundo. |
 
 `useBooks` es la más peligrosa de la lista: no es código inerte cualquiera, es un clon de un dominio con las mismas operaciones y la misma forma de API. Cualquiera que lo encuentre va a usarlo y la biblioteca va a quedar con dos fuentes de verdad.
@@ -26,7 +26,7 @@ Verificado con `rg` sobre `frontend/src`. Cada entrada de esta lista aparece **s
 | Duplicado | Archivos | Riesgo |
 |---|---|---|
 | Estado de la biblioteca | `hooks/useBooks.tsx` vs `store/bookStore.ts` | Alto: dos APIs para el mismo dominio. |
-| Extracción de PDF | `lib/pdfExtractor.ts` vs `lib/pdfService.ts` | Alto: uno de los dos está roto. Ver `02-trabajo-pdf.md`. |
+| Extracción de PDF | ~~`lib/pdfExtractor.ts` vs `lib/pdfService.ts`~~ **✅ resuelto** | Un solo módulo `lib/pdf.ts`. Ver `02-trabajo-pdf.md`. |
 | Estado de tema | `context/ThemeContext.tsx` vs los 6 temas de `index.css` | Medio: `index.css` define `light`, `dark`, `midnight`, `sepia`, `ocean` y `forest`, y el script inline de `index.html` tiene un objeto `themes` con los 6. Pero `ThemeContext` solo maneja `light` y `dark`: |
 
 ```ts
@@ -87,8 +87,8 @@ Que no queden clones de un dominio ni dependencias que no se usan, y que los cua
 - [ ] 1. Borrar `hooks/useBooks.tsx`
   - Confirmado: ningún archivo lo importa. `store/bookStore.ts` es la fuente de verdad de la biblioteca.
   - Borrar el archivo. Si en el futuro hace falta un hook de solo lectura, se extrae del store, no se clona.
-- [ ] 2. Borrar `downloadPdfToBlob` y `getSignedDownloadUrl` de `lib/pdfService.ts`
-  - Se resuelven junto con la unificación del módulo de PDF de `02-trabajo-pdf.md`.
+- [x] 2. Borrar `downloadPdfToBlob` y `getSignedDownloadUrl` de `lib/pdfService.ts`
+  - Resuelto: no se portaron al módulo único de `02-trabajo-pdf.md`.
 - [ ] 3. Quitar `axios` de `frontend/package.json`
   - `rg axios frontend/src` no devuelve nada.
   - `pnpm remove axios` y verificar que `pnpm build` sigue pasando.

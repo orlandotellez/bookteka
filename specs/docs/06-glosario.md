@@ -50,7 +50,7 @@ Vista de lectura de la app. No es una ruta: `Layout` la renderiza cuando el esta
 
 Proceso de convertir un PDF en texto plano dentro del dispositivo, usando pdf.js. El resultado se cachea en IndexedDB con marcadores de página (`[PAGE_n]`) para poder navegar después.
 
-*Código: `frontend/src/lib/pdfExtractor.ts` y `frontend/src/lib/pdfService.ts`.*
+*Código: `frontend/src/lib/pdf.ts` — `extractTextFromFile` y `extractTextFromBook`.*
 
 ## File hash
 

@@ -57,7 +57,7 @@ Stack tecnológico de la app React del Bookteka.
 
 | Dep | Propósito |
 |---|---|
-| `pdfjs-dist` 5.4.624 | Extracción de texto de PDFs. Worker cargado como módulo en `lib/pdfExtractor.ts`; en `lib/pdfService.ts` se apunta a `/pdf.worker.min.js` (⚠️ ese archivo **no existe** en `public/` — ver `specs/tasks/frontend/02-pdf-worker.md`). |
+| `pdfjs-dist` 5.4.624 | Extracción de texto de PDFs. Un solo módulo `lib/pdf.ts` con el worker resuelto por Vite (`?url`). Ver `specs/tasks/frontend/02-trabajo-pdf.md`. |
 
 ## Desktop (Tauri)
 
@@ -104,7 +104,7 @@ Mismo `index.html` + mismo JS bundle. Tauri solo agrega la window chrome / WebVi
 frontend/
 ├── public/
 │   ├── tauri.svg
-│   └── vite.svg            # ⚠️ no hay pdf.worker.min.js (lo apunta lib/pdfService.ts)
+│   └── vite.svg
 ├── src-tauri/                 # Shell nativo Tauri (escrito en Rust, parte del frontend)
 │   ├── tauri.conf.json        # productName "bookteka", version 1.1.0, devUrl :1420
 │   ├── capabilities/default.json
@@ -130,7 +130,7 @@ frontend/
     ├── database/              # schema.ts, connection.ts, sync.ts, features/{books,bookmarks,highlights,streaks,user}
     ├── store/                 # bookStore.ts, streakStore.ts, userPreferencesStore.ts
     ├── hooks/                 # useBooks.tsx (⚠️ sin uso), useReadingTimer.tsx
-    ├── lib/                   # api-config, fetch, sessionToken, sessionCache, auth-api, useAuthSession, pdfService, pdfExtractor, apiEnv
+    ├── lib/                   # api-config, fetch, sessionToken, sessionCache, auth-api, useAuthSession, pdf, apiEnv
     ├── types/                 # auth.ts, book.d.ts, reading.d.ts, user.d.ts
     ├── utils/                 # debounce, generateId, time, text
     ├── validations/           # loginValidations.ts

@@ -54,10 +54,11 @@ Un solo camino de extracción, con el worker resuelto por el bundler, y el mismo
 
 ## Tareas
 
-- [ ] 1. Confirmar el fallo antes de tocar nada
+- [x] 1. Confirmar el fallo antes de tocar nada
+  - Confirmado por inspección del árbol: `frontend/public/` solo contiene `tauri.svg` y `vite.svg`; `lib/pdfService.ts` apuntaba a `/pdf.worker.min.js`. El 404 físico requiere la app corriendo, pero la ausencia del archivo es evidencia determinística.
   - Levantar un libro sincronizado en la app y verificar en la consola que aparece un 404 de `/pdf.worker.min.js`.
   - Agregar el archivo a `public/` sería un parche; **no es la solución** (ver tarea 3).
-- [ ] 2. Unificar los dos módulos en uno
+- [x] 2. Unificar los dos módulos en uno
   - `lib/pdfExtractor.ts` es el que funciona. `lib/pdfService.ts` tiene además `downloadAndExtractPdfText`, `downloadPdfToBlob`, `getSignedDownloadUrl` y `processBookForReading`.
   - Decidir la forma final. Lo recomendado: un solo módulo, por ejemplo `lib/pdf.ts`, que exporte:
     - `extractTextFromFile(file: File): Promise<PDFExtractResult>` (lo que hoy hace `pdfExtractor.ts`).
@@ -65,26 +66,29 @@ Un solo camino de extracción, con el worker resuelto por el bundler, y el mismo
     - `processBookForReading(book, onProgress?): Promise<Book>` (la orquestación con el no-op cuando ya hay texto).
   - Borrar `lib/pdfExtractor.ts` y `lib/pdfService.ts`.
   - Actualizar los imports en `frontend/src/components/modals/ShowUploaderModal.tsx`, `frontend/src/store/bookStore.ts` y los tests.
-- [ ] 3. Fijar el worker con el patrón de Vite en el módulo único
+- [x] 3. Fijar el worker con el patrón de Vite en el módulo único
   - `import PDFWorker from "pdfjs-dist/build/pdf.worker.min.mjs?url"` + `pdfjsLib.GlobalWorkerOptions.workerSrc = PDFWorker`.
   - **No** agregar un `.js` a mano en `public/`: la dependencia se rompe en el update de `pdfjs-dist` y no pasa por el hash de contenido de Vite, así que puede quedar cacheado.
-- [ ] 4. Unificar el formato del marcador de página
+- [x] 4. Unificar el formato del marcador de página
+  - Formato único: `[PAGE_n]\n<texto>`. El regex de `TextReader` (`/^\[PAGE_(\d+)\]\s*/`) lo acepta; verificado por test de contrato.
   - Elegir uno y aplicarlo en las dos funciones. Recomendado: `[PAGE_n]` seguido de un salto de línea, que es lo que hace `pdfExtractor.ts` y lo más legible al inspeccionar el texto.
   - Verificar contra el parser de `TextReader.tsx` (`components/pages/reader/TextReader.tsx`) que la expresión regular sigue encontrando los marcadores. Este archivo tiene 567 líneas: no lo reescribas, ajustá el regex si hace falta.
-- [ ] 5. Borrar las funciones sin uso de `pdfService.ts`
+- [x] 5. Borrar las funciones sin uso de `pdfService.ts`
   - `downloadPdfToBlob(fileUrl)` y `getSignedDownloadUrl(bookId)`: `rg` confirma que cada una aparece **solo** en el archivo que las define.
   - El flujo de descarga real usa `booksApi.stream` + `processBookForReading`.
-- [ ] 6. Agregar tests
+- [x] 6. Agregar tests
   - `extractTextFromFile` con un PDF de fixture pequeño: devuelve el número de páginas correcto y el texto con marcadores.
   - `processBookForReading` con un libro que ya tiene texto: no llama a la red (el no-op de `book.text.length > 10`).
   - Verificar que el regex de `TextReader` encuentra los marcadores que genera el extractor. Este es el test que más valor da: es el contrato entre los dos módulos.
 
 ## Criterios de Done
 
-- [ ] Abrir un libro sincronizado por primera vez descarga y extrae el texto sin error.
-- [ ] No hay ninguna referencia a `/pdf.worker.min.js` en el código.
-- [ ] Existe un solo módulo de PDF y un solo formato de marcador de página.
-- [ ] La navegación por página del reader funciona con el texto que genera el extractor.
-- [ ] `pnpm exec vitest run` pasa con los tests nuevos, incluido el de compatibilidad extractor ↔ reader.
-- [ ] `pnpm build` pasa (el `?url` de Vite tiene que resolver en build, no solo en dev).
-- [ ] `specs/modules/frontend/03-architecture.md` describe el módulo único.
+- [~] Abrir un libro sincronizado por primera vez descarga y extrae el texto sin error.
+  - Verificado por tests con `booksApi.stream` mockeado y por `pnpm build` (el worker `?url` resuelve en build). La apertura física del lector requiere la app corriendo.
+- [x] No hay ninguna referencia a `/pdf.worker.min.js` en el código (`rg /pdf.worker.min.js` no devuelve nada).
+- [x] Existe un solo módulo de PDF y un solo formato de marcador de página.
+- [~] La navegación por página del reader funciona con el texto que genera el extractor.
+  - El regex del reader está cubierto por el test de contrato; el comportamiento visual queda verificado cuando corra la app.
+- [x] `pnpm exec vitest run` pasa: 78 tests en 10 archivos, incluido el de contrato.
+- [x] `pnpm build` pasa.
+- [x] `specs/modules/frontend/03-architecture.md` describe el módulo único.

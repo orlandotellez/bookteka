@@ -98,7 +98,7 @@ Los stores de IndexedDB tienen índice `by-userId` y filtran en lectura (`getAll
 | Tema | Dónde | Problema |
 |---|---|---|
 | Doble implementación del estado de libros | `src/hooks/useBooks.tsx` vs `src/store/bookStore.ts` | `useBooks` no lo importa nadie. Dos APIs para lo mismo. |
-| Dos capas de extracción de PDF | `src/lib/pdfExtractor.ts` vs `src/lib/pdfService.ts` | Marcadores de página con formatos distintos (`[PAGE_n]` vs `[PAGE_n]\n`). |
+| ~~Dos capas de extracción de PDF~~ **✅ resuelto** | Un solo módulo `lib/pdf.ts`, formato único. Ver `02-trabajo-pdf.md`. |
 | Estado de tema duplicado | `src/context/ThemeContext.tsx` | Solo maneja `light`/`dark`, pero `index.css` define 6 temas. |
 | Borrado de DB en logout | `LogoutButton.tsx` | Hay un `try { } catch { }` vacío de sincronización, resultado de un refactor a medias. |
 

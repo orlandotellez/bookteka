@@ -204,5 +204,5 @@ El backend proxya el `GetObjectCommand` de R2 (evita CORS y protege el bucket).
 ## Cliente (frontend)
 
 - `booksApi` (`src/api/book.ts`): `list`, `upload` (FormData), `download`, `stream` (`api.raw` → Response), `updateProgress`, `remove`.
-- `processBookForReading` (`frontend/src/lib/pdfService.ts`): stream → arrayBuffer → pdf.js extrae texto con marcadores `[PAGE_n]`.
+- `processBookForReading` (`frontend/src/lib/pdf.ts`): stream → arrayBuffer → pdf.js extrae texto con marcadores `[PAGE_n]`.
 - El store coalesce los PATCH /progress (3s) y los flushea con keepalive al cerrar.

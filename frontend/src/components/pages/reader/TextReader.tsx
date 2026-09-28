@@ -224,7 +224,7 @@ export const TextReader = forwardRef<TextReaderHandle, TextReaderProps>(({
   }, [bookmarks]);
 
   // Marcadores de página efectivos: si el PDF no trae tokens [PAGE_X],
-  // generamos uno sintético dividiendo los párrafos均匀 entre totalPages
+  // generamos uno sintético dividiendo los párrafos en partes iguales entre totalPages
   // para que el separador visual funcione también en esos libros.
   const effectivePageMarkers = useMemo(() => {
     if (pageMarkers.length > 0 || !totalPages || totalPages <= 1 || paragraphs.length === 0) {
