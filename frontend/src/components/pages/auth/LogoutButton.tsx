@@ -15,19 +15,16 @@ export const LogoutButton = () => {
     try {
       toast.info("Cerrando sesión...");
 
-      // Eliminar la base de datos local
-      await clearDatabase();
-
-      // Reiniciar la conexión a la base de datos
-      await resetDatabase();
-
-      // Cerrar sesión en el servidor y limpiar ambos JWT.
       await authApi.logout();
       invalidateAuthSession();
+
+      await clearDatabase();
+      await resetDatabase();
 
       navigate("/auth/login", { replace: true });
     } catch (err) {
       console.error("Error inesperado durante el logout:", err);
+    } finally {
       setLoading(false);
     }
   };
