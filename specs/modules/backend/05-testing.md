@@ -32,7 +32,11 @@ pnpm test              # NODE_OPTIONS=--experimental-vm-modules jest
 pnpm test:watch        # lo mismo, en modo watch
 ```
 
-No hay script de cobertura. Para medirla hay que pasar el flag de Jest o agregar el reporter.
+```bash
+NODE_OPTIONS=--experimental-vm-modules pnpm exec jest --coverage
+```
+
+La medición real (87% stmts) está en la sección de cobertura de este archivo.
 
 ---
 
@@ -63,7 +67,7 @@ Se instancia el service con un repositorio falso inyectado por el constructor y 
 | `src/modules/streak/_tests_/application/streak.service.test.ts` | `getUserStreak`, `completeDay`, `initializeStreak` | 346 |
 | `src/modules/bookmarks/_tests_/application/bookmarks.service.test.ts` | `getBookmarks`, `createBookmark`, `updateBookmark`, `deleteBookmark` | 214 |
 
-**Total: 119 tests en 8 suites** (incluye 25 tests nuevos de `AuthService`, que no tenía ninguna cobertura).
+**Total: 150 tests en 12 suites**.
 
 ### Por qué funciona la inyección
 
@@ -114,17 +118,20 @@ Plan de cierre: `specs/tasks/backend/05-ci-y-calidad.md` tareas 3 y 4.
 
 ---
 
-## Cobertura objetivo
+## Cobertura medida
 
-**No hay objetivo numérico definido, y no se debe inventar uno.** Hoy tampoco hay medición: no hay reporter de cobertura configurado ni umbral en el pipeline.
+`NODE_OPTIONS=--experimental-vm-modules pnpm exec jest --coverage` (2026-09-28):
 
-El orden sensato es:
+| Métrica | Valor |
+|---|---|
+| Statements | **87.22%** |
+| Branches | **78.85%** |
+| Functions | **70.14%** |
+| Lines | **87.51%** |
 
-1. Medir la cobertura real con `jest --coverage` y anotar el número.
-2. Cerrar los huecos de la tabla de arriba, que son de riesgo alto (auth, CORS, env, health).
-3. Recién entonces decidir un umbral, si hace falta. Ver `specs/tasks/backend/05-ci-y-calidad.md` tarea 9.
+El test de cobertura corre con `testTimeout: 10_000` (jest.config.ts): bajo instrumentación la app completa tarda más de 5s en montarse. El flake del 401 que apareció en la tarea 04 era este timeout, no un bug.
 
-Un umbral alto sin cubrir `lib/auth.ts` no aporta nada: mide líneas, no riesgo.
+**No hay umbral establecido en CI** — se mide, no se gatea. Si mañana se quiere umbral, el número real ya está acá para decidirlo con datos.
 
 ---
 
@@ -152,7 +159,7 @@ Un umbral alto sin cubrir `lib/auth.ts` no aporta nada: mide líneas, no riesgo.
 |---|---|
 | **No hay CI** | `.github/` no existe. Nada corre estos tests automáticamente. |
 | ~~Tests no herméticos~~ **✅ resuelto** | `src/tests/setup.ts` inyecta las variables vía `setupFiles` de Jest. Verificado: 123/123 tests con el `.env` fuera. La CI no necesita `.env`. |
-| **No hay reporter de cobertura** | La cobertura es invisible. |
+| ~~No hay reporter de cobertura~~ **✅ medido** | 87.22% stmts / 87.51% lines. Ver sección de cobertura. |
 | **No hay umbral** | Nada impide que caiga. |
 | **No hay lint en el backend** | A diferencia del frontend, el backend no tiene ESLint ni siquiera instalado. |
 | **No hay tests de integración contra PostgreSQL** | Las suites HTTP prueban el contrato pero no las queries reales de Prisma. `P2002`, `P2003` y los `updateMany` condicionales nunca se ejecutan contra una base. |

@@ -85,5 +85,5 @@ Que no quede código que aparente una capacidad inexistente, y que ninguna opera
 - [x] Cada export de `src/` es alcanzable desde `server.ts` o desde un test. Barrido con regex: **0 huérfanos** tras la limpieza. Se eliminaron 3 archivos completos sin consumidores (`books.entities.ts`, `error-messages.ts`, `audit.types.ts`) y 22 exports muertos.
 - [x] `BooksService.deleteBook` no escribe en la base de datos: toda query pasa por el repositorio. `IBooksRepository.transaction` ejecuta `createAuditLog`/`deleteUserBook`/`deleteBook` dentro de una transacción de Prisma (mismo patrón que auth).
 - [x] La carpeta `src/http ` ya no existe y `pnpm build` pasa.
-- [x] `pnpm test` pasa: 123/123 en 3 corridas seguidas (hubo un flake aislado del 401 de `GET /books` en la primera corrida, no reproducible).
+- [x] `pnpm test` pasa: 150/150. El flake del 401 que apareció al cerrar esta tarea resultó ser un timeout de 5s de Jest bajo instrumentación — se subió `testTimeout` a 10s en la tarea 05-ci. No era un bug del código.
 - [x] Los specs que mencionaban el pool de `pg`, los schemas muertos y el nombre de la carpeta están actualizados.
