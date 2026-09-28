@@ -36,7 +36,7 @@ pnpm exec vitest run
 
 Configuración en `vite.config.ts` → `test: { environment: "jsdom", setupFiles: "./src/test/setup.ts" }`.
 
-### Cobertura actual (59 tests / 8 archivos)
+### Cobertura actual (131 tests / 17 archivos)
 
 | Archivo | Cubre |
 |---|---|
@@ -49,7 +49,9 @@ Configuración en `vite.config.ts` → `test: { environment: "jsdom", setupFiles
 | `__tests__/utils/text.test.ts` | normalizeText. |
 | `__tests__/store/bookStore.test.ts` | Store principal (Zustand), 20 tests. |
 
-> Sin cobertura de tests: `streakStore`, `userPreferencesStore`, `api/*`, `database/sync.ts`, `routes/*` y toda la vista `reader/`. Ver `specs/tasks/frontend/`.
+> **Cobertura medida (2026-09-28, `pnpm exec vitest run --coverage`): 23.99% statements / 19.36% branches / 20.35% functions / 24.63% lines** con `@vitest/coverage-v8@4` (la major 5 no empareja con vitest 4: fallaba con `coverageFilesDirectory is required`). El provider v8 se declara en `vite.config.ts`.
+>
+> Lo cubierto es la infraestructura de comportamiento: stores (bookStore, streakStore), el coalescer de progreso, la capa de API, el merge de sincronización, guards de rutas, el contrato extractor↔reader y las validaciones. Lo no cubierto son los componentes de UI grandes (`Index`, `Profile`, el reader completo), que se priorizaron por ser presentación. Ver `specs/tasks/frontend/` si se quiere subir.
 
 ### Convenciones
 
