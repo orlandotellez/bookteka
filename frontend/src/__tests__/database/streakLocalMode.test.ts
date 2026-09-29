@@ -2,13 +2,11 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 
 const streakApiGet = vi.fn();
 const streakApiComplete = vi.fn();
-const streakApiInitialize = vi.fn();
 
 vi.mock("@/api/streak", () => ({
   streakApi: {
     get: () => streakApiGet(),
     complete: () => streakApiComplete(),
-    initialize: (d?: string) => streakApiInitialize(d),
   },
 }));
 
@@ -24,8 +22,9 @@ vi.mock("@/store/userPreferencesStore", () => ({
   useUserPreferences: { getState: () => ({ ...prefs }) },
 }));
 
-const { syncStreakFromCloud, completeDayInCloud, initializeStreakInCloud } =
-  await import("@/database/features/streaks");
+const { syncStreakFromCloud, completeDayInCloud } = await import(
+  "@/database/features/streaks"
+);
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -45,11 +44,6 @@ describe("racha en modo local", () => {
   it("completeDayInCloud no llama a la API", async () => {
     await expect(completeDayInCloud()).resolves.toBeNull();
     expect(streakApiComplete).not.toHaveBeenCalled();
-  });
-
-  it("initializeStreakInCloud no llama a la API", async () => {
-    await expect(initializeStreakInCloud(0, "2026-01-01")).resolves.toBeNull();
-    expect(streakApiInitialize).not.toHaveBeenCalled();
   });
 
   it("tampoco escribe en IndexedDB", async () => {

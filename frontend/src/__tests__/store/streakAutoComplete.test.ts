@@ -5,13 +5,11 @@ const {
   getStreakDataMock,
   saveStreakDataMock,
   completeDayInCloudMock,
-  initializeStreakInCloudMock,
 } = vi.hoisted(() => ({
   syncStreakFromCloudMock: vi.fn(),
   getStreakDataMock: vi.fn(),
   saveStreakDataMock: vi.fn(),
   completeDayInCloudMock: vi.fn(),
-  initializeStreakInCloudMock: vi.fn(),
 }));
 
 vi.mock("@/database", () => ({
@@ -19,8 +17,6 @@ vi.mock("@/database", () => ({
   saveStreakData: () => saveStreakDataMock(),
   syncStreakFromCloud: () => syncStreakFromCloudMock(),
   completeDayInCloud: () => completeDayInCloudMock(),
-  initializeStreakInCloud: (days: number, startDate?: string) =>
-    initializeStreakInCloudMock(days, startDate),
 }));
 
 import { useStreakStore } from "@/store/streakStore";
@@ -35,7 +31,6 @@ beforeEach(() => {
   getStreakDataMock.mockResolvedValue(null);
   saveStreakDataMock.mockResolvedValue(undefined);
   completeDayInCloudMock.mockResolvedValue(null);
-  initializeStreakInCloudMock.mockResolvedValue(null);
 });
 
 describe("completeDayIfNeeded", () => {

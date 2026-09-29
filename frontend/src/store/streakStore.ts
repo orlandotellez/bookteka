@@ -1,4 +1,4 @@
-import { getStreakData, saveStreakData, syncStreakFromCloud, completeDayInCloud, initializeStreakInCloud } from "@/database";
+import { getStreakData, saveStreakData, syncStreakFromCloud, completeDayInCloud } from "@/database";
 
 import type { StreakData } from "@/types/reading";
 import { create } from "zustand";
@@ -31,7 +31,6 @@ interface StreakStore {
   loadStreakData: () => Promise<void>;
   completeDay: () => Promise<boolean | undefined>;
   completeDayIfNeeded: () => Promise<boolean>;
-  initializeStreak: (days: number, startDate?: string) => Promise<void>;
 }
 
 // Key para localStorage
@@ -158,55 +157,6 @@ export const useStreakStore = create<StreakStore>()(
       completeDayIfNeeded: async () => {
         if (get().streakData?.hasCompletedToday) return false;
         return (await get().completeDay()) === true;
-      },
-
-      // Inicializar la racha (recibe solo la fecha de inicio, el backend calcula los días)
-      initializeStreak: async (_days: number, startDate?: string) => {
-        set({ isStreakLoading: true });
-        const today = getTodayDate();
-
-        // Usar la fecha proporcionada, o hoy si no hay
-        const initialDate = startDate || today;
-
-        try {
-          // Intentar primero con el backend (el calcula los días automáticamente)
-          const result = await initializeStreakInCloud(0, initialDate);
-
-          if (result) {
-            set({
-              streakData: { ...result, hasCompletedToday: true },
-              isStreakLoading: false,
-            });
-            return;
-          }
-
-          // Fallback local si el backend falla
-          // Calcular días basados en la fecha de inicio
-          let calculatedStreak = 1;
-          if (startDate) {
-            const start = new Date(startDate);
-            const now = new Date();
-            const diffTime = now.getTime() - start.getTime();
-            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-            calculatedStreak = diffDays < 0 ? 0 : diffDays + 1;
-          }
-
-          const newData: StreakData = {
-            currentStreak: calculatedStreak,
-            startDate: initialDate,
-            lastActiveDate: today,
-            hasCompletedToday: true,
-          };
-
-          await saveStreakData(newData);
-          set({
-            streakData: newData,
-            isStreakLoading: false,
-          });
-        } catch (error) {
-          console.error("Error initializing streak:", error);
-          set({ isStreakLoading: false });
-        }
       },
     }),
     {

@@ -7,13 +7,11 @@ const {
   getStreakDataMock,
   saveStreakDataMock,
   completeDayInCloudMock,
-  initializeStreakInCloudMock,
 } = vi.hoisted(() => ({
   syncStreakFromCloudMock: vi.fn(),
   getStreakDataMock: vi.fn(),
   saveStreakDataMock: vi.fn(),
   completeDayInCloudMock: vi.fn(),
-  initializeStreakInCloudMock: vi.fn(),
 }));
 
 vi.mock("@/database", () => ({
@@ -21,8 +19,6 @@ vi.mock("@/database", () => ({
   saveStreakData: () => saveStreakDataMock(),
   syncStreakFromCloud: () => syncStreakFromCloudMock(),
   completeDayInCloud: () => completeDayInCloudMock(),
-  initializeStreakInCloud: (days: number, startDate?: string) =>
-    initializeStreakInCloudMock(days, startDate),
 }));
 
 const store = useStreakStore;
@@ -35,7 +31,6 @@ beforeEach(() => {
   getStreakDataMock.mockResolvedValue(null);
   saveStreakDataMock.mockResolvedValue(undefined);
   completeDayInCloudMock.mockResolvedValue(null);
-  initializeStreakInCloudMock.mockResolvedValue(null);
 });
 
 describe("streakStore.loadStreakData", () => {
@@ -167,25 +162,6 @@ describe("streakStore.completeDay", () => {
 
     expect(result).toBeUndefined();
     expect(store.getState().streakData).toBeNull();
-  });
-});
-
-describe("streakStore.initializeStreak", () => {
-  it("delega en el backend cuando responde", async () => {
-    initializeStreakInCloudMock.mockResolvedValue({
-      currentStreak: 15,
-      startDate: "2026-04-01",
-      lastActiveDate: "2026-05-06",
-      hasCompletedToday: true,
-    });
-
-    await store.getState().initializeStreak(15, "2026-04-01");
-
-    expect(initializeStreakInCloudMock).toHaveBeenCalledWith(
-      0,
-      "2026-04-01",
-    );
-    expect(store.getState().streakData?.currentStreak).toBe(15);
   });
 });
 

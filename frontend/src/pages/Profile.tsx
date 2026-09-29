@@ -22,11 +22,7 @@ const Profile = () => {
     uploadBookToCloud,
     uploadingBookId,
   } = useBookStore();
-  const {
-    streakData,
-    loadStreakData,
-    initializeStreak,
-  } = useStreakStore();
+  const { streakData, loadStreakData } = useStreakStore();
   const {
     defaultReadingSettings,
     setDefaultReadingSettings,
@@ -109,7 +105,6 @@ const Profile = () => {
                     hasCompletedToday: false,
                   }
                 }
-                onInitializeStreak={initializeStreak}
               />
 
               <CardProfile />

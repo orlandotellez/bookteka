@@ -13,7 +13,4 @@ export const streakApi = {
 
   complete: (data?: { clientDate?: string; clientTimestamp?: number }) =>
     api.post<StreakResponse>("/streak/complete", data ?? {}),
-
-  initialize: (startDate?: string) =>
-    api.post<StreakResponse>("/streak/initialize", { startDate }),
 };

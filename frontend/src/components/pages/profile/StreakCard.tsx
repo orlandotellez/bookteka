@@ -1,32 +1,15 @@
 import styles from "./StreakCard.module.css";
-import { useState } from "react";
-import { Flame, Settings, Check } from "lucide-react";
+import { Flame, Check } from "lucide-react";
 
 export const StreakCard = ({
   streakData,
-  onInitializeStreak,
 }: {
   streakData: {
     currentStreak: number;
     startDate: string | null;
     hasCompletedToday: boolean;
   };
-  onInitializeStreak: (days: number, startDate?: string) => Promise<void>;
 }) => {
-  const [showSettings, setShowSettings] = useState(false);
-  const [startDate, setStartDate] = useState("");
-
-  const handleInit = async () => {
-    if (!onInitializeStreak || !startDate) {
-      alert("Selecciona una fecha de inicio");
-      return;
-    }
-
-    await onInitializeStreak(0, startDate);
-    setShowSettings(false);
-    setStartDate("");
-  };
-
   // Función para formatear fecha - maneja diferentes formatos
   const formatDate = (str: string | null | undefined) => {
     if (!str) return "No iniciada";
@@ -77,33 +60,6 @@ export const StreakCard = ({
             </div>
           )}
         </div>
-      </div>
-
-      <div className={styles.streakActions}>
-        <button
-          className={styles.iconButton}
-          onClick={() => setShowSettings((v) => !v)}
-        >
-          <Settings size={16} />
-        </button>
-
-        {showSettings && (
-          <div className={styles.popover}>
-            <label>Fecha de inicio de la racha</label>
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-            />
-            <p style={{ fontSize: "12px", color: "#666", marginTop: "4px" }}>
-              Selecciona desde qué día empezaste a leer
-            </p>
-
-            <button className={styles.primaryButton} onClick={handleInit}>
-              Establecer racha
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );

@@ -89,32 +89,3 @@ export async function completeDayInCloud(): Promise<{
     return null;
   }
 }
-
-// Inicializa la racha en el backend
-export async function initializeStreakInCloud(
-  _currentStreak: number, // Ya no se usa, el backend calcula automáticamente
-  startDate?: string
-): Promise<StreakData | null> {
-  if (!hasCloudForStreak()) return null;
-  const currentUserId = getCurrentUserId();
-  if (!currentUserId) return null;
-
-  try {
-    const data = await streakApi.initialize(startDate);
-
-    // Actualizar también en IndexedDB
-    const streakData: StreakData = {
-      userId: currentUserId,
-      currentStreak: data.currentStreak,
-      startDate: data.startDate,
-      lastActiveDate: data.lastActiveDate,
-      hasCompletedToday: data.hasCompletedToday,
-    };
-
-    await saveStreakData(streakData);
-    return streakData;
-  } catch (error) {
-    console.error("Error initializing streak in cloud:", error);
-    return null;
-  }
-}

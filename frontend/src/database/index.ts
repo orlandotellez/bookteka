@@ -51,7 +51,6 @@ export {
   saveStreakData,
   syncStreakFromCloud,
   completeDayInCloud,
-  initializeStreakInCloud,
 } from "./features/streaks";
 
 export { syncBooksFromCloud } from "./sync";
