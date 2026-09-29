@@ -268,7 +268,7 @@ const ShelfBook = ({
             <div
               className={styles.tooltipAccent}
               style={{
-                background: `linear-gr1dient(90deg, ${color.spine}, ${color.cover})`,
+                background: `linear-gradient(90deg, ${color.spine}, ${color.cover})`,
               }}
             />
 
