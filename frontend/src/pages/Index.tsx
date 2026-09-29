@@ -140,6 +140,9 @@ const Index = () => {
   );
 
   const renderBooks = (booksToRender: Book[]) => {
+    // `viewMode` viene de las preferencias del usuario, que vienen de
+    // localStorage. Si ahí hubiera un valor corrupto, esta función devolvía
+    // `undefined` y la grilla desaparecía sin error ni aviso.
     if (viewMode === "grid") {
       return (
         <div className={styles.cards}>
@@ -187,6 +190,23 @@ const Index = () => {
         />
       );
     }
+
+    // Cualquier valor no reconocido cae en la grilla, que es la vista por
+    // defecto. Devolver `null` explícito en vez de `undefined` implícito.
+    return (
+      <div className={styles.cards}>
+        {booksToRender.map((book) => (
+          <CardBook
+            key={book.id}
+            book={book}
+            onOpen={handleOpenBook}
+            onDelete={handleDelete}
+            isDownloading={isProcessingPdf && downloadingBookId === book.id}
+            downloadProgress={downloadingBookId === book.id ? pdfProgress : undefined}
+          />
+        ))}
+      </div>
+    );
   };
 
   if (isLoading) return <Loading text="Cargando libros..." />;

@@ -301,15 +301,15 @@ const ShelfBook = ({
 
               <div className={styles.tooltipActions}>
                 <span className={styles.tooltipOpenLabel}>
-              <BookOpen size={12} />
-              Ver libro
-            </span>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setHovered(false);
-                setConfirmOpen(true);
-              }}
+                  <BookOpen size={12} />
+                  Ver libro
+                </span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setHovered(false);
+                    setConfirmOpen(true);
+                  }}
                   disabled={isDownloading}
                   title={isDownloading ? "Espera a que termine la descarga" : undefined}
                   aria-label="Eliminar libro"
@@ -405,7 +405,9 @@ const BookShelfView = ({
     const to = prev.findIndex((b) => b.id === targetId);
     if (from === -1 || to === -1 || from === to) return;
     const next = [...prev];
-    const [moved] = next.splice(from, 1);
+    const removed = next.splice(from, 1);
+    const moved = removed[0];
+    if (!moved) return;
     next.splice(from < to ? to - 1 : to, 0, moved);
     localBooksRef.current = next;
     setLocalBooks(next);
@@ -419,9 +421,9 @@ const BookShelfView = ({
       if (id !== targetId) reorderLocal(id, targetId);
       const list = localBooksRef.current;
       const idx = list.findIndex((b) => b.id === id);
-      const beforeId = idx > 0 ? list[idx - 1].id : null;
-      const afterId = idx >= 0 && idx < list.length - 1 ? list[idx + 1].id : null;
-      onMove(id, beforeId, afterId);
+      const before = idx > 0 ? list[idx - 1] : undefined;
+      const after = idx >= 0 && idx < list.length - 1 ? list[idx + 1] : undefined;
+      onMove(id, before?.id ?? null, after?.id ?? null);
       setDragId(null);
     },
     [dragId, reorderLocal, onMove],

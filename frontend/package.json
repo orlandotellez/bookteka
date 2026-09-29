@@ -7,6 +7,7 @@
     "dev": "vite",
     "production:mode": "VITE_FORCE_PRODUCTION=true pnpm tauri dev",
     "build": "tsc && vite build",
+    "typecheck": "tsc --noEmit",
     "preview": "vite preview",
     "tauri": "tauri",
     "lint": "eslint .",

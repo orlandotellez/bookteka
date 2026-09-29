@@ -190,10 +190,10 @@ export const TextReader = forwardRef<TextReaderHandle, TextReaderProps>(({
     rawParagraphs.forEach((p) => {
       const pageMatch = p.match(/^\[PAGE_(\d+)\]\s*/);
       if (pageMatch) {
-        const pageNum = parseInt(pageMatch[1]);
+        const pageNum = parseInt(pageMatch[1] ?? "", 10);
         markers.push({
           paragraphIndex: cleanParagraphs.length,
-          pageNumber: pageNum,
+          pageNumber: Number.isNaN(pageNum) ? 1 : pageNum,
         });
         const cleanText = p.replace(/^\[PAGE_\d+\]\s*/, "").trim();
         if (cleanText) cleanParagraphs.push(cleanText);
@@ -208,10 +208,12 @@ export const TextReader = forwardRef<TextReaderHandle, TextReaderProps>(({
   const highlightsByParagraph = useMemo(() => {
     const map: Record<number, Highlight[]> = {};
     highlights.forEach((h) => {
-      if (!map[h.paragraphIndex]) {
-        map[h.paragraphIndex] = [];
+      const existing = map[h.paragraphIndex];
+      if (existing) {
+        existing.push(h);
+      } else {
+        map[h.paragraphIndex] = [h];
       }
-      map[h.paragraphIndex].push(h);
     });
     return map;
   }, [highlights]);
@@ -221,10 +223,12 @@ export const TextReader = forwardRef<TextReaderHandle, TextReaderProps>(({
   const bookmarksByPage = useMemo(() => {
     const map: Record<number, Bookmark[]> = {};
     bookmarks.forEach((b) => {
-      if (!map[b.pageNumber]) {
-        map[b.pageNumber] = [];
+      const existing = map[b.pageNumber];
+      if (existing) {
+        existing.push(b);
+      } else {
+        map[b.pageNumber] = [b];
       }
-      map[b.pageNumber].push(b);
     });
     return map;
   }, [bookmarks]);
@@ -485,6 +489,9 @@ export const TextReader = forwardRef<TextReaderHandle, TextReaderProps>(({
             );
             const showDivider =
               pageStartsAtThisParagraph.length > 0 && !isFirstPage;
+            // `showDivider` ya garantiza que hay al menos un marcador, pero
+            // leerlo una vez con `?.` evita repetir el indexado tres veces.
+            const dividerPage = pageStartsAtThisParagraph[0]?.pageNumber;
             const seenPageNumbers = new Set<number>();
             const pageBookmarks = pageStartsAtThisParagraph.flatMap((m) => {
               if (seenPageNumbers.has(m.pageNumber)) return [];
@@ -494,14 +501,14 @@ export const TextReader = forwardRef<TextReaderHandle, TextReaderProps>(({
 
             return (
               <React.Fragment key={index}>
-                {showDivider && (
+                {showDivider && dividerPage !== undefined && (
                   <div
                     className={styles.pageDivider}
-                    data-page={pageStartsAtThisParagraph[0].pageNumber}
-                    aria-label={`Inicio de la página ${pageStartsAtThisParagraph[0].pageNumber}`}
+                    data-page={dividerPage}
+                    aria-label={`Inicio de la página ${dividerPage}`}
                   >
                     <span className={styles.pageDividerLabel} aria-hidden="true">
-                      Página {pageStartsAtThisParagraph[0].pageNumber}
+                      Página {dividerPage}
                     </span>
 
                     {pageBookmarks.length > 0 && (

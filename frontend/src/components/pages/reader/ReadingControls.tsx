@@ -32,28 +32,28 @@ export const ReadingControls = ({
 
   // Cerrar menú al hacer click afuera
   useEffect(() => {
+    if (!activeMenu) return;
+
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         closeMenu();
       }
     };
 
-    if (activeMenu) {
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
-    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [activeMenu]);
 
   // Cerrar menú con Escape
   useEffect(() => {
+    if (!activeMenu) return;
+
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") closeMenu();
     };
 
-    if (activeMenu) {
-      document.addEventListener("keydown", handleEscape);
-      return () => document.removeEventListener("keydown", handleEscape);
-    }
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
   }, [activeMenu]);
 
   const updateSetting = <K extends keyof ReadingSettings>(
