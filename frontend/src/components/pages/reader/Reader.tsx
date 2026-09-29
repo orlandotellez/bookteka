@@ -13,6 +13,7 @@ import { ReadingControls, type ReadingSettings } from "./ReadingControls";
 import type { Highlight, HighlightColor, Bookmark } from "@/types/book";
 import styles from "./Reader.module.css";
 import { Loading } from "@/components/common/Loading";
+import { toast } from "sonner";
 import { generateId } from "@/utils/generateId";
 
 // Colores disponibles para asignar aleatoriamente a marcadores
@@ -53,13 +54,7 @@ export const Reader = ({ book }: ReaderProps) => {
       }
     },
   });
-  const {
-    streakData,
-    loadStreakData,
-    completeDay,
-    initializeStreak,
-    isStreakLoading,
-  } = useStreakStore();
+  const { loadStreakData, completeDayIfNeeded } = useStreakStore();
   const { defaultReadingSettings } = useUserPreferences();
 
   // Inicializar settings con las preferencias del usuario (ajustando textWidth para móvil)
@@ -152,9 +147,18 @@ export const Reader = ({ book }: ReaderProps) => {
   const handleTimerToggle = () => {
     if (isRunning) {
       pause();
-    } else {
-      start();
+      return;
     }
+    start();
+    // Arrancar el temporizador ES la acción de leer: con eso basta para que el
+    // día cuente en la racha. Antes había un botón "Completar día" que además
+    // exigía un toque extra.
+    void registrarLecturaDelDia();
+  };
+
+  const registrarLecturaDelDia = async () => {
+    const countedNow = await completeDayIfNeeded();
+    if (countedNow) toast.success("Racha completada por hoy");
   };
 
   const handleRemoveHighlight = useCallback(
@@ -275,14 +279,6 @@ export const Reader = ({ book }: ReaderProps) => {
           isTimerRunning={isRunning}
           sessionSeconds={sessionSeconds}
           onToggleTimer={handleTimerToggle}
-          streakData={{
-            currentStreak: streakData?.currentStreak ?? 0,
-            hasCompletedToday: streakData?.hasCompletedToday ?? false,
-            startDate: streakData?.startDate ?? null,
-            onCompleteDay: completeDay,
-            onInitialize: initializeStreak,
-            isLoading: isStreakLoading,
-          }}
         />
         <ReadingControls settings={settings} onSettingsChange={setSettings} />
       </header>

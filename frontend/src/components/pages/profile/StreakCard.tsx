@@ -4,24 +4,17 @@ import { Flame, Settings, Check } from "lucide-react";
 
 export const StreakCard = ({
   streakData,
-  onCompleteDay,
   onInitializeStreak,
-  isLoading,
 }: {
-  streakData: { currentStreak: number; startDate: string | null; hasCompletedToday: boolean };
-  onCompleteDay: () => Promise<boolean | undefined>;
+  streakData: {
+    currentStreak: number;
+    startDate: string | null;
+    hasCompletedToday: boolean;
+  };
   onInitializeStreak: (days: number, startDate?: string) => Promise<void>;
-  isLoading: boolean;
 }) => {
   const [showSettings, setShowSettings] = useState(false);
   const [startDate, setStartDate] = useState("");
-
-  const handleCompleteDay = async () => {
-    if (!onCompleteDay) return;
-    const success = await onCompleteDay();
-    if (success) alert("¡Racha completada!");
-    else alert("Ya completaste hoy");
-  };
 
   const handleInit = async () => {
     if (!onInitializeStreak || !startDate) {
@@ -78,32 +71,15 @@ export const StreakCard = ({
           <div className={styles.streakDate}>
             Inicio: {formatDate(streakData.startDate)}
           </div>
+          {streakData.hasCompletedToday && (
+            <div className={styles.streakDate}>
+              <Check size={12} /> Completado hoy
+            </div>
+          )}
         </div>
       </div>
 
       <div className={styles.streakActions}>
-        <button
-          className={styles.primaryButton}
-          disabled={isLoading || streakData.hasCompletedToday}
-          onClick={handleCompleteDay}
-        >
-          {streakData.hasCompletedToday ? (
-            <>
-              <Check size={16} />
-              <span>
-                Completado
-              </span>
-            </>
-          ) : (
-            <>
-              <Flame size={16} />
-              <span>
-                Completar día
-              </span>
-            </>
-          )}
-        </button>
-
         <button
           className={styles.iconButton}
           onClick={() => setShowSettings((v) => !v)}

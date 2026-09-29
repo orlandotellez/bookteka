@@ -35,6 +35,9 @@
 }
 
 .streakDate {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   font-size: 12px;
   color: var(--font-color-text);
 }
@@ -75,11 +78,4 @@
   background: var(--primary-color);
   color: var(--font-color-title);
   padding: 5px;
-}
-
-
-@media only screen and (max-width: 768px) {
-  .primaryButton span {
-    display: none;
-  }
 }

@@ -30,6 +30,7 @@ interface StreakStore {
   // Acciones de streak
   loadStreakData: () => Promise<void>;
   completeDay: () => Promise<boolean | undefined>;
+  completeDayIfNeeded: () => Promise<boolean>;
   initializeStreak: (days: number, startDate?: string) => Promise<void>;
 }
 
@@ -150,6 +151,13 @@ export const useStreakStore = create<StreakStore>()(
           console.error("Error completing day:", error);
           return undefined;
         }
+      },
+
+      // Contar el día solo si todavía no estaba. Es la acción que dispara el
+      // temporizador al arrancar: arrancar el temporizador ES leer.
+      completeDayIfNeeded: async () => {
+        if (get().streakData?.hasCompletedToday) return false;
+        return (await get().completeDay()) === true;
       },
 
       // Inicializar la racha (recibe solo la fecha de inicio, el backend calcula los días)

@@ -25,9 +25,7 @@ const Profile = () => {
   const {
     streakData,
     loadStreakData,
-    completeDay,
     initializeStreak,
-    isStreakLoading,
   } = useStreakStore();
   const {
     defaultReadingSettings,
@@ -111,9 +109,7 @@ const Profile = () => {
                     hasCompletedToday: false,
                   }
                 }
-                onCompleteDay={completeDay}
                 onInitializeStreak={initializeStreak}
-                isLoading={isStreakLoading}
               />
 
               <CardProfile />

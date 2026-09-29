@@ -1,20 +1,10 @@
 import { X, Bookmark, User } from "lucide-react";
 import styles from "./ReaderHeader.module.css";
 import { ReadingTimer } from "./ReadingTimer";
-import StreakButton from "./StreakButton";
 import logoDark from "@/assets/logoDark.svg";
 import logoLight from "@/assets/logoLight.svg";
 import { useTheme } from "@/context/ThemeContext";
 import { isDarkTheme } from "@/context/theme";
-
-interface StreakData {
-  currentStreak: number;
-  hasCompletedToday: boolean;
-  startDate: string | null;
-  onCompleteDay: () => Promise<boolean | undefined>;
-  onInitialize: (days: number, startDate?: string) => Promise<void>;
-  isLoading: boolean;
-}
 
 interface ReaderHeaderProps {
   fileName?: string;
@@ -26,7 +16,6 @@ interface ReaderHeaderProps {
   sessionSeconds?: number;
   onToggleTimer?: () => void;
   themeToggle?: React.ReactNode;
-  streakData?: StreakData;
 }
 
 export const ReaderHeader = ({
@@ -39,7 +28,6 @@ export const ReaderHeader = ({
   sessionSeconds = 0,
   onToggleTimer,
   themeToggle,
-  streakData,
 }: ReaderHeaderProps) => {
   const { theme } = useTheme();
   return (
@@ -68,15 +56,6 @@ export const ReaderHeader = ({
 
         {/* Lado derecho */}
         <div className={styles.right}>
-          {streakData && (
-            <StreakButton
-              currentStreak={streakData.currentStreak}
-              hasCompletedToday={streakData.hasCompletedToday}
-              onCompleteDay={streakData.onCompleteDay}
-              isLoading={streakData.isLoading}
-            />
-          )}
-
           {showTimer && onToggleTimer && (
             <ReadingTimer
               isRunning={isTimerRunning}

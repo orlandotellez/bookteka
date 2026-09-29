@@ -3,6 +3,12 @@ import { getDatabase } from "../connection";
 import { getCurrentUserId } from "../connection";
 
 import { streakApi } from "@/api/streak";
+import { isCloudAvailable } from "@/lib/cloud";
+import { useUserPreferences } from "@/store/userPreferencesStore";
+
+function hasCloudForStreak(): boolean {
+  return isCloudAvailable(useUserPreferences.getState().authMode);
+}
 
 // Obtiene los datos de la racha del usuario actual
 export async function getStreakData(): Promise<StreakData | null> {
@@ -29,6 +35,7 @@ export async function saveStreakData(streakData: StreakData): Promise<void> {
 
 // Sincroniza la racha con el backend
 export async function syncStreakFromCloud(): Promise<StreakData | null> {
+  if (!hasCloudForStreak()) return null;
   const currentUserId = getCurrentUserId();
   if (!currentUserId) return null;
 
@@ -59,6 +66,7 @@ export async function completeDayInCloud(): Promise<{
   lastActiveDate: string | null;
   hasCompletedToday: boolean;
 } | null> {
+  if (!hasCloudForStreak()) return null;
   const currentUserId = getCurrentUserId();
   if (!currentUserId) return null;
 
@@ -87,6 +95,7 @@ export async function initializeStreakInCloud(
   _currentStreak: number, // Ya no se usa, el backend calcula automáticamente
   startDate?: string
 ): Promise<StreakData | null> {
+  if (!hasCloudForStreak()) return null;
   const currentUserId = getCurrentUserId();
   if (!currentUserId) return null;
 
